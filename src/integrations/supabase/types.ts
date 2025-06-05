@@ -9,7 +9,590 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      access_logs: {
+        Row: {
+          access_method: string | null
+          access_time: string | null
+          created_at: string | null
+          exit_time: string | null
+          id: string
+          location_details: string | null
+          member_id: string | null
+          space_id: string | null
+        }
+        Insert: {
+          access_method?: string | null
+          access_time?: string | null
+          created_at?: string | null
+          exit_time?: string | null
+          id?: string
+          location_details?: string | null
+          member_id?: string | null
+          space_id?: string | null
+        }
+        Update: {
+          access_method?: string | null
+          access_time?: string | null
+          created_at?: string | null
+          exit_time?: string | null
+          id?: string
+          location_details?: string | null
+          member_id?: string | null
+          space_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "access_logs_member_id_fkey"
+            columns: ["member_id"]
+            isOneToOne: false
+            referencedRelation: "members"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "access_logs_space_id_fkey"
+            columns: ["space_id"]
+            isOneToOne: false
+            referencedRelation: "spaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      bookings: {
+        Row: {
+          attendees: number | null
+          created_at: string | null
+          description: string | null
+          end_time: string
+          id: string
+          is_recurring: boolean | null
+          member_id: string | null
+          recurring_pattern: Json | null
+          resource_id: string | null
+          special_requests: string | null
+          start_time: string
+          status: Database["public"]["Enums"]["booking_status"] | null
+          title: string | null
+          total_amount: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          attendees?: number | null
+          created_at?: string | null
+          description?: string | null
+          end_time: string
+          id?: string
+          is_recurring?: boolean | null
+          member_id?: string | null
+          recurring_pattern?: Json | null
+          resource_id?: string | null
+          special_requests?: string | null
+          start_time: string
+          status?: Database["public"]["Enums"]["booking_status"] | null
+          title?: string | null
+          total_amount?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          attendees?: number | null
+          created_at?: string | null
+          description?: string | null
+          end_time?: string
+          id?: string
+          is_recurring?: boolean | null
+          member_id?: string | null
+          recurring_pattern?: Json | null
+          resource_id?: string | null
+          special_requests?: string | null
+          start_time?: string
+          status?: Database["public"]["Enums"]["booking_status"] | null
+          title?: string | null
+          total_amount?: number | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bookings_member_id_fkey"
+            columns: ["member_id"]
+            isOneToOne: false
+            referencedRelation: "members"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bookings_resource_id_fkey"
+            columns: ["resource_id"]
+            isOneToOne: false
+            referencedRelation: "resources"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      event_registrations: {
+        Row: {
+          attended: boolean | null
+          event_id: string | null
+          id: string
+          member_id: string | null
+          registered_at: string | null
+        }
+        Insert: {
+          attended?: boolean | null
+          event_id?: string | null
+          id?: string
+          member_id?: string | null
+          registered_at?: string | null
+        }
+        Update: {
+          attended?: boolean | null
+          event_id?: string | null
+          id?: string
+          member_id?: string | null
+          registered_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_registrations_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "event_registrations_member_id_fkey"
+            columns: ["member_id"]
+            isOneToOne: false
+            referencedRelation: "members"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      events: {
+        Row: {
+          capacity: number | null
+          created_at: string | null
+          description: string | null
+          end_time: string
+          event_type: string | null
+          id: string
+          image_url: string | null
+          is_public: boolean | null
+          location_details: string | null
+          organizer_id: string | null
+          price: number | null
+          registration_required: boolean | null
+          space_id: string | null
+          start_time: string
+          title: string
+          updated_at: string | null
+        }
+        Insert: {
+          capacity?: number | null
+          created_at?: string | null
+          description?: string | null
+          end_time: string
+          event_type?: string | null
+          id?: string
+          image_url?: string | null
+          is_public?: boolean | null
+          location_details?: string | null
+          organizer_id?: string | null
+          price?: number | null
+          registration_required?: boolean | null
+          space_id?: string | null
+          start_time: string
+          title: string
+          updated_at?: string | null
+        }
+        Update: {
+          capacity?: number | null
+          created_at?: string | null
+          description?: string | null
+          end_time?: string
+          event_type?: string | null
+          id?: string
+          image_url?: string | null
+          is_public?: boolean | null
+          location_details?: string | null
+          organizer_id?: string | null
+          price?: number | null
+          registration_required?: boolean | null
+          space_id?: string | null
+          start_time?: string
+          title?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "events_organizer_id_fkey"
+            columns: ["organizer_id"]
+            isOneToOne: false
+            referencedRelation: "members"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "events_space_id_fkey"
+            columns: ["space_id"]
+            isOneToOne: false
+            referencedRelation: "spaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      members: {
+        Row: {
+          access_code: string | null
+          access_hours: Json | null
+          created_at: string | null
+          end_date: string | null
+          id: string
+          member_id: string
+          membership_status:
+            | Database["public"]["Enums"]["membership_status"]
+            | null
+          membership_tier: Database["public"]["Enums"]["membership_tier"] | null
+          monthly_rate: number | null
+          rfid_card_id: string | null
+          space_id: string | null
+          start_date: string | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          access_code?: string | null
+          access_hours?: Json | null
+          created_at?: string | null
+          end_date?: string | null
+          id?: string
+          member_id: string
+          membership_status?:
+            | Database["public"]["Enums"]["membership_status"]
+            | null
+          membership_tier?:
+            | Database["public"]["Enums"]["membership_tier"]
+            | null
+          monthly_rate?: number | null
+          rfid_card_id?: string | null
+          space_id?: string | null
+          start_date?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          access_code?: string | null
+          access_hours?: Json | null
+          created_at?: string | null
+          end_date?: string | null
+          id?: string
+          member_id?: string
+          membership_status?:
+            | Database["public"]["Enums"]["membership_status"]
+            | null
+          membership_tier?:
+            | Database["public"]["Enums"]["membership_tier"]
+            | null
+          monthly_rate?: number | null
+          rfid_card_id?: string | null
+          space_id?: string | null
+          start_date?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "members_space_id_fkey"
+            columns: ["space_id"]
+            isOneToOne: false
+            referencedRelation: "spaces"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "members_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      notifications: {
+        Row: {
+          action_url: string | null
+          created_at: string | null
+          id: string
+          is_read: boolean | null
+          message: string
+          metadata: Json | null
+          title: string
+          type: Database["public"]["Enums"]["notification_type"]
+          user_id: string | null
+        }
+        Insert: {
+          action_url?: string | null
+          created_at?: string | null
+          id?: string
+          is_read?: boolean | null
+          message: string
+          metadata?: Json | null
+          title: string
+          type: Database["public"]["Enums"]["notification_type"]
+          user_id?: string | null
+        }
+        Update: {
+          action_url?: string | null
+          created_at?: string | null
+          id?: string
+          is_read?: boolean | null
+          message?: string
+          metadata?: Json | null
+          title?: string
+          type?: Database["public"]["Enums"]["notification_type"]
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notifications_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      payments: {
+        Row: {
+          amount: number
+          booking_id: string | null
+          created_at: string | null
+          currency: string | null
+          description: string | null
+          due_date: string | null
+          id: string
+          invoice_date: string | null
+          invoice_number: string | null
+          member_id: string | null
+          metadata: Json | null
+          payment_method: string | null
+          status: Database["public"]["Enums"]["payment_status"] | null
+          stripe_payment_intent_id: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          amount: number
+          booking_id?: string | null
+          created_at?: string | null
+          currency?: string | null
+          description?: string | null
+          due_date?: string | null
+          id?: string
+          invoice_date?: string | null
+          invoice_number?: string | null
+          member_id?: string | null
+          metadata?: Json | null
+          payment_method?: string | null
+          status?: Database["public"]["Enums"]["payment_status"] | null
+          stripe_payment_intent_id?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          amount?: number
+          booking_id?: string | null
+          created_at?: string | null
+          currency?: string | null
+          description?: string | null
+          due_date?: string | null
+          id?: string
+          invoice_date?: string | null
+          invoice_number?: string | null
+          member_id?: string | null
+          metadata?: Json | null
+          payment_method?: string | null
+          status?: Database["public"]["Enums"]["payment_status"] | null
+          stripe_payment_intent_id?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payments_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: false
+            referencedRelation: "bookings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payments_member_id_fkey"
+            columns: ["member_id"]
+            isOneToOne: false
+            referencedRelation: "members"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          bio: string | null
+          company: string | null
+          created_at: string | null
+          emergency_contact_name: string | null
+          emergency_contact_phone: string | null
+          first_name: string | null
+          id: string
+          job_title: string | null
+          last_name: string | null
+          linkedin_url: string | null
+          phone: string | null
+          updated_at: string | null
+          website_url: string | null
+        }
+        Insert: {
+          avatar_url?: string | null
+          bio?: string | null
+          company?: string | null
+          created_at?: string | null
+          emergency_contact_name?: string | null
+          emergency_contact_phone?: string | null
+          first_name?: string | null
+          id: string
+          job_title?: string | null
+          last_name?: string | null
+          linkedin_url?: string | null
+          phone?: string | null
+          updated_at?: string | null
+          website_url?: string | null
+        }
+        Update: {
+          avatar_url?: string | null
+          bio?: string | null
+          company?: string | null
+          created_at?: string | null
+          emergency_contact_name?: string | null
+          emergency_contact_phone?: string | null
+          first_name?: string | null
+          id?: string
+          job_title?: string | null
+          last_name?: string | null
+          linkedin_url?: string | null
+          phone?: string | null
+          updated_at?: string | null
+          website_url?: string | null
+        }
+        Relationships: []
+      }
+      resources: {
+        Row: {
+          amenities: string[] | null
+          capacity: number | null
+          created_at: string | null
+          daily_rate: number | null
+          description: string | null
+          hourly_rate: number | null
+          id: string
+          image_url: string | null
+          is_available: boolean | null
+          location_details: string | null
+          name: string
+          space_id: string | null
+          type: Database["public"]["Enums"]["space_type"]
+          updated_at: string | null
+        }
+        Insert: {
+          amenities?: string[] | null
+          capacity?: number | null
+          created_at?: string | null
+          daily_rate?: number | null
+          description?: string | null
+          hourly_rate?: number | null
+          id?: string
+          image_url?: string | null
+          is_available?: boolean | null
+          location_details?: string | null
+          name: string
+          space_id?: string | null
+          type: Database["public"]["Enums"]["space_type"]
+          updated_at?: string | null
+        }
+        Update: {
+          amenities?: string[] | null
+          capacity?: number | null
+          created_at?: string | null
+          daily_rate?: number | null
+          description?: string | null
+          hourly_rate?: number | null
+          id?: string
+          image_url?: string | null
+          is_available?: boolean | null
+          location_details?: string | null
+          name?: string
+          space_id?: string | null
+          type?: Database["public"]["Enums"]["space_type"]
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "resources_space_id_fkey"
+            columns: ["space_id"]
+            isOneToOne: false
+            referencedRelation: "spaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      spaces: {
+        Row: {
+          address: string
+          amenities: string[] | null
+          city: string
+          country: string
+          created_at: string | null
+          description: string | null
+          email: string | null
+          id: string
+          image_url: string | null
+          name: string
+          operating_hours: Json | null
+          phone: string | null
+          postal_code: string | null
+          timezone: string | null
+          updated_at: string | null
+          website_url: string | null
+        }
+        Insert: {
+          address: string
+          amenities?: string[] | null
+          city: string
+          country: string
+          created_at?: string | null
+          description?: string | null
+          email?: string | null
+          id?: string
+          image_url?: string | null
+          name: string
+          operating_hours?: Json | null
+          phone?: string | null
+          postal_code?: string | null
+          timezone?: string | null
+          updated_at?: string | null
+          website_url?: string | null
+        }
+        Update: {
+          address?: string
+          amenities?: string[] | null
+          city?: string
+          country?: string
+          created_at?: string | null
+          description?: string | null
+          email?: string | null
+          id?: string
+          image_url?: string | null
+          name?: string
+          operating_hours?: Json | null
+          phone?: string | null
+          postal_code?: string | null
+          timezone?: string | null
+          updated_at?: string | null
+          website_url?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -18,7 +601,18 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      booking_status: "confirmed" | "pending" | "cancelled" | "completed"
+      membership_status: "active" | "inactive" | "suspended" | "pending"
+      membership_tier: "basic" | "premium" | "enterprise"
+      notification_type: "booking" | "payment" | "event" | "system" | "access"
+      payment_status: "pending" | "completed" | "failed" | "refunded"
+      space_type:
+        | "hot_desk"
+        | "dedicated_desk"
+        | "private_office"
+        | "meeting_room"
+        | "phone_booth"
+        | "event_space"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -133,6 +727,20 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      booking_status: ["confirmed", "pending", "cancelled", "completed"],
+      membership_status: ["active", "inactive", "suspended", "pending"],
+      membership_tier: ["basic", "premium", "enterprise"],
+      notification_type: ["booking", "payment", "event", "system", "access"],
+      payment_status: ["pending", "completed", "failed", "refunded"],
+      space_type: [
+        "hot_desk",
+        "dedicated_desk",
+        "private_office",
+        "meeting_room",
+        "phone_booth",
+        "event_space",
+      ],
+    },
   },
 } as const
