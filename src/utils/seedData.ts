@@ -31,12 +31,12 @@ export const seedDemoData = async () => {
 
     if (spaceError) throw spaceError;
 
-    // Create demo resources
+    // Create demo resources with proper typing
     const resources = [
       {
         space_id: space.id,
         name: "Hot Desk Area",
-        type: "hot_desk",
+        type: "hot_desk" as const,
         description: "Flexible workspace with high-speed internet",
         capacity: 20,
         hourly_rate: 15.00,
@@ -46,7 +46,7 @@ export const seedDemoData = async () => {
       {
         space_id: space.id,
         name: "Conference Room A",
-        type: "meeting_room",
+        type: "meeting_room" as const,
         description: "8-person meeting room with projector",
         capacity: 8,
         hourly_rate: 75.00,
@@ -55,7 +55,7 @@ export const seedDemoData = async () => {
       {
         space_id: space.id,
         name: "Private Office 1",
-        type: "private_office",
+        type: "private_office" as const,
         description: "Private office for 1-2 people",
         capacity: 2,
         daily_rate: 200.00,
@@ -64,7 +64,7 @@ export const seedDemoData = async () => {
       {
         space_id: space.id,
         name: "Phone Booth 1",
-        type: "phone_booth",
+        type: "phone_booth" as const,
         description: "Quiet space for calls",
         capacity: 1,
         hourly_rate: 10.00,
