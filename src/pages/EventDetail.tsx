@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, Calendar, Clock, MapPin, Users, DollarSign, User } from "lucide-react";
 import { format } from "date-fns";
+import { Breadcrumbs } from "@/components/Breadcrumbs";
 
 const EventDetail = () => {
   const { id } = useParams<{ id: string }>();
@@ -40,6 +41,8 @@ const EventDetail = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
       <div className="container mx-auto px-4 py-8">
+        <Breadcrumbs />
+        
         <div className="mb-6">
           <Button 
             variant="ghost" 
@@ -190,11 +193,17 @@ const EventDetail = () => {
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-2">
-                    <p className="font-semibold">
-                      {event.organizer.first_name} {event.organizer.last_name}
-                    </p>
-                    {event.organizer.company && (
-                      <p className="text-sm text-gray-500">{event.organizer.company}</p>
+                    {event.organizer.profiles ? (
+                      <>
+                        <p className="font-semibold">
+                          {event.organizer.profiles.first_name} {event.organizer.profiles.last_name}
+                        </p>
+                        {event.organizer.profiles.company && (
+                          <p className="text-sm text-gray-500">{event.organizer.profiles.company}</p>
+                        )}
+                      </>
+                    ) : (
+                      <p className="font-semibold">Member ID: {event.organizer.member_id}</p>
                     )}
                   </div>
                 </CardContent>

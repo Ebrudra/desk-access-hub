@@ -10,7 +10,10 @@ export const useEvents = () => {
         .from("events")
         .select(`
           *,
-          organizer:organizer_id(*),
+          organizer:organizer_id(
+            *,
+            profiles:user_id(*)
+          ),
           spaces(*)
         `)
         .order("start_time", { ascending: true });
@@ -29,7 +32,10 @@ export const useEvent = (id: string) => {
         .from("events")
         .select(`
           *,
-          organizer:organizer_id(*),
+          organizer:organizer_id(
+            *,
+            profiles:user_id(*)
+          ),
           spaces(*)
         `)
         .eq("id", id)
