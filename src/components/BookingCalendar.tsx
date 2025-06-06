@@ -1,141 +1,159 @@
 
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Calendar, Clock, MapPin, Plus } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Calendar } from "@/components/ui/calendar";
+import { useBookings } from "@/hooks/useBookings";
+import { format, isSameDay, isToday } from "date-fns";
+import { CalendarPlus, Clock, MapPin, Users } from "lucide-react";
 
 interface BookingCalendarProps {
   expanded?: boolean;
 }
 
 export const BookingCalendar = ({ expanded = false }: BookingCalendarProps) => {
-  const [selectedDate, setSelectedDate] = useState(new Date());
+  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
+  const navigate = useNavigate();
+  const { data: bookings, isLoading } = useBookings();
 
-  const bookings = [
-    {
-      id: 1,
-      title: "Team Meeting",
-      member: "Sarah Johnson",
-      space: "Conference Room A",
-      time: "09:00 - 10:30",
-      status: "confirmed",
-      type: "meeting-room"
-    },
-    {
-      id: 2,
-      title: "Hot Desk",
-      member: "Mike Chen",
-      space: "Desk #23",
-      time: "08:00 - 17:00",
-      status: "checked-in",
-      type: "desk"
-    },
-    {
-      id: 3,
-      title: "Client Presentation",
-      member: "Emma Wilson",
-      space: "Conference Room B",
-      time: "14:00 - 15:30",
-      status: "pending",
-      type: "meeting-room"
-    },
-    {
-      id: 4,
-      title: "Focus Work",
-      member: "David Lee",
-      space: "Private Office #5",
-      time: "10:00 - 18:00",
-      status: "confirmed",
-      type: "office"
-    }
-  ];
+  const selectedDateBookings = bookings?.filter(booking => 
+    isSameDay(new Date(booking.start_time), selectedDate)
+  ) || [];
 
   const getStatusColor = (status: string) => {
     switch (status) {
       case "confirmed": return "bg-green-100 text-green-800";
-      case "checked-in": return "bg-blue-100 text-blue-800";
       case "pending": return "bg-yellow-100 text-yellow-800";
+      case "cancelled": return "bg-red-100 text-red-800";
+      case "completed": return "bg-blue-100 text-blue-800";
       default: return "bg-gray-100 text-gray-800";
     }
   };
 
-  const getTypeIcon = (type: string) => {
-    switch (type) {
-      case "meeting-room": return "🏢";
-      case "desk": return "💼";
-      case "office": return "🏠";
-      default: return "📍";
-    }
-  };
+  // Mark dates that have bookings
+  const datesWithBookings = bookings?.map(booking => new Date(booking.start_time)) || [];
+
+  if (isLoading) {
+    return (
+      <Card className={expanded ? "col-span-full" : ""}>
+        <CardHeader>
+          <CardTitle>Booking Calendar</CardTitle>
+          <CardDescription>Loading booking data...</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="animate-pulse">
+            <div className="h-64 bg-gray-200 rounded mb-4"></div>
+            <div className="space-y-2">
+              {[...Array(3)].map((_, i) => (
+                <div key={i} className="h-16 bg-gray-200 rounded"></div>
+              ))}
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
-    <Card className="hover:shadow-lg transition-shadow duration-200">
+    <Card className={expanded ? "col-span-full" : ""}>
       <CardHeader>
         <div className="flex items-center justify-between">
           <div>
-            <CardTitle className="flex items-center space-x-2">
-              <Calendar className="h-5 w-5" />
-              <span>Today's Bookings</span>
-            </CardTitle>
+            <CardTitle>Booking Calendar</CardTitle>
             <CardDescription>
-              {new Date().toLocaleDateString('en-US', { 
-                weekday: 'long', 
-                year: 'numeric', 
-                month: 'long', 
-                day: 'numeric' 
-              })}
+              View and manage space bookings
             </CardDescription>
           </div>
-          <Button size="sm" className="flex items-center space-x-2">
-            <Plus className="h-4 w-4" />
-            <span>New Booking</span>
+          <Button>
+            <CalendarPlus className="mr-2 h-4 w-4" />
+            New Booking
           </Button>
         </div>
       </CardHeader>
       <CardContent>
-        <div className="space-y-4">
-          {bookings.map((booking) => (
-            <div 
-              key={booking.id}
-              className="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors duration-200"
-            >
-              <div className="flex items-center space-x-4">
-                <div className="text-2xl">
-                  {getTypeIcon(booking.type)}
-                </div>
-                <div>
-                  <div className="font-semibold text-gray-900">
-                    {booking.title}
-                  </div>
-                  <div className="text-sm text-gray-600 flex items-center space-x-4">
-                    <span className="flex items-center space-x-1">
-                      <MapPin className="h-3 w-3" />
-                      <span>{booking.space}</span>
-                    </span>
-                    <span className="flex items-center space-x-1">
-                      <Clock className="h-3 w-3" />
-                      <span>{booking.time}</span>
-                    </span>
-                  </div>
-                  <div className="text-sm text-gray-500 mt-1">
-                    {booking.member}
-                  </div>
-                </div>
-              </div>
-              <Badge className={getStatusColor(booking.status)}>
-                {booking.status}
+        <div className={`grid ${expanded ? 'grid-cols-1 lg:grid-cols-2' : 'grid-cols-1'} gap-6`}>
+          <div>
+            <Calendar
+              mode="single"
+              selected={selectedDate}
+              onSelect={(date) => date && setSelectedDate(date)}
+              className="rounded-md border"
+              modifiers={{
+                hasBooking: datesWithBookings,
+                today: [new Date()]
+              }}
+              modifiersClassNames={{
+                hasBooking: "bg-blue-100 text-blue-900 font-semibold",
+                today: "bg-orange-100 text-orange-900"
+              }}
+            />
+          </div>
+          
+          <div>
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold">
+                {isToday(selectedDate) ? "Today's Bookings" : format(selectedDate, "PPP")}
+              </h3>
+              <Badge variant="secondary">
+                {selectedDateBookings.length} bookings
               </Badge>
             </div>
-          ))}
-          
-          {expanded && (
-            <div className="text-center py-4">
-              <Button variant="outline" className="w-full">
-                View All Bookings
-              </Button>
+            
+            <div className="space-y-3 max-h-96 overflow-y-auto">
+              {selectedDateBookings.length === 0 ? (
+                <div className="text-center py-8 text-gray-500">
+                  <Calendar className="mx-auto h-8 w-8 mb-2 opacity-50" />
+                  <p>No bookings for this date</p>
+                </div>
+              ) : (
+                selectedDateBookings.map((booking) => (
+                  <Card 
+                    key={booking.id} 
+                    className="cursor-pointer hover:shadow-md transition-shadow"
+                    onClick={() => navigate(`/bookings/${booking.id}`)}
+                  >
+                    <CardContent className="p-4">
+                      <div className="flex items-center justify-between mb-2">
+                        <h4 className="font-semibold">
+                          {booking.title || "Untitled Booking"}
+                        </h4>
+                        <Badge className={getStatusColor(booking.status || "pending")}>
+                          {booking.status || "pending"}
+                        </Badge>
+                      </div>
+                      
+                      <div className="space-y-1 text-sm text-gray-600">
+                        <div className="flex items-center">
+                          <Clock className="mr-1 h-3 w-3" />
+                          {format(new Date(booking.start_time), "p")} - {format(new Date(booking.end_time), "p")}
+                        </div>
+                        
+                        {booking.resources && (
+                          <div className="flex items-center">
+                            <MapPin className="mr-1 h-3 w-3" />
+                            {booking.resources.name}
+                          </div>
+                        )}
+                        
+                        <div className="flex items-center">
+                          <Users className="mr-1 h-3 w-3" />
+                          {booking.attendees || 1} attendees
+                        </div>
+                        
+                        {booking.total_amount && (
+                          <div className="text-green-600 font-medium">
+                            ${booking.total_amount}
+                          </div>
+                        )}
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))
+              )}
             </div>
-          )}
+          </div>
         </div>
       </CardContent>
     </Card>
