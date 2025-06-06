@@ -1,29 +1,47 @@
 
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { User } from "@supabase/supabase-js";
+import { User, Session } from "@supabase/supabase-js";
+import { useNavigate, useLocation } from "react-router-dom";
 
 export const useAuth = () => {
   const [user, setUser] = useState<User | null>(null);
+  const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
-    // Get initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setUser(session?.user ?? null);
-      setLoading(false);
-    });
+    // Set up auth state listener FIRST
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (event, session) => {
+        console.log('Auth state changed:', event, session);
+        setSession(session);
+        setUser(session?.user ?? null);
+        setLoading(false);
 
-    // Listen for auth changes
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
+        // Handle navigation after auth state changes
+        if (event === 'SIGNED_IN' && session) {
+          // Redirect to dashboard after successful login
+          if (location.pathname === '/auth') {
+            navigate('/');
+          }
+        } else if (event === 'SIGNED_OUT') {
+          // Redirect to auth page after logout
+          navigate('/auth');
+        }
+      }
+    );
+
+    // THEN check for existing session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
       setUser(session?.user ?? null);
       setLoading(false);
     });
 
     return () => subscription.unsubscribe();
-  }, []);
+  }, [navigate, location.pathname]);
 
   const signOut = async () => {
     await supabase.auth.signOut();
@@ -31,6 +49,7 @@ export const useAuth = () => {
 
   return {
     user,
+    session,
     loading,
     signOut,
   };

@@ -1,12 +1,8 @@
+
 import { useAuth } from "@/hooks/useAuth";
 import LandingPage from "@/components/landing/LandingPage";
-import AuthForm from "@/components/auth/AuthForm";
 import { useState } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Progress } from "@/components/ui/progress";
 import { DashboardStats } from "@/components/DashboardStats";
 import { BookingCalendar } from "@/components/BookingCalendar";
 import { MemberList } from "@/components/MemberList";
