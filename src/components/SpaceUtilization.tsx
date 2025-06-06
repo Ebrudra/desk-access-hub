@@ -1,60 +1,38 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
-import { TrendingUp, Users, Calendar } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { useSpaces } from "@/hooks/useSpaces";
+import { useResources } from "@/hooks/useResources";
+import { useBookings } from "@/hooks/useBookings";
+import { MapPin, Users, Calendar } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 interface SpaceUtilizationProps {
   expanded?: boolean;
 }
 
 export const SpaceUtilization = ({ expanded = false }: SpaceUtilizationProps) => {
-  const utilizationData = [
-    { name: "Mon", desks: 75, meetingRooms: 60, offices: 90 },
-    { name: "Tue", desks: 82, meetingRooms: 75, offices: 85 },
-    { name: "Wed", desks: 88, meetingRooms: 80, offices: 95 },
-    { name: "Thu", desks: 85, meetingRooms: 70, offices: 88 },
-    { name: "Fri", desks: 78, meetingRooms: 85, offices: 92 },
-    { name: "Sat", desks: 45, meetingRooms: 40, offices: 60 },
-    { name: "Sun", desks: 25, meetingRooms: 20, offices: 35 }
-  ];
+  const navigate = useNavigate();
+  const { data: spaces, isLoading: spacesLoading } = useSpaces();
+  const { data: resources, isLoading: resourcesLoading } = useResources();
+  const { data: bookings, isLoading: bookingsLoading } = useBookings();
 
-  const spaceBreakdown = [
-    { name: "Hot Desks", value: 45, color: "#3B82F6" },
-    { name: "Meeting Rooms", value: 25, color: "#10B981" },
-    { name: "Private Offices", value: 20, color: "#8B5CF6" },
-    { name: "Common Areas", value: 10, color: "#F59E0B" }
-  ];
-
-  const currentUtilization = [
-    { space: "Hot Desks", current: 23, total: 30, percentage: 77 },
-    { space: "Meeting Room A", current: 1, total: 1, percentage: 100 },
-    { space: "Meeting Room B", current: 0, total: 1, percentage: 0 },
-    { space: "Private Offices", current: 8, total: 10, percentage: 80 },
-    { space: "Phone Booths", current: 3, total: 4, percentage: 75 }
-  ];
-
-  if (!expanded) {
+  if (spacesLoading || resourcesLoading || bookingsLoading) {
     return (
-      <Card className="hover:shadow-lg transition-shadow duration-200">
+      <Card>
         <CardHeader>
-          <CardTitle className="flex items-center space-x-2">
-            <TrendingUp className="h-5 w-5" />
-            <span>Space Utilization</span>
+          <CardTitle className="flex items-center">
+            <MapPin className="mr-2 h-5 w-5" />
+            Space Utilization
           </CardTitle>
-          <CardDescription>Real-time occupancy overview</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            {currentUtilization.slice(0, 3).map((item, index) => (
-              <div key={index} className="space-y-2">
-                <div className="flex justify-between text-sm">
-                  <span className="font-medium">{item.space}</span>
-                  <span className="text-gray-500">
-                    {item.current}/{item.total}
-                  </span>
-                </div>
-                <Progress value={item.percentage} className="h-2" />
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="animate-pulse">
+                <div className="h-4 bg-gray-200 rounded mb-2"></div>
+                <div className="h-2 bg-gray-200 rounded"></div>
               </div>
             ))}
           </div>
@@ -63,104 +41,75 @@ export const SpaceUtilization = ({ expanded = false }: SpaceUtilizationProps) =>
     );
   }
 
+  const activeBookings = bookings?.filter(booking => 
+    booking.status === 'confirmed' && new Date(booking.end_time) > new Date()
+  ) || [];
+
+  const getResourceUtilization = (resourceId: string) => {
+    const resourceBookings = activeBookings.filter(booking => 
+      booking.resource_id === resourceId
+    );
+    return (resourceBookings.length / 10) * 100; // Mock calculation
+  };
+
+  const availableResources = resources?.filter(resource => resource.is_available) || [];
+  const displayResources = expanded ? availableResources : availableResources.slice(0, 3);
+
   return (
-    <div className="space-y-6">
-      {/* Weekly Utilization Chart */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center space-x-2">
-            <BarChart className="h-5 w-5" />
-            <span>Weekly Utilization Trends</span>
-          </CardTitle>
-          <CardDescription>
-            Space utilization percentages over the past week
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="h-80">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={utilizationData}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="name" />
-                <YAxis />
-                <Tooltip />
-                <Bar dataKey="desks" fill="#3B82F6" name="Hot Desks" />
-                <Bar dataKey="meetingRooms" fill="#10B981" name="Meeting Rooms" />
-                <Bar dataKey="offices" fill="#8B5CF6" name="Private Offices" />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Space Breakdown */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card>
-          <CardHeader>
-            <CardTitle>Space Distribution</CardTitle>
-            <CardDescription>
-              Breakdown of available space types
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="h-64">
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie
-                    data={spaceBreakdown}
-                    cx="50%"
-                    cy="50%"
-                    innerRadius={60}
-                    outerRadius={100}
-                    paddingAngle={5}
-                    dataKey="value"
-                  >
-                    {spaceBreakdown.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={entry.color} />
-                    ))}
-                  </Pie>
-                  <Tooltip />
-                </PieChart>
-              </ResponsiveContainer>
-            </div>
-            <div className="grid grid-cols-2 gap-2 mt-4">
-              {spaceBreakdown.map((item, index) => (
-                <div key={index} className="flex items-center space-x-2">
-                  <div
-                    className="w-3 h-3 rounded"
-                    style={{ backgroundColor: item.color }}
-                  ></div>
-                  <span className="text-sm">{item.name}</span>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Current Occupancy</CardTitle>
-            <CardDescription>
-              Real-time space availability
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {currentUtilization.map((item, index) => (
-                <div key={index} className="space-y-2">
-                  <div className="flex justify-between text-sm">
-                    <span className="font-medium">{item.space}</span>
-                    <span className="text-gray-500">
-                      {item.current}/{item.total} ({item.percentage}%)
-                    </span>
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center">
+          <MapPin className="mr-2 h-5 w-5" />
+          Space Utilization
+        </CardTitle>
+        <CardDescription>
+          {expanded ? "All available resources" : "Current space usage"}
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        <div className="space-y-4">
+          {displayResources.map((resource) => {
+            const utilization = getResourceUtilization(resource.id);
+            return (
+              <div 
+                key={resource.id} 
+                className="cursor-pointer hover:bg-gray-50 p-2 rounded-lg transition-colors"
+                onClick={() => navigate(`/resources/${resource.id}`)}
+              >
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center space-x-2">
+                    <span className="font-medium text-sm">{resource.name}</span>
+                    <Badge variant="outline" className="text-xs">
+                      {resource.type.replace('_', ' ')}
+                    </Badge>
                   </div>
-                  <Progress value={item.percentage} className="h-2" />
+                  <span className="text-xs text-gray-500">{Math.round(utilization)}%</span>
                 </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-    </div>
+                <Progress value={utilization} className="h-2" />
+                <div className="flex items-center justify-between mt-1 text-xs text-gray-500">
+                  <div className="flex items-center">
+                    <Users className="mr-1 h-3 w-3" />
+                    {resource.capacity}
+                  </div>
+                  <div className="flex items-center">
+                    <Calendar className="mr-1 h-3 w-3" />
+                    {activeBookings.filter(b => b.resource_id === resource.id).length} bookings
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+          
+          {!expanded && availableResources.length > 3 && (
+            <button 
+              onClick={() => navigate("/resources")}
+              className="w-full text-center text-sm text-blue-600 hover:text-blue-800 py-2"
+            >
+              View all resources ({availableResources.length - 3} more)
+            </button>
+          )}
+        </div>
+      </CardContent>
+    </Card>
   );
 };

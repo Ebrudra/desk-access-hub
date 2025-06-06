@@ -1,9 +1,9 @@
-
 import { useParams, useNavigate } from "react-router-dom";
 import { useBooking } from "@/hooks/useBookings";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { ArrowLeft, Calendar, Clock, MapPin, Users, DollarSign } from "lucide-react";
 import { format } from "date-fns";
 
@@ -50,6 +50,8 @@ const BookingDetail = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
       <div className="container mx-auto px-4 py-8">
+        <Breadcrumbs />
+        
         <div className="mb-6">
           <Button 
             variant="ghost" 
