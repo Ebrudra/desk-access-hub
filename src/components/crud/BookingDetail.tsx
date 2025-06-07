@@ -1,4 +1,3 @@
-
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
@@ -63,13 +62,7 @@ export const BookingDetail = () => {
           Back to Dashboard
         </Button>
         
-        <Breadcrumbs
-          items={[
-            { label: "Dashboard", href: "/" },
-            { label: "Bookings", href: "/" },
-            { label: booking.title || "Booking Details" }
-          ]}
-        />
+        <Breadcrumbs />
       </div>
 
       <Card>

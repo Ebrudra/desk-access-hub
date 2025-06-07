@@ -1,4 +1,3 @@
-
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
@@ -69,13 +68,7 @@ export const MemberDetail = () => {
           Back to Dashboard
         </Button>
         
-        <Breadcrumbs
-          items={[
-            { label: "Dashboard", href: "/" },
-            { label: "Members", href: "/" },
-            { label: member.member_id }
-          ]}
-        />
+        <Breadcrumbs />
       </div>
 
       <Card>
