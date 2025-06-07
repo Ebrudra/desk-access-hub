@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
@@ -6,14 +5,16 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
-import { MapPin, Edit, Trash2, Plus, Search, Users } from "lucide-react";
+import { MapPin, Edit, Trash2, Plus, Search, Building2, DollarSign, Eye } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { ResourceForm } from "./ResourceForm";
+import { useNavigate } from "react-router-dom";
 
 export const ResourcesList = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState("");
   const [isFormOpen, setIsFormOpen] = useState(false);
 
@@ -26,7 +27,7 @@ export const ResourcesList = () => {
           *,
           spaces(name)
         `)
-        .order("created_at", { ascending: false });
+        .order("name", { ascending: true });
       if (error) throw error;
       return data;
     },
@@ -52,17 +53,14 @@ export const ResourcesList = () => {
   );
 
   const getTypeColor = (type: string) => {
-    const colors = {
-      "hot_desk": "bg-blue-100 text-blue-800",
-      "dedicated_desk": "bg-green-100 text-green-800",
-      "private_office": "bg-purple-100 text-purple-800",
-      "meeting_room": "bg-orange-100 text-orange-800",
-      "phone_booth": "bg-gray-100 text-gray-800",
-      "event_space": "bg-red-100 text-red-800",
-      "equipment": "bg-yellow-100 text-yellow-800",
-      "lounge": "bg-pink-100 text-pink-800"
-    };
-    return colors[type as keyof typeof colors] || "bg-gray-100 text-gray-800";
+    switch (type) {
+      case "meeting_room": return "bg-blue-100 text-blue-800";
+      case "desk": return "bg-green-100 text-green-800";
+      case "office": return "bg-purple-100 text-purple-800";
+      case "equipment": return "bg-orange-100 text-orange-800";
+      case "lounge": return "bg-pink-100 text-pink-800";
+      default: return "bg-gray-100 text-gray-800";
+    }
   };
 
   if (isLoading) {
@@ -109,6 +107,13 @@ export const ResourcesList = () => {
                   <Badge variant={resource.is_available ? "default" : "secondary"}>
                     {resource.is_available ? "Available" : "Unavailable"}
                   </Badge>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => navigate(`/crud/resources/${resource.id}`)}
+                  >
+                    <Eye className="h-4 w-4" />
+                  </Button>
                   <Dialog>
                     <DialogTrigger asChild>
                       <Button variant="outline" size="sm">
@@ -133,30 +138,26 @@ export const ResourcesList = () => {
             <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
                 <div className="flex items-center space-x-2">
-                  <MapPin className="h-4 w-4 text-gray-400" />
+                  <Building2 className="h-4 w-4 text-gray-400" />
                   <span>{resource.spaces?.name || "No space assigned"}</span>
                 </div>
-                <div className="flex items-center space-x-2">
-                  <Users className="h-4 w-4 text-gray-400" />
-                  <span>Capacity: {resource.capacity}</span>
-                </div>
                 <div>
-                  <span className="font-medium">Rate: </span>
-                  {resource.hourly_rate ? `$${resource.hourly_rate}/hr` : 
-                   resource.daily_rate ? `$${resource.daily_rate}/day` : "No rate set"}
+                  <span className="font-medium">Capacity: </span>
+                  {resource.capacity} people
                 </div>
+                {(resource.hourly_rate || resource.daily_rate) && (
+                  <div className="flex items-center space-x-2">
+                    <DollarSign className="h-4 w-4 text-gray-400" />
+                    <span>
+                      {resource.hourly_rate && `$${resource.hourly_rate}/hr`}
+                      {resource.hourly_rate && resource.daily_rate && " | "}
+                      {resource.daily_rate && `$${resource.daily_rate}/day`}
+                    </span>
+                  </div>
+                )}
               </div>
               {resource.description && (
                 <p className="mt-2 text-sm text-gray-600">{resource.description}</p>
-              )}
-              {resource.amenities && resource.amenities.length > 0 && (
-                <div className="mt-2 flex flex-wrap gap-1">
-                  {resource.amenities.map((amenity, index) => (
-                    <Badge key={index} variant="outline" className="text-xs">
-                      {amenity}
-                    </Badge>
-                  ))}
-                </div>
               )}
             </CardContent>
           </Card>

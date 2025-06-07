@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
@@ -6,14 +5,16 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
-import { Users, Edit, Trash2, Plus, Search } from "lucide-react";
+import { Users, Edit, Trash2, Plus, Search, Eye } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { MemberForm } from "./MemberForm";
+import { useNavigate } from "react-router-dom";
 
 export const MembersList = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState("");
   const [isFormOpen, setIsFormOpen] = useState(false);
 
@@ -113,6 +114,13 @@ export const MembersList = () => {
                   <Badge className={getTierColor(member.membership_tier || "basic")}>
                     {member.membership_tier || "basic"}
                   </Badge>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => navigate(`/crud/members/${member.id}`)}
+                  >
+                    <Eye className="h-4 w-4" />
+                  </Button>
                   <Dialog>
                     <DialogTrigger asChild>
                       <Button variant="outline" size="sm">

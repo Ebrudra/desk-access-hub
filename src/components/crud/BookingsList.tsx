@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
@@ -6,14 +5,16 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
-import { Calendar, Clock, Users, Edit, Trash2, Plus, Search } from "lucide-react";
+import { Calendar, Edit, Trash2, Plus, Search, Eye } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { BookingForm } from "./BookingForm";
+import { useNavigate } from "react-router-dom";
 
 export const BookingsList = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedBooking, setSelectedBooking] = useState<string | null>(null);
   const [isFormOpen, setIsFormOpen] = useState(false);
@@ -25,8 +26,8 @@ export const BookingsList = () => {
         .from("bookings")
         .select(`
           *,
-          members(*),
-          resources(*)
+          members(member_id),
+          resources(name, type)
         `)
         .order("start_time", { ascending: false });
       if (error) throw error;
@@ -50,6 +51,7 @@ export const BookingsList = () => {
 
   const filteredBookings = bookings?.filter((booking) =>
     booking.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    booking.members?.member_id?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     booking.resources?.name?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
@@ -58,7 +60,6 @@ export const BookingsList = () => {
       case "confirmed": return "bg-green-100 text-green-800";
       case "pending": return "bg-yellow-100 text-yellow-800";
       case "cancelled": return "bg-red-100 text-red-800";
-      case "completed": return "bg-blue-100 text-blue-800";
       default: return "bg-gray-100 text-gray-800";
     }
   };
@@ -103,11 +104,20 @@ export const BookingsList = () => {
           <Card key={booking.id}>
             <CardHeader className="pb-3">
               <div className="flex justify-between items-start">
-                <CardTitle className="text-lg">{booking.title || "Untitled Booking"}</CardTitle>
+                <CardTitle className="text-lg">
+                  {booking.title || "Untitled Booking"}
+                </CardTitle>
                 <div className="flex items-center space-x-2">
-                  <Badge className={getStatusColor(booking.status || "pending")}>
-                    {booking.status || "pending"}
+                  <Badge className={getStatusColor(booking.status)}>
+                    {booking.status}
                   </Badge>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => navigate(`/crud/bookings/${booking.id}`)}
+                  >
+                    <Eye className="h-4 w-4" />
+                  </Button>
                   <Dialog>
                     <DialogTrigger asChild>
                       <Button variant="outline" size="sm">
@@ -131,30 +141,22 @@ export const BookingsList = () => {
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
-                <div className="flex items-center space-x-2">
-                  <Calendar className="h-4 w-4 text-gray-400" />
-                  <span>{formatDateTime(booking.start_time)}</span>
+                <div>
+                  <span className="font-medium">Time: </span>
+                  {formatDateTime(booking.start_time)}
                 </div>
-                <div className="flex items-center space-x-2">
-                  <Clock className="h-4 w-4 text-gray-400" />
-                  <span>{formatDateTime(booking.end_time)}</span>
+                <div>
+                  <span className="font-medium">Resource: </span>
+                  {booking.resources?.name || "No resource"}
                 </div>
-                <div className="flex items-center space-x-2">
-                  <Users className="h-4 w-4 text-gray-400" />
-                  <span>{booking.attendees} attendees</span>
+                <div>
+                  <span className="font-medium">Member: </span>
+                  {booking.members?.member_id || "No member"}
                 </div>
               </div>
               {booking.description && (
                 <p className="mt-2 text-sm text-gray-600">{booking.description}</p>
               )}
-              <div className="mt-2 flex flex-wrap gap-2">
-                {booking.resources && (
-                  <Badge variant="outline">Resource: {booking.resources.name}</Badge>
-                )}
-                {booking.members && (
-                  <Badge variant="outline">Member: {booking.members.member_id}</Badge>
-                )}
-              </div>
             </CardContent>
           </Card>
         ))}

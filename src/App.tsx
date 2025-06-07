@@ -65,6 +65,46 @@ const App = () => (
               </ProtectedRoute>
             } 
           />
+          <Route 
+            path="/crud/bookings/:id" 
+            element={
+              <ProtectedRoute>
+                <BookingDetail />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/crud/members/:id" 
+            element={
+              <ProtectedRoute>
+                <MemberDetail />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/crud/events/:id" 
+            element={
+              <ProtectedRoute>
+                <EventDetail />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/crud/spaces/:id" 
+            element={
+              <ProtectedRoute>
+                <SpaceDetail />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/crud/resources/:id" 
+            element={
+              <ProtectedRoute>
+                <ResourceDetail />
+              </ProtectedRoute>
+            } 
+          />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

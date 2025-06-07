@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
@@ -6,14 +5,16 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
-import { Settings, Edit, Trash2, Plus, Search, Calendar, MapPin, Users } from "lucide-react";
+import { Settings, Edit, Trash2, Plus, Search, Calendar, MapPin, Users, Eye } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { EventForm } from "./EventForm";
+import { useNavigate } from "react-router-dom";
 
 export const EventsList = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState("");
   const [isFormOpen, setIsFormOpen] = useState(false);
 
@@ -99,6 +100,13 @@ export const EventsList = () => {
                   <Badge variant={event.is_public ? "default" : "secondary"}>
                     {event.is_public ? "Public" : "Private"}
                   </Badge>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => navigate(`/crud/events/${event.id}`)}
+                  >
+                    <Eye className="h-4 w-4" />
+                  </Button>
                   <Dialog>
                     <DialogTrigger asChild>
                       <Button variant="outline" size="sm">
