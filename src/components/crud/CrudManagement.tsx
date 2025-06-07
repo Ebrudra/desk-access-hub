@@ -4,6 +4,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { BookingsList } from "./BookingsList";
 import { SpaceForm } from "./SpaceForm";
+import { MembersList } from "./MembersList";
+import { ResourcesList } from "./ResourcesList";
+import { EventsList } from "./EventsList";
 import { Calendar, Building2, Users, MapPin, Settings } from "lucide-react";
 
 export const CrudManagement = () => {
@@ -62,36 +65,15 @@ export const CrudManagement = () => {
         </TabsContent>
 
         <TabsContent value="members">
-          <Card>
-            <CardHeader>
-              <CardTitle>Members Management</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-gray-500">Members management coming soon...</p>
-            </CardContent>
-          </Card>
+          <MembersList />
         </TabsContent>
 
         <TabsContent value="resources">
-          <Card>
-            <CardHeader>
-              <CardTitle>Resources Management</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-gray-500">Resources management coming soon...</p>
-            </CardContent>
-          </Card>
+          <ResourcesList />
         </TabsContent>
 
         <TabsContent value="events">
-          <Card>
-            <CardHeader>
-              <CardTitle>Events Management</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-gray-500">Events management coming soon...</p>
-            </CardContent>
-          </Card>
+          <EventsList />
         </TabsContent>
       </Tabs>
     </div>
