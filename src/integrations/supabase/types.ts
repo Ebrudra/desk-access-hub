@@ -606,6 +606,7 @@ export type Database = {
       membership_tier: "basic" | "premium" | "enterprise"
       notification_type: "booking" | "payment" | "event" | "system" | "access"
       payment_status: "pending" | "completed" | "failed" | "refunded"
+      resource_type: "meeting_room" | "desk" | "office" | "equipment" | "lounge"
       space_type:
         | "hot_desk"
         | "dedicated_desk"
@@ -613,6 +614,10 @@ export type Database = {
         | "meeting_room"
         | "phone_booth"
         | "event_space"
+        | "desk"
+        | "office"
+        | "equipment"
+        | "lounge"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -733,6 +738,7 @@ export const Constants = {
       membership_tier: ["basic", "premium", "enterprise"],
       notification_type: ["booking", "payment", "event", "system", "access"],
       payment_status: ["pending", "completed", "failed", "refunded"],
+      resource_type: ["meeting_room", "desk", "office", "equipment", "lounge"],
       space_type: [
         "hot_desk",
         "dedicated_desk",
@@ -740,6 +746,10 @@ export const Constants = {
         "meeting_room",
         "phone_booth",
         "event_space",
+        "desk",
+        "office",
+        "equipment",
+        "lounge",
       ],
     },
   },

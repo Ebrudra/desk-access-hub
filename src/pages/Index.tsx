@@ -10,6 +10,7 @@ import { AccessControl } from "@/components/AccessControl";
 import { SpaceUtilization } from "@/components/SpaceUtilization";
 import { QuickActions } from "@/components/QuickActions";
 import { Navigation } from "@/components/Navigation";
+import { CrudManagement } from "@/components/crud/CrudManagement";
 
 const Index = () => {
   const { user, loading } = useAuth();
@@ -49,12 +50,13 @@ const Index = () => {
 
         {/* Main Content */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-5 lg:w-fit">
+          <TabsList className="grid w-full grid-cols-6 lg:w-fit">
             <TabsTrigger value="dashboard" className="text-sm">Dashboard</TabsTrigger>
             <TabsTrigger value="bookings" className="text-sm">Bookings</TabsTrigger>
             <TabsTrigger value="members" className="text-sm">Members</TabsTrigger>
             <TabsTrigger value="access" className="text-sm">Access</TabsTrigger>
             <TabsTrigger value="analytics" className="text-sm">Analytics</TabsTrigger>
+            <TabsTrigger value="manage" className="text-sm">Manage</TabsTrigger>
           </TabsList>
 
           <TabsContent value="dashboard" className="space-y-6 animate-slide-up">
@@ -84,6 +86,10 @@ const Index = () => {
 
           <TabsContent value="analytics" className="animate-slide-up">
             <SpaceUtilization expanded />
+          </TabsContent>
+
+          <TabsContent value="manage" className="animate-slide-up">
+            <CrudManagement />
           </TabsContent>
         </Tabs>
       </div>
