@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Trash2, Edit, Download, CheckSquare, Square } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import * as CheckboxPrimitive from "@radix-ui/react-checkbox";
 
 interface BulkActionsProps {
   selectedItems: string[];
@@ -31,16 +32,16 @@ export const BulkActions = ({
 }: BulkActionsProps) => {
   const { toast } = useToast();
   const [bulkStatus, setBulkStatus] = useState("");
-  const checkboxRef = useRef<HTMLButtonElement>(null);
+  const checkboxRef = useRef<React.ElementRef<typeof CheckboxPrimitive.Root>>(null);
 
   const isAllSelected = selectedItems.length === totalItems && totalItems > 0;
   const isPartialSelected = selectedItems.length > 0 && selectedItems.length < totalItems;
 
   useEffect(() => {
     if (checkboxRef.current) {
-      checkboxRef.current.indeterminate = isPartialSelected;
+      checkboxRef.current.dataset.state = isPartialSelected ? "indeterminate" : isAllSelected ? "checked" : "unchecked";
     }
-  }, [isPartialSelected]);
+  }, [isPartialSelected, isAllSelected]);
 
   const handleBulkStatusChange = () => {
     if (!bulkStatus) {
