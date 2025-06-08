@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -31,9 +31,16 @@ export const BulkActions = ({
 }: BulkActionsProps) => {
   const { toast } = useToast();
   const [bulkStatus, setBulkStatus] = useState("");
+  const checkboxRef = useRef<HTMLButtonElement>(null);
 
   const isAllSelected = selectedItems.length === totalItems && totalItems > 0;
   const isPartialSelected = selectedItems.length > 0 && selectedItems.length < totalItems;
+
+  useEffect(() => {
+    if (checkboxRef.current) {
+      checkboxRef.current.indeterminate = isPartialSelected;
+    }
+  }, [isPartialSelected]);
 
   const handleBulkStatusChange = () => {
     if (!bulkStatus) {
@@ -49,10 +56,8 @@ export const BulkActions = ({
       <div className="flex items-center space-x-4">
         <div className="flex items-center space-x-2">
           <Checkbox
+            ref={checkboxRef}
             checked={isAllSelected}
-            ref={(el) => {
-              if (el) el.indeterminate = isPartialSelected;
-            }}
             onCheckedChange={isAllSelected ? onClearSelection : onSelectAll}
           />
           <span className="text-sm font-medium">

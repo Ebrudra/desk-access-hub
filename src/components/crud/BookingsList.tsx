@@ -17,16 +17,26 @@ import { BulkActions } from "./BulkActions";
 import { useRealtimeData } from "@/hooks/useRealtimeData";
 import { exportToCSV, exportToJSON, importFromCSV } from "@/utils/exportUtils";
 
+interface SearchFilters {
+  query: string;
+  status?: string;
+  dateRange?: {
+    from: Date;
+    to?: Date;
+  };
+  category?: string;
+}
+
 export const BookingsList = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const navigate = useNavigate();
   const [selectedBookings, setSelectedBookings] = useState<string[]>([]);
   const [isFormOpen, setIsFormOpen] = useState(false);
-  const [filters, setFilters] = useState({
+  const [filters, setFilters] = useState<SearchFilters>({
     query: "",
-    status: "",
-    dateRange: undefined as any
+    status: undefined,
+    dateRange: undefined
   });
 
   // Real-time updates
@@ -72,7 +82,7 @@ export const BookingsList = () => {
   });
 
   const bulkStatusUpdateMutation = useMutation({
-    mutationFn: async ({ ids, status }: { ids: string[], status: string }) => {
+    mutationFn: async ({ ids, status }: { ids: string[], status: "confirmed" | "pending" | "cancelled" | "completed" }) => {
       const { error } = await supabase
         .from("bookings")
         .update({ status })
@@ -137,6 +147,11 @@ export const BookingsList = () => {
     } catch (error) {
       toast({ title: "Error", description: "Failed to import file", variant: "destructive" });
     }
+  };
+
+  const handleBulkStatusChange = (ids: string[], status: string) => {
+    const typedStatus = status as "confirmed" | "pending" | "cancelled" | "completed";
+    bulkStatusUpdateMutation.mutate({ ids, status: typedStatus });
   };
 
   const getStatusColor = (status: string) => {
@@ -207,7 +222,7 @@ export const BookingsList = () => {
           onSelectAll={handleSelectAll}
           onClearSelection={handleClearSelection}
           onBulkDelete={(ids) => bulkDeleteMutation.mutate(ids)}
-          onBulkStatusChange={(ids, status) => bulkStatusUpdateMutation.mutate({ ids, status })}
+          onBulkStatusChange={handleBulkStatusChange}
           onExport={handleExport}
           statusOptions={statusOptions}
         />

@@ -8,13 +8,14 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Badge } from "@/components/ui/badge";
 import { Search, Filter, X, CalendarIcon } from "lucide-react";
 import { format } from "date-fns";
+import { DateRange } from "react-day-picker";
 
 interface SearchFilters {
   query: string;
   status?: string;
   dateRange?: {
     from: Date;
-    to: Date;
+    to?: Date;
   };
   category?: string;
 }
@@ -41,6 +42,20 @@ export const EnhancedSearch = ({
   };
 
   const hasActiveFilters = filters.status || filters.dateRange || filters.category;
+
+  const handleDateRangeChange = (range: DateRange | undefined) => {
+    if (range?.from) {
+      onFiltersChange({ 
+        ...filters, 
+        dateRange: {
+          from: range.from,
+          to: range.to
+        }
+      });
+    } else {
+      onFiltersChange({ ...filters, dateRange: undefined });
+    }
+  };
 
   return (
     <div className="space-y-4">
@@ -135,8 +150,8 @@ export const EnhancedSearch = ({
                   initialFocus
                   mode="range"
                   defaultMonth={filters.dateRange?.from}
-                  selected={filters.dateRange}
-                  onSelect={(range) => onFiltersChange({ ...filters, dateRange: range })}
+                  selected={filters.dateRange as DateRange}
+                  onSelect={handleDateRangeChange}
                   numberOfMonths={2}
                 />
               </PopoverContent>
