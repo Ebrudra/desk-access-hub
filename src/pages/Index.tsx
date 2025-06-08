@@ -11,9 +11,13 @@ import { QuickActions } from "@/components/QuickActions";
 import { Navigation } from "@/components/Navigation";
 import { CrudManagement } from "@/components/crud/CrudManagement";
 import { AnalyticsDashboard } from "@/components/analytics/AnalyticsDashboard";
+import { EmailVerification } from "@/components/auth/EmailVerification";
+import { RoleManagement } from "@/components/RoleManagement";
+import { useAuthRole } from "@/hooks/useAuthRole";
 
 const Index = () => {
   const { user, loading } = useAuth();
+  const { hasRole } = useAuthRole();
   const [activeTab, setActiveTab] = useState("dashboard");
 
   if (loading) {
@@ -38,6 +42,9 @@ const Index = () => {
       <Navigation />
       
       <div className="container mx-auto px-4 py-8">
+        {/* Email verification notice */}
+        <EmailVerification />
+
         {/* Header */}
         <div className="mb-8 animate-fade-in">
           <h1 className="text-4xl font-bold text-gray-900 mb-2">
@@ -50,7 +57,7 @@ const Index = () => {
 
         {/* Main Content */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-7 lg:w-fit">
+          <TabsList className={`grid w-full ${hasRole('admin') ? 'grid-cols-8' : 'grid-cols-7'} lg:w-fit`}>
             <TabsTrigger value="dashboard" className="text-sm">Dashboard</TabsTrigger>
             <TabsTrigger value="bookings" className="text-sm">Bookings</TabsTrigger>
             <TabsTrigger value="members" className="text-sm">Members</TabsTrigger>
@@ -58,6 +65,9 @@ const Index = () => {
             <TabsTrigger value="analytics" className="text-sm">Analytics</TabsTrigger>
             <TabsTrigger value="reports" className="text-sm">Reports</TabsTrigger>
             <TabsTrigger value="manage" className="text-sm">Manage</TabsTrigger>
+            {hasRole('admin') && (
+              <TabsTrigger value="roles" className="text-sm">Roles</TabsTrigger>
+            )}
           </TabsList>
 
           <TabsContent value="dashboard" className="space-y-6 animate-slide-up">
@@ -96,6 +106,12 @@ const Index = () => {
           <TabsContent value="manage" className="animate-slide-up">
             <CrudManagement />
           </TabsContent>
+
+          {hasRole('admin') && (
+            <TabsContent value="roles" className="animate-slide-up">
+              <RoleManagement />
+            </TabsContent>
+          )}
         </Tabs>
       </div>
     </div>

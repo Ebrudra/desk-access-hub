@@ -1,28 +1,48 @@
-import { useState } from "react";
+
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
-import { useEffect } from "react";
-import { Building2 } from "lucide-react";
+import { useSessionManagement } from "@/hooks/useSessionManagement";
+import { Building2, Eye, EyeOff } from "lucide-react";
+import { PasswordReset } from "./PasswordReset";
+import { PasswordUpdate } from "./PasswordUpdate";
 
-const AuthForm = () => {
+const EnhancedAuthForm = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showPasswordReset, setShowPasswordReset] = useState(false);
   const navigate = useNavigate();
   const { user } = useAuth();
+  const [searchParams] = useSearchParams();
+  const mode = searchParams.get('mode');
+
+  // Initialize session management
+  useSessionManagement();
 
   // Redirect if already authenticated
   useEffect(() => {
-    if (user) {
+    if (user && mode !== 'reset') {
       navigate("/");
     }
-  }, [user, navigate]);
+  }, [user, navigate, mode]);
+
+  // Handle password reset mode
+  if (mode === 'reset') {
+    return <PasswordUpdate />;
+  }
+
+  // Show password reset form
+  if (showPasswordReset) {
+    return <PasswordReset onBack={() => setShowPasswordReset(false)} />;
+  }
 
   const handleSignIn = async (email: string, password: string) => {
     setIsLoading(true);
@@ -80,6 +100,8 @@ const AuthForm = () => {
     } catch (error: any) {
       if (error.message.includes("already registered")) {
         setError("An account with this email already exists. Please sign in instead.");
+      } else if (error.message.includes("Password should be at least")) {
+        setError("Password should be at least 6 characters long.");
       } else {
         setError(error.message || "An error occurred during sign up");
       }
@@ -112,15 +134,38 @@ const AuthForm = () => {
         </div>
         <div className="space-y-2">
           <Label htmlFor="signin-password">Password</Label>
-          <Input
-            id="signin-password"
-            type="password"
-            placeholder="Enter your password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-          />
+          <div className="relative">
+            <Input
+              id="signin-password"
+              type={showPassword ? "text" : "password"}
+              placeholder="Enter your password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+            />
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+              onClick={() => setShowPassword(!showPassword)}
+            >
+              {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+            </Button>
+          </div>
         </div>
+        
+        <div className="flex justify-end">
+          <Button
+            type="button"
+            variant="link"
+            className="px-0 text-sm"
+            onClick={() => setShowPasswordReset(true)}
+          >
+            Forgot your password?
+          </Button>
+        </div>
+
         <Button type="submit" className="w-full" disabled={isLoading}>
           {isLoading ? "Signing in..." : "Sign In"}
         </Button>
@@ -131,11 +176,23 @@ const AuthForm = () => {
   const SignUpForm = () => {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
+    const [confirmPassword, setConfirmPassword] = useState("");
     const [firstName, setFirstName] = useState("");
     const [lastName, setLastName] = useState("");
 
     const onSubmit = (e: React.FormEvent) => {
       e.preventDefault();
+      
+      if (password !== confirmPassword) {
+        setError("Passwords do not match");
+        return;
+      }
+
+      if (password.length < 6) {
+        setError("Password must be at least 6 characters long");
+        return;
+      }
+
       handleSignUp(email, password, firstName, lastName);
     };
 
@@ -178,12 +235,35 @@ const AuthForm = () => {
         </div>
         <div className="space-y-2">
           <Label htmlFor="signup-password">Password</Label>
+          <div className="relative">
+            <Input
+              id="signup-password"
+              type={showPassword ? "text" : "password"}
+              placeholder="Create a password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              minLength={6}
+            />
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+              onClick={() => setShowPassword(!showPassword)}
+            >
+              {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+            </Button>
+          </div>
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="signup-confirm-password">Confirm Password</Label>
           <Input
-            id="signup-password"
+            id="signup-confirm-password"
             type="password"
-            placeholder="Create a password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
+            placeholder="Confirm your password"
+            value={confirmPassword}
+            onChange={(e) => setConfirmPassword(e.target.value)}
             required
             minLength={6}
           />
@@ -247,4 +327,4 @@ const AuthForm = () => {
   );
 };
 
-export default AuthForm;
+export default EnhancedAuthForm;

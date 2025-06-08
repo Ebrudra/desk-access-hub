@@ -1,8 +1,8 @@
 
-import AuthForm from "@/components/auth/AuthForm";
+import EnhancedAuthForm from "@/components/auth/EnhancedAuthForm";
 
 const Auth = () => {
-  return <AuthForm />;
+  return <EnhancedAuthForm />;
 };
 
 export default Auth;
