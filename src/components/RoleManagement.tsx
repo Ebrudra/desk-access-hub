@@ -11,6 +11,17 @@ import { useAuthRole, UserRole } from "@/hooks/useAuthRole";
 import { RoleBasedRoute } from "./auth/RoleBasedRoute";
 import { Users, Shield } from "lucide-react";
 
+// Define the type for our query result
+type UserWithRole = {
+  id: string;
+  first_name: string | null;
+  last_name: string | null;
+  user_roles: {
+    role: UserRole;
+    assigned_at: string;
+  }[];
+};
+
 export const RoleManagement = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -18,7 +29,7 @@ export const RoleManagement = () => {
 
   const { data: usersWithRoles, isLoading } = useQuery({
     queryKey: ["users-with-roles"],
-    queryFn: async () => {
+    queryFn: async (): Promise<UserWithRole[]> => {
       const { data, error } = await supabase
         .from("profiles")
         .select(`
@@ -32,7 +43,7 @@ export const RoleManagement = () => {
         `);
       
       if (error) throw error;
-      return data;
+      return data as UserWithRole[];
     },
     enabled: hasRole('admin'),
   });
