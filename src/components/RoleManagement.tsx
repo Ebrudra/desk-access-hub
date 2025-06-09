@@ -36,7 +36,7 @@ export const RoleManagement = () => {
           id,
           first_name,
           last_name,
-          user_roles!inner(
+          user_roles(
             role,
             assigned_at
           )
