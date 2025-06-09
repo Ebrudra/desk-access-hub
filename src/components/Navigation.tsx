@@ -10,12 +10,15 @@ import { supabase } from "@/integrations/supabase/client";
 import { Home, Users, Calendar, Settings, LogOut, Menu, X, Shield } from "lucide-react";
 import { NotificationCenter } from "./notifications/NotificationCenter";
 import { Badge } from "@/components/ui/badge";
+import { MobileDrawer } from "@/components/ui/mobile-drawer";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 export const Navigation = () => {
   const { user } = useAuth();
   const { role, isAdmin } = useAuthRole();
   const location = useLocation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const isMobile = useIsMobile();
 
   const handleSignOut = async () => {
     await supabase.auth.signOut();
@@ -44,6 +47,26 @@ export const Navigation = () => {
     }
   };
 
+  const NavigationItems = () => (
+    <div className={`${isMobile ? 'flex flex-col space-y-2' : 'flex items-center space-x-8'}`}>
+      {navItems.map((item) => (
+        <Link
+          key={item.path}
+          to={item.path}
+          className={`flex items-center space-x-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+            isActivePath(item.path)
+              ? "bg-blue-100 text-blue-700"
+              : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
+          }`}
+          onClick={() => isMobile && setIsMobileMenuOpen(false)}
+        >
+          <item.icon className="h-4 w-4" />
+          <span>{item.label}</span>
+        </Link>
+      ))}
+    </div>
+  );
+
   return (
     <nav className="bg-white border-b border-gray-200 sticky top-0 z-50">
       <div className="container mx-auto px-4">
@@ -55,22 +78,7 @@ export const Navigation = () => {
           </Link>
 
           {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center space-x-8">
-            {navItems.map((item) => (
-              <Link
-                key={item.path}
-                to={item.path}
-                className={`flex items-center space-x-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                  isActivePath(item.path)
-                    ? "bg-blue-100 text-blue-700"
-                    : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
-                }`}
-              >
-                <item.icon className="h-4 w-4" />
-                <span>{item.label}</span>
-              </Link>
-            ))}
-          </div>
+          {!isMobile && <NavigationItems />}
 
           {/* Right side items */}
           <div className="flex items-center space-x-4">
@@ -89,7 +97,7 @@ export const Navigation = () => {
               </DropdownMenuTrigger>
               <DropdownMenuContent className="w-56" align="end" forceMount>
                 <div className="flex items-center justify-between px-2 py-1.5">
-                  <span className="text-sm font-medium">{user?.email}</span>
+                  <span className="text-sm font-medium truncate max-w-32">{user?.email}</span>
                   {role && (
                     <Badge className={getRoleBadgeColor()}>
                       {role}
@@ -117,39 +125,16 @@ export const Navigation = () => {
               </DropdownMenuContent>
             </DropdownMenu>
 
-            {/* Mobile menu button */}
-            <Button
-              variant="ghost"
-              className="md:hidden"
-              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            >
-              {isMobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-            </Button>
+            {/* Mobile menu */}
+            {isMobile && (
+              <MobileDrawer>
+                <div className="pt-6">
+                  <NavigationItems />
+                </div>
+              </MobileDrawer>
+            )}
           </div>
         </div>
-
-        {/* Mobile Navigation */}
-        {isMobileMenuOpen && (
-          <div className="md:hidden border-t border-gray-200 py-4">
-            <div className="space-y-2">
-              {navItems.map((item) => (
-                <Link
-                  key={item.path}
-                  to={item.path}
-                  className={`flex items-center space-x-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                    isActivePath(item.path)
-                      ? "bg-blue-100 text-blue-700"
-                      : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
-                  }`}
-                  onClick={() => setIsMobileMenuOpen(false)}
-                >
-                  <item.icon className="h-4 w-4" />
-                  <span>{item.label}</span>
-                </Link>
-              ))}
-            </div>
-          </div>
-        )}
       </div>
     </nav>
   );

@@ -1,3 +1,4 @@
+
 import { useAuth } from "@/hooks/useAuth";
 import LandingPage from "@/components/landing/LandingPage";
 import { useState } from "react";
@@ -14,11 +15,17 @@ import { AnalyticsDashboard } from "@/components/analytics/AnalyticsDashboard";
 import { EmailVerification } from "@/components/auth/EmailVerification";
 import { RoleManagement } from "@/components/RoleManagement";
 import { useAuthRole } from "@/hooks/useAuthRole";
+import { ErrorBoundary } from "@/components/ui/error-boundary";
+import { LoadingSkeleton } from "@/components/ui/loading-skeleton";
+import { ToastProvider } from "@/components/ui/toast-provider";
+import { GlobalKeyboardShortcuts } from "@/components/ui/keyboard-shortcuts";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 const Index = () => {
   const { user, loading } = useAuth();
   const { hasRole } = useAuthRole();
   const [activeTab, setActiveTab] = useState("dashboard");
+  const isMobile = useIsMobile();
 
   if (loading) {
     return (
@@ -38,83 +45,100 @@ const Index = () => {
 
   // Show dashboard for authenticated users
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
-      <Navigation />
-      
-      <div className="container mx-auto px-4 py-8">
-        {/* Email verification notice */}
-        <EmailVerification />
+    <ErrorBoundary>
+      <ToastProvider>
+        <GlobalKeyboardShortcuts />
+        <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
+          <Navigation />
+          
+          <div className="container mx-auto px-4 py-8">
+            {/* Email verification notice */}
+            <EmailVerification />
 
-        {/* Header */}
-        <div className="mb-8 animate-fade-in">
-          <h1 className="text-4xl font-bold text-gray-900 mb-2">
-            Workspace Hub
-          </h1>
-          <p className="text-xl text-gray-600">
-            Streamline your coworking space operations
-          </p>
-        </div>
-
-        {/* Main Content */}
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className={`grid w-full ${hasRole('admin') ? 'grid-cols-8' : 'grid-cols-7'} lg:w-fit`}>
-            <TabsTrigger value="dashboard" className="text-sm">Dashboard</TabsTrigger>
-            <TabsTrigger value="bookings" className="text-sm">Bookings</TabsTrigger>
-            <TabsTrigger value="members" className="text-sm">Members</TabsTrigger>
-            <TabsTrigger value="access" className="text-sm">Access</TabsTrigger>
-            <TabsTrigger value="analytics" className="text-sm">Analytics</TabsTrigger>
-            <TabsTrigger value="reports" className="text-sm">Reports</TabsTrigger>
-            <TabsTrigger value="manage" className="text-sm">Manage</TabsTrigger>
-            {hasRole('admin') && (
-              <TabsTrigger value="roles" className="text-sm">Roles</TabsTrigger>
-            )}
-          </TabsList>
-
-          <TabsContent value="dashboard" className="space-y-6 animate-slide-up">
-            <DashboardStats />
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              <div className="lg:col-span-2">
-                <BookingCalendar />
-              </div>
-              <div className="space-y-6">
-                <QuickActions />
-                <SpaceUtilization />
-              </div>
+            {/* Header */}
+            <div className="mb-8 animate-fade-in">
+              <h1 className="text-4xl font-bold text-gray-900 mb-2">
+                Workspace Hub
+              </h1>
+              <p className="text-xl text-gray-600">
+                Streamline your coworking space operations
+              </p>
             </div>
-          </TabsContent>
 
-          <TabsContent value="bookings" className="animate-slide-up">
-            <BookingCalendar expanded />
-          </TabsContent>
+            {/* Main Content */}
+            <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+              <TabsList className={`grid w-full ${hasRole('admin') ? 'grid-cols-8' : 'grid-cols-7'} ${isMobile ? 'grid-cols-4' : ''} lg:w-fit`}>
+                <TabsTrigger value="dashboard" className="text-sm">
+                  {isMobile ? "Home" : "Dashboard"}
+                </TabsTrigger>
+                <TabsTrigger value="bookings" className="text-sm">Bookings</TabsTrigger>
+                <TabsTrigger value="members" className="text-sm">Members</TabsTrigger>
+                <TabsTrigger value="access" className="text-sm">
+                  {isMobile ? "Access" : "Access"}
+                </TabsTrigger>
+                {!isMobile && (
+                  <>
+                    <TabsTrigger value="analytics" className="text-sm">Analytics</TabsTrigger>
+                    <TabsTrigger value="reports" className="text-sm">Reports</TabsTrigger>
+                    <TabsTrigger value="manage" className="text-sm">Manage</TabsTrigger>
+                    {hasRole('admin') && (
+                      <TabsTrigger value="roles" className="text-sm">Roles</TabsTrigger>
+                    )}
+                  </>
+                )}
+              </TabsList>
 
-          <TabsContent value="members" className="animate-slide-up">
-            <MemberList />
-          </TabsContent>
+              <TabsContent value="dashboard" className="space-y-6 animate-slide-up">
+                <DashboardStats />
+                <div className={`grid grid-cols-1 ${isMobile ? '' : 'lg:grid-cols-3'} gap-6`}>
+                  <div className={isMobile ? '' : 'lg:col-span-2'}>
+                    <BookingCalendar />
+                  </div>
+                  <div className="space-y-6">
+                    <QuickActions />
+                    <SpaceUtilization />
+                  </div>
+                </div>
+              </TabsContent>
 
-          <TabsContent value="access" className="animate-slide-up">
-            <AccessControl />
-          </TabsContent>
+              <TabsContent value="bookings" className="animate-slide-up">
+                <BookingCalendar expanded />
+              </TabsContent>
 
-          <TabsContent value="analytics" className="animate-slide-up">
-            <SpaceUtilization expanded />
-          </TabsContent>
+              <TabsContent value="members" className="animate-slide-up">
+                <MemberList />
+              </TabsContent>
 
-          <TabsContent value="reports" className="animate-slide-up">
-            <AnalyticsDashboard />
-          </TabsContent>
+              <TabsContent value="access" className="animate-slide-up">
+                <AccessControl />
+              </TabsContent>
 
-          <TabsContent value="manage" className="animate-slide-up">
-            <CrudManagement />
-          </TabsContent>
+              {!isMobile && (
+                <>
+                  <TabsContent value="analytics" className="animate-slide-up">
+                    <SpaceUtilization expanded />
+                  </TabsContent>
 
-          {hasRole('admin') && (
-            <TabsContent value="roles" className="animate-slide-up">
-              <RoleManagement />
-            </TabsContent>
-          )}
-        </Tabs>
-      </div>
-    </div>
+                  <TabsContent value="reports" className="animate-slide-up">
+                    <AnalyticsDashboard />
+                  </TabsContent>
+
+                  <TabsContent value="manage" className="animate-slide-up">
+                    <CrudManagement />
+                  </TabsContent>
+
+                  {hasRole('admin') && (
+                    <TabsContent value="roles" className="animate-slide-up">
+                      <RoleManagement />
+                    </TabsContent>
+                  )}
+                </>
+              )}
+            </Tabs>
+          </div>
+        </div>
+      </ToastProvider>
+    </ErrorBoundary>
   );
 };
 
