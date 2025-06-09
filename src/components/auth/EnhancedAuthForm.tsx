@@ -125,10 +125,13 @@ const EnhancedAuthForm = () => {
           <Label htmlFor="signin-email">Email</Label>
           <Input
             id="signin-email"
+            name="email"
             type="email"
             placeholder="Enter your email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
+            autoComplete="email"
+            disabled={isLoading}
             required
           />
         </div>
@@ -137,10 +140,14 @@ const EnhancedAuthForm = () => {
           <div className="relative">
             <Input
               id="signin-password"
+              name="password"
               type={showPassword ? "text" : "password"}
               placeholder="Enter your password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
+              autoComplete="current-password"
+              disabled={isLoading}
+              className="pr-10"
               required
             />
             <Button
@@ -149,6 +156,7 @@ const EnhancedAuthForm = () => {
               size="sm"
               className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
               onClick={() => setShowPassword(!showPassword)}
+              disabled={isLoading}
             >
               {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
             </Button>
@@ -161,6 +169,7 @@ const EnhancedAuthForm = () => {
             variant="link"
             className="px-0 text-sm"
             onClick={() => setShowPasswordReset(true)}
+            disabled={isLoading}
           >
             Forgot your password?
           </Button>
@@ -203,10 +212,13 @@ const EnhancedAuthForm = () => {
             <Label htmlFor="signup-firstname">First Name</Label>
             <Input
               id="signup-firstname"
+              name="firstName"
               type="text"
               placeholder="First name"
               value={firstName}
               onChange={(e) => setFirstName(e.target.value)}
+              autoComplete="given-name"
+              disabled={isLoading}
               required
             />
           </div>
@@ -214,10 +226,13 @@ const EnhancedAuthForm = () => {
             <Label htmlFor="signup-lastname">Last Name</Label>
             <Input
               id="signup-lastname"
+              name="lastName"
               type="text"
               placeholder="Last name"
               value={lastName}
               onChange={(e) => setLastName(e.target.value)}
+              autoComplete="family-name"
+              disabled={isLoading}
               required
             />
           </div>
@@ -226,10 +241,13 @@ const EnhancedAuthForm = () => {
           <Label htmlFor="signup-email">Email</Label>
           <Input
             id="signup-email"
+            name="email"
             type="email"
             placeholder="Enter your email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
+            autoComplete="email"
+            disabled={isLoading}
             required
           />
         </div>
@@ -238,10 +256,14 @@ const EnhancedAuthForm = () => {
           <div className="relative">
             <Input
               id="signup-password"
+              name="password"
               type={showPassword ? "text" : "password"}
               placeholder="Create a password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
+              autoComplete="new-password"
+              disabled={isLoading}
+              className="pr-10"
               required
               minLength={6}
             />
@@ -251,6 +273,7 @@ const EnhancedAuthForm = () => {
               size="sm"
               className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
               onClick={() => setShowPassword(!showPassword)}
+              disabled={isLoading}
             >
               {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
             </Button>
@@ -260,10 +283,13 @@ const EnhancedAuthForm = () => {
           <Label htmlFor="signup-confirm-password">Confirm Password</Label>
           <Input
             id="signup-confirm-password"
+            name="confirmPassword"
             type="password"
             placeholder="Confirm your password"
             value={confirmPassword}
             onChange={(e) => setConfirmPassword(e.target.value)}
+            autoComplete="new-password"
+            disabled={isLoading}
             required
             minLength={6}
           />

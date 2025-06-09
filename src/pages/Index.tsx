@@ -1,144 +1,150 @@
 
-import { useAuth } from "@/hooks/useAuth";
-import LandingPage from "@/components/landing/LandingPage";
-import { useState } from "react";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useState, useEffect } from "react";
+import { Navigation } from "@/components/Navigation";
 import { DashboardStats } from "@/components/DashboardStats";
 import { BookingCalendar } from "@/components/BookingCalendar";
-import { MemberList } from "@/components/MemberList";
-import { AccessControl } from "@/components/AccessControl";
-import { SpaceUtilization } from "@/components/SpaceUtilization";
 import { QuickActions } from "@/components/QuickActions";
-import { Navigation } from "@/components/Navigation";
+import { SpaceUtilization } from "@/components/SpaceUtilization";
+import { MemberList } from "@/components/MemberList";
+import { RoleManagement } from "@/components/RoleManagement";
 import { CrudManagement } from "@/components/crud/CrudManagement";
 import { AnalyticsDashboard } from "@/components/analytics/AnalyticsDashboard";
-import { EmailVerification } from "@/components/auth/EmailVerification";
-import { RoleManagement } from "@/components/RoleManagement";
+import { AdvancedAnalytics } from "@/components/analytics/AdvancedAnalytics";
+import { CalendarSync } from "@/components/integrations/CalendarSync";
+import { PaymentIntegration } from "@/components/payments/PaymentIntegration";
+import { SmartBookingSuggestions } from "@/components/booking/SmartBookingSuggestions";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useAuth } from "@/hooks/useAuth";
 import { useAuthRole } from "@/hooks/useAuthRole";
+import { useSearchParams } from "react-router-dom";
+import { ProtectedRoute } from "@/components/ProtectedRoute";
+import { GlobalKeyboardShortcuts } from "@/components/ui/keyboard-shortcuts";
 import { ErrorBoundary } from "@/components/ui/error-boundary";
 import { LoadingSkeleton } from "@/components/ui/loading-skeleton";
-import { ToastProvider } from "@/components/ui/toast-provider";
-import { GlobalKeyboardShortcuts } from "@/components/ui/keyboard-shortcuts";
-import { useIsMobile } from "@/hooks/use-mobile";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
 const Index = () => {
   const { user, loading } = useAuth();
-  const { hasRole } = useAuthRole();
-  const [activeTab, setActiveTab] = useState("dashboard");
-  const isMobile = useIsMobile();
+  const { role, loading: roleLoading } = useAuthRole();
+  const [searchParams] = useSearchParams();
+  const activeTab = searchParams.get('tab') || 'dashboard';
 
-  if (loading) {
+  if (loading || roleLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg mx-auto mb-4 animate-pulse"></div>
-          <p className="text-gray-600">Loading...</p>
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
+        <div className="container mx-auto px-4 py-8">
+          <LoadingSkeleton.Dashboard />
         </div>
       </div>
     );
   }
 
-  // Show landing page for unauthenticated users
-  if (!user) {
-    return <LandingPage />;
-  }
-
-  // Show dashboard for authenticated users
   return (
-    <ErrorBoundary>
-      <ToastProvider>
-        <GlobalKeyboardShortcuts />
+    <ProtectedRoute>
+      <ErrorBoundary>
         <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
           <Navigation />
+          <GlobalKeyboardShortcuts />
           
           <div className="container mx-auto px-4 py-8">
-            {/* Email verification notice */}
-            <EmailVerification />
-
-            {/* Header */}
-            <div className="mb-8 animate-fade-in">
-              <h1 className="text-4xl font-bold text-gray-900 mb-2">
-                Workspace Hub
+            <div className="mb-8">
+              <h1 className="text-3xl font-bold text-gray-900 mb-2">
+                Welcome back, {user?.email?.split('@')[0]}!
               </h1>
-              <p className="text-xl text-gray-600">
-                Streamline your coworking space operations
+              <p className="text-gray-600">
+                Manage your workspace efficiently with our comprehensive platform
               </p>
             </div>
 
-            {/* Main Content */}
-            <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-              <TabsList className={`grid w-full ${hasRole('admin') ? 'grid-cols-8' : 'grid-cols-7'} ${isMobile ? 'grid-cols-4' : ''} lg:w-fit`}>
-                <TabsTrigger value="dashboard" className="text-sm">
-                  {isMobile ? "Home" : "Dashboard"}
-                </TabsTrigger>
-                <TabsTrigger value="bookings" className="text-sm">Bookings</TabsTrigger>
-                <TabsTrigger value="members" className="text-sm">Members</TabsTrigger>
-                <TabsTrigger value="access" className="text-sm">
-                  {isMobile ? "Access" : "Access"}
-                </TabsTrigger>
-                {!isMobile && (
-                  <>
-                    <TabsTrigger value="analytics" className="text-sm">Analytics</TabsTrigger>
-                    <TabsTrigger value="reports" className="text-sm">Reports</TabsTrigger>
-                    <TabsTrigger value="manage" className="text-sm">Manage</TabsTrigger>
-                    {hasRole('admin') && (
-                      <TabsTrigger value="roles" className="text-sm">Roles</TabsTrigger>
-                    )}
-                  </>
-                )}
+            <Tabs value={activeTab} className="space-y-6">
+              <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 lg:grid-cols-8">
+                <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
+                <TabsTrigger value="calendar">Calendar</TabsTrigger>
+                <TabsTrigger value="analytics">Analytics</TabsTrigger>
+                <TabsTrigger value="advanced-analytics">AI Analytics</TabsTrigger>
+                <TabsTrigger value="smart-booking">Smart Booking</TabsTrigger>
+                <TabsTrigger value="integrations">Integrations</TabsTrigger>
+                <TabsTrigger value="crud">Management</TabsTrigger>
+                {role === 'admin' && <TabsTrigger value="roles">Roles</TabsTrigger>}
               </TabsList>
 
-              <TabsContent value="dashboard" className="space-y-6 animate-slide-up">
+              <TabsContent value="dashboard" className="space-y-6">
                 <DashboardStats />
-                <div className={`grid grid-cols-1 ${isMobile ? '' : 'lg:grid-cols-3'} gap-6`}>
-                  <div className={isMobile ? '' : 'lg:col-span-2'}>
-                    <BookingCalendar />
-                  </div>
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  <BookingCalendar />
                   <div className="space-y-6">
                     <QuickActions />
                     <SpaceUtilization />
                   </div>
                 </div>
-              </TabsContent>
-
-              <TabsContent value="bookings" className="animate-slide-up">
-                <BookingCalendar expanded />
-              </TabsContent>
-
-              <TabsContent value="members" className="animate-slide-up">
                 <MemberList />
               </TabsContent>
 
-              <TabsContent value="access" className="animate-slide-up">
-                <AccessControl />
+              <TabsContent value="calendar">
+                <div className="max-w-4xl mx-auto">
+                  <BookingCalendar />
+                </div>
               </TabsContent>
 
-              {!isMobile && (
-                <>
-                  <TabsContent value="analytics" className="animate-slide-up">
-                    <SpaceUtilization expanded />
-                  </TabsContent>
+              <TabsContent value="analytics">
+                <AnalyticsDashboard />
+              </TabsContent>
 
-                  <TabsContent value="reports" className="animate-slide-up">
-                    <AnalyticsDashboard />
-                  </TabsContent>
+              <TabsContent value="advanced-analytics">
+                <AdvancedAnalytics />
+              </TabsContent>
 
-                  <TabsContent value="manage" className="animate-slide-up">
-                    <CrudManagement />
-                  </TabsContent>
+              <TabsContent value="smart-booking">
+                <div className="max-w-4xl mx-auto space-y-6">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Smart Booking Assistant</CardTitle>
+                      <CardDescription>
+                        AI-powered booking suggestions and conflict resolution
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <SmartBookingSuggestions
+                        date={new Date().toISOString().split('T')[0]}
+                        duration={2}
+                        capacity={10}
+                        amenities={['WiFi', 'Projector']}
+                        onSelectSuggestion={(suggestion) => {
+                          console.log('Selected suggestion:', suggestion);
+                        }}
+                      />
+                    </CardContent>
+                  </Card>
+                  
+                  <PaymentIntegration
+                    amount={150.00}
+                    onPaymentSuccess={() => {
+                      console.log('Payment successful');
+                    }}
+                  />
+                </div>
+              </TabsContent>
 
-                  {hasRole('admin') && (
-                    <TabsContent value="roles" className="animate-slide-up">
-                      <RoleManagement />
-                    </TabsContent>
-                  )}
-                </>
+              <TabsContent value="integrations">
+                <div className="max-w-4xl mx-auto">
+                  <CalendarSync />
+                </div>
+              </TabsContent>
+
+              <TabsContent value="crud">
+                <CrudManagement />
+              </TabsContent>
+
+              {role === 'admin' && (
+                <TabsContent value="roles">
+                  <RoleManagement />
+                </TabsContent>
               )}
             </Tabs>
           </div>
         </div>
-      </ToastProvider>
-    </ErrorBoundary>
+      </ErrorBoundary>
+    </ProtectedRoute>
   );
 };
 
