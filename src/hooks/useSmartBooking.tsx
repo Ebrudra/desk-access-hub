@@ -17,20 +17,21 @@ interface ConflictResolution {
   suggestions: BookingSuggestion[];
 }
 
-interface SpaceData {
+// Use the actual database types from Supabase
+type DatabaseSpace = {
   id: string;
   name: string;
-  capacity?: number;
-  amenities?: string[];
-}
+  amenities?: string[] | null;
+  capacity?: number | null;
+};
 
-interface BookingData {
+type DatabaseBooking = {
   id: string;
-  space_id: string;
-  date: string;
+  resource_id: string | null;
   start_time: string;
   end_time: string;
-}
+  created_at: string | null;
+};
 
 export const useSmartBooking = () => {
   const { toast } = useToast();
@@ -45,36 +46,39 @@ export const useSmartBooking = () => {
       // Fetch available spaces for the date
       const { data: spaces, error: spacesError } = await supabase
         .from('spaces')
-        .select('*')
-        .gte('capacity', capacity || 1);
+        .select('id, name, amenities')
+        .gte('id', '00000000-0000-0000-0000-000000000000'); // Simple filter to get all
 
       if (spacesError) throw spacesError;
 
       // Fetch existing bookings for the date
       const { data: bookings, error: bookingsError } = await supabase
         .from('bookings')
-        .select('*')
-        .eq('date', date);
+        .select('id, resource_id, start_time, end_time')
+        .gte('start_time', `${date}T00:00:00`)
+        .lt('start_time', `${date}T23:59:59`);
 
       if (bookingsError) throw bookingsError;
 
       const suggestions: BookingSuggestion[] = [];
 
-      for (const space of (spaces || []) as SpaceData[]) {
-        // Find available time slots
-        const timeSlots = generateTimeSlots(date, duration, bookings as BookingData[], space.id);
-        
-        for (const slot of timeSlots) {
-          const confidence = calculateConfidence(space, amenities, slot.hour);
+      if (spaces) {
+        for (const space of spaces) {
+          // Find available time slots
+          const timeSlots = generateTimeSlots(date, duration, bookings || [], space.id);
           
-          suggestions.push({
-            spaceId: space.id,
-            spaceName: space.name,
-            startTime: slot.start,
-            endTime: slot.end,
-            confidence,
-            reason: generateReason(space, confidence, slot.hour)
-          });
+          for (const slot of timeSlots) {
+            const confidence = calculateConfidence(space, amenities, slot.hour);
+            
+            suggestions.push({
+              spaceId: space.id,
+              spaceName: space.name,
+              startTime: slot.start,
+              endTime: slot.end,
+              confidence,
+              reason: generateReason(space, confidence, slot.hour)
+            });
+          }
         }
       }
 
@@ -94,20 +98,25 @@ export const useSmartBooking = () => {
     }
   };
 
-  const detectConflicts = async (bookingData: BookingData): Promise<ConflictResolution | null> => {
+  const detectConflicts = async (bookingData: {
+    id: string;
+    resource_id: string;
+    start_time: string;
+    end_time: string;
+  }): Promise<ConflictResolution | null> => {
     try {
       const { data: conflicts, error } = await supabase
         .from('bookings')
         .select('*')
-        .eq('space_id', bookingData.space_id)
-        .eq('date', bookingData.date)
-        .or(`start_time.lte.${bookingData.end_time},end_time.gte.${bookingData.start_time}`);
+        .eq('resource_id', bookingData.resource_id)
+        .gte('start_time', bookingData.start_time.split('T')[0] + 'T00:00:00')
+        .lt('start_time', bookingData.start_time.split('T')[0] + 'T23:59:59');
 
       if (error) throw error;
 
       if (conflicts && conflicts.length > 0) {
         const suggestions = await generateBookingSuggestions(
-          bookingData.date,
+          bookingData.start_time.split('T')[0],
           calculateDuration(bookingData.start_time, bookingData.end_time),
           undefined,
           []
@@ -115,7 +124,7 @@ export const useSmartBooking = () => {
 
         return {
           bookingId: bookingData.id,
-          suggestions: suggestions.filter(s => s.spaceId !== bookingData.space_id)
+          suggestions: suggestions.filter(s => s.spaceId !== bookingData.resource_id)
         };
       }
 
@@ -133,9 +142,14 @@ export const useSmartBooking = () => {
 };
 
 // Helper functions
-const generateTimeSlots = (date: string, duration: number, bookings: BookingData[], spaceId: string) => {
+const generateTimeSlots = (
+  date: string, 
+  duration: number, 
+  bookings: DatabaseBooking[], 
+  spaceId: string
+) => {
   const slots = [];
-  const spaceBookings = bookings.filter(b => b.space_id === spaceId);
+  const spaceBookings = bookings.filter(b => b.resource_id === spaceId);
   
   // Generate hourly slots from 8 AM to 8 PM
   for (let hour = 8; hour <= 20 - duration; hour++) {
@@ -143,11 +157,13 @@ const generateTimeSlots = (date: string, duration: number, bookings: BookingData
     const endTime = `${(hour + duration).toString().padStart(2, '0')}:00`;
     
     // Check if slot is available
-    const isAvailable = !spaceBookings.some(booking => 
-      (booking.start_time <= startTime && booking.end_time > startTime) ||
-      (booking.start_time < endTime && booking.end_time >= endTime) ||
-      (booking.start_time >= startTime && booking.end_time <= endTime)
-    );
+    const isAvailable = !spaceBookings.some(booking => {
+      const bookingStart = new Date(booking.start_time).getHours();
+      const bookingEnd = new Date(booking.end_time).getHours();
+      return (bookingStart <= hour && bookingEnd > hour) ||
+             (bookingStart < hour + duration && bookingEnd >= hour + duration) ||
+             (bookingStart >= hour && bookingEnd <= hour + duration);
+    });
 
     if (isAvailable) {
       slots.push({
@@ -161,7 +177,7 @@ const generateTimeSlots = (date: string, duration: number, bookings: BookingData
   return slots;
 };
 
-const calculateConfidence = (space: SpaceData, amenities?: string[], hour?: number): number => {
+const calculateConfidence = (space: DatabaseSpace, amenities?: string[], hour?: number): number => {
   let confidence = 0.5; // Base confidence
 
   // Time-based scoring
@@ -177,15 +193,10 @@ const calculateConfidence = (space: SpaceData, amenities?: string[], hour?: numb
     confidence += (matchCount / amenities.length) * 0.3;
   }
 
-  // Capacity utilization (prefer 70-90% utilization)
-  if (space.capacity) {
-    confidence += 0.1; // Bonus for having capacity info
-  }
-
   return Math.min(1, Math.max(0, confidence));
 };
 
-const generateReason = (space: SpaceData, confidence: number, hour?: number): string => {
+const generateReason = (space: DatabaseSpace, confidence: number, hour?: number): string => {
   const reasons = [];
   
   if (confidence > 0.8) {
@@ -199,16 +210,12 @@ const generateReason = (space: SpaceData, confidence: number, hour?: number): st
   if (space.amenities && space.amenities.length > 0) {
     reasons.push(`Includes ${space.amenities.slice(0, 2).join(', ')}`);
   }
-  
-  if (space.capacity) {
-    reasons.push(`Capacity for ${space.capacity} people`);
-  }
 
   return reasons.length > 0 ? reasons.join(', ') : "Available space";
 };
 
 const calculateDuration = (startTime: string, endTime: string): number => {
-  const start = new Date(`2000-01-01T${startTime}`);
-  const end = new Date(`2000-01-01T${endTime}`);
+  const start = new Date(startTime);
+  const end = new Date(endTime);
   return (end.getTime() - start.getTime()) / (1000 * 60 * 60); // Duration in hours
 };
