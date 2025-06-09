@@ -17,6 +17,21 @@ interface ConflictResolution {
   suggestions: BookingSuggestion[];
 }
 
+interface SpaceData {
+  id: string;
+  name: string;
+  capacity?: number;
+  amenities?: string[];
+}
+
+interface BookingData {
+  id: string;
+  space_id: string;
+  date: string;
+  start_time: string;
+  end_time: string;
+}
+
 export const useSmartBooking = () => {
   const { toast } = useToast();
 
@@ -45,9 +60,9 @@ export const useSmartBooking = () => {
 
       const suggestions: BookingSuggestion[] = [];
 
-      for (const space of spaces || []) {
+      for (const space of (spaces || []) as SpaceData[]) {
         // Find available time slots
-        const timeSlots = generateTimeSlots(date, duration, bookings, space.id);
+        const timeSlots = generateTimeSlots(date, duration, bookings as BookingData[], space.id);
         
         for (const slot of timeSlots) {
           const confidence = calculateConfidence(space, amenities, slot.hour);
@@ -79,7 +94,7 @@ export const useSmartBooking = () => {
     }
   };
 
-  const detectConflicts = async (bookingData: any): Promise<ConflictResolution | null> => {
+  const detectConflicts = async (bookingData: BookingData): Promise<ConflictResolution | null> => {
     try {
       const { data: conflicts, error } = await supabase
         .from('bookings')
@@ -118,7 +133,7 @@ export const useSmartBooking = () => {
 };
 
 // Helper functions
-const generateTimeSlots = (date: string, duration: number, bookings: any[], spaceId: string) => {
+const generateTimeSlots = (date: string, duration: number, bookings: BookingData[], spaceId: string) => {
   const slots = [];
   const spaceBookings = bookings.filter(b => b.space_id === spaceId);
   
@@ -146,7 +161,7 @@ const generateTimeSlots = (date: string, duration: number, bookings: any[], spac
   return slots;
 };
 
-const calculateConfidence = (space: any, amenities?: string[], hour?: number): number => {
+const calculateConfidence = (space: SpaceData, amenities?: string[], hour?: number): number => {
   let confidence = 0.5; // Base confidence
 
   // Time-based scoring
@@ -158,7 +173,7 @@ const calculateConfidence = (space: any, amenities?: string[], hour?: number): n
 
   // Amenity matching
   if (amenities && space.amenities) {
-    const matchCount = amenities.filter(a => space.amenities.includes(a)).length;
+    const matchCount = amenities.filter(a => space.amenities!.includes(a)).length;
     confidence += (matchCount / amenities.length) * 0.3;
   }
 
@@ -170,7 +185,7 @@ const calculateConfidence = (space: any, amenities?: string[], hour?: number): n
   return Math.min(1, Math.max(0, confidence));
 };
 
-const generateReason = (space: any, confidence: number, hour?: number): string => {
+const generateReason = (space: SpaceData, confidence: number, hour?: number): string => {
   const reasons = [];
   
   if (confidence > 0.8) {

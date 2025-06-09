@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
-import { Calendar, ExternalLink, Sync, AlertCircle } from 'lucide-react';
+import { Calendar, ExternalLink, RefreshCw, AlertCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 export const CalendarSync = () => {
@@ -160,7 +160,7 @@ export const CalendarSync = () => {
               disabled={syncing || !syncEnabled}
               className="w-full"
             >
-              <Sync className={`h-4 w-4 mr-2 ${syncing ? 'animate-spin' : ''}`} />
+              <RefreshCw className={`h-4 w-4 mr-2 ${syncing ? 'animate-spin' : ''}`} />
               {syncing ? 'Syncing...' : 'Sync Now'}
             </Button>
           </div>
