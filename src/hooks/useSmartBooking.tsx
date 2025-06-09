@@ -51,10 +51,10 @@ export const useSmartBooking = () => {
 
       if (spacesError) throw spacesError;
 
-      // Fetch existing bookings for the date
+      // Fetch existing bookings for the date - include created_at field
       const { data: bookings, error: bookingsError } = await supabase
         .from('bookings')
-        .select('id, resource_id, start_time, end_time')
+        .select('id, resource_id, start_time, end_time, created_at')
         .gte('start_time', `${date}T00:00:00`)
         .lt('start_time', `${date}T23:59:59`);
 
