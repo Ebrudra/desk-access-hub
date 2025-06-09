@@ -16,10 +16,8 @@ type UserWithRole = {
   id: string;
   first_name: string | null;
   last_name: string | null;
-  user_roles: {
-    role: UserRole;
-    assigned_at: string;
-  }[];
+  role: UserRole | null;
+  assigned_at: string | null;
 };
 
 export const RoleManagement = () => {
@@ -30,20 +28,33 @@ export const RoleManagement = () => {
   const { data: usersWithRoles, isLoading } = useQuery({
     queryKey: ["users-with-roles"],
     queryFn: async (): Promise<UserWithRole[]> => {
-      const { data, error } = await supabase
+      // First get all profiles
+      const { data: profiles, error: profilesError } = await supabase
         .from("profiles")
-        .select(`
-          id,
-          first_name,
-          last_name,
-          user_roles(
-            role,
-            assigned_at
-          )
-        `);
+        .select("id, first_name, last_name");
       
-      if (error) throw error;
-      return data as UserWithRole[];
+      if (profilesError) throw profilesError;
+
+      // Then get user roles for each profile
+      const usersWithRoles: UserWithRole[] = [];
+      
+      for (const profile of profiles || []) {
+        const { data: userRole } = await supabase
+          .from("user_roles")
+          .select("role, assigned_at")
+          .eq("user_id", profile.id)
+          .single();
+
+        usersWithRoles.push({
+          id: profile.id,
+          first_name: profile.first_name,
+          last_name: profile.last_name,
+          role: userRole?.role || null,
+          assigned_at: userRole?.assigned_at || null,
+        });
+      }
+
+      return usersWithRoles;
     },
     enabled: hasRole('admin'),
   });
@@ -82,7 +93,7 @@ export const RoleManagement = () => {
     },
   });
 
-  const getRoleBadgeColor = (role: UserRole) => {
+  const getRoleBadgeColor = (role: UserRole | null) => {
     switch (role) {
       case 'admin':
         return 'bg-red-100 text-red-800';
@@ -137,14 +148,14 @@ export const RoleManagement = () => {
                         </h3>
                         <p className="text-sm text-gray-500">ID: {user.id}</p>
                       </div>
-                      <Badge className={getRoleBadgeColor(user.user_roles[0]?.role)}>
-                        {user.user_roles[0]?.role || 'No role'}
+                      <Badge className={getRoleBadgeColor(user.role)}>
+                        {user.role || 'No role'}
                       </Badge>
                     </div>
 
                     <div className="flex items-center space-x-2">
                       <Select
-                        value={user.user_roles[0]?.role || ''}
+                        value={user.role || ''}
                         onValueChange={(newRole: UserRole) => {
                           updateRoleMutation.mutate({ userId: user.id, newRole });
                         }}
