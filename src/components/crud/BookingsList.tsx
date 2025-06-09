@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
@@ -16,6 +15,8 @@ import { EnhancedSearch } from "./EnhancedSearch";
 import { BulkActions } from "./BulkActions";
 import { useRealtimeData } from "@/hooks/useRealtimeData";
 import { exportToCSV, exportToJSON, importFromCSV } from "@/utils/exportUtils";
+import { usePagination } from "@/hooks/usePagination";
+import { DataPagination } from "@/components/ui/DataPagination";
 
 interface SearchFilters {
   query: string;
@@ -115,6 +116,15 @@ export const BookingsList = () => {
     return matchesQuery && matchesStatus && matchesDate;
   }) || [];
 
+  const {
+    currentPage,
+    totalPages,
+    paginatedData: paginatedBookings,
+    goToPage,
+    hasNextPage,
+    hasPreviousPage,
+  } = usePagination({ data: filteredBookings, itemsPerPage: 10 });
+
   const statusOptions = [
     { value: "pending", label: "Pending" },
     { value: "confirmed", label: "Confirmed" },
@@ -123,7 +133,7 @@ export const BookingsList = () => {
   ];
 
   const handleSelectAll = () => {
-    setSelectedBookings(filteredBookings.map(b => b.id));
+    setSelectedBookings(paginatedBookings.map(b => b.id));
   };
 
   const handleClearSelection = () => {
@@ -142,7 +152,6 @@ export const BookingsList = () => {
 
     try {
       const data = await importFromCSV(file);
-      // Process and validate data before importing
       toast({ title: "Success", description: `Imported ${data.length} bookings` });
     } catch (error) {
       toast({ title: "Error", description: "Failed to import file", variant: "destructive" });
@@ -218,7 +227,7 @@ export const BookingsList = () => {
       {selectedBookings.length > 0 && (
         <BulkActions
           selectedItems={selectedBookings}
-          totalItems={filteredBookings.length}
+          totalItems={paginatedBookings.length}
           onSelectAll={handleSelectAll}
           onClearSelection={handleClearSelection}
           onBulkDelete={(ids) => bulkDeleteMutation.mutate(ids)}
@@ -228,86 +237,104 @@ export const BookingsList = () => {
         />
       )}
 
-      <div className="grid gap-4">
-        {filteredBookings?.map((booking) => (
-          <Card key={booking.id}>
-            <CardHeader className="pb-3">
-              <div className="flex justify-between items-start">
-                <div className="flex items-center space-x-3">
-                  <Checkbox
-                    checked={selectedBookings.includes(booking.id)}
-                    onCheckedChange={(checked) => {
-                      if (checked) {
-                        setSelectedBookings([...selectedBookings, booking.id]);
-                      } else {
-                        setSelectedBookings(selectedBookings.filter(id => id !== booking.id));
-                      }
-                    }}
-                  />
-                  <CardTitle className="text-lg">
-                    {booking.title || "Untitled Booking"}
-                  </CardTitle>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <Badge className={getStatusColor(booking.status)}>
-                    {booking.status}
-                  </Badge>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => navigate(`/crud/bookings/${booking.id}`)}
-                  >
-                    <Eye className="h-4 w-4" />
-                  </Button>
-                  <Dialog>
-                    <DialogTrigger asChild>
-                      <Button variant="outline" size="sm">
-                        <Edit className="h-4 w-4" />
-                      </Button>
-                    </DialogTrigger>
-                    <DialogContent className="max-w-4xl">
-                      <BookingForm bookingId={booking.id} />
-                    </DialogContent>
-                  </Dialog>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => deleteMutation.mutate(booking.id)}
-                    disabled={deleteMutation.isPending}
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
-                <div>
-                  <span className="font-medium">Time: </span>
-                  {formatDateTime(booking.start_time)}
-                </div>
-                <div>
-                  <span className="font-medium">Resource: </span>
-                  {booking.resources?.name || "No resource"}
-                </div>
-                <div>
-                  <span className="font-medium">Member: </span>
-                  {booking.members?.member_id || "No member"}
-                </div>
-              </div>
-              {booking.description && (
-                <p className="mt-2 text-sm text-gray-600">{booking.description}</p>
-              )}
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-
-      {filteredBookings?.length === 0 && (
-        <div className="text-center py-8 text-gray-500">
-          No bookings found.
+      <div className="space-y-4">
+        <div className="flex justify-between items-center">
+          <p className="text-sm text-gray-600">
+            Showing {paginatedBookings.length} of {filteredBookings.length} bookings
+          </p>
         </div>
-      )}
+
+        <div className="grid gap-4">
+          {paginatedBookings?.map((booking) => (
+            <Card key={booking.id}>
+              <CardHeader className="pb-3">
+                <div className="flex justify-between items-start">
+                  <div className="flex items-center space-x-3">
+                    <Checkbox
+                      checked={selectedBookings.includes(booking.id)}
+                      onCheckedChange={(checked) => {
+                        if (checked) {
+                          setSelectedBookings([...selectedBookings, booking.id]);
+                        } else {
+                          setSelectedBookings(selectedBookings.filter(id => id !== booking.id));
+                        }
+                      }}
+                    />
+                    <CardTitle className="text-lg">
+                      {booking.title || "Untitled Booking"}
+                    </CardTitle>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <Badge className={getStatusColor(booking.status)}>
+                      {booking.status}
+                    </Badge>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => navigate(`/crud/bookings/${booking.id}`)}
+                    >
+                      <Eye className="h-4 w-4" />
+                    </Button>
+                    <Dialog>
+                      <DialogTrigger asChild>
+                        <Button variant="outline" size="sm">
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent className="max-w-4xl">
+                        <BookingForm bookingId={booking.id} />
+                      </DialogContent>
+                    </Dialog>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => deleteMutation.mutate(booking.id)}
+                      disabled={deleteMutation.isPending}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                  <div>
+                    <span className="font-medium">Time: </span>
+                    {formatDateTime(booking.start_time)}
+                  </div>
+                  <div>
+                    <span className="font-medium">Resource: </span>
+                    {booking.resources?.name || "No resource"}
+                  </div>
+                  <div>
+                    <span className="font-medium">Member: </span>
+                    {booking.members?.member_id || "No member"}
+                  </div>
+                </div>
+                {booking.description && (
+                  <p className="mt-2 text-sm text-gray-600">{booking.description}</p>
+                )}
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+
+        {totalPages > 1 && (
+          <DataPagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={goToPage}
+            hasNextPage={hasNextPage}
+            hasPreviousPage={hasPreviousPage}
+          />
+        )}
+
+        {paginatedBookings?.length === 0 && (
+          <div className="text-center py-8 text-gray-500">
+            No bookings found.
+          </div>
+        )}
+      </div>
     </div>
   );
 };

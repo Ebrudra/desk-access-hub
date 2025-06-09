@@ -2,14 +2,14 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Calendar, Clock } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { BookingBasicInfo } from "@/components/forms/BookingBasicInfo";
+import { BookingSelectors } from "@/components/forms/BookingSelectors";
+import { BookingDateTime } from "@/components/forms/BookingDateTime";
+import { BookingSpecialRequests } from "@/components/forms/BookingSpecialRequests";
 
 interface BookingFormProps {
   bookingId?: string;
@@ -122,104 +122,15 @@ export const BookingForm = ({ bookingId, onSuccess }: BookingFormProps) => {
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="title">Title</Label>
-              <Input
-                id="title"
-                value={formData.title}
-                onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                required
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="resource_id">Resource</Label>
-              <Select value={formData.resource_id} onValueChange={(value) => setFormData({ ...formData, resource_id: value })}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select a resource" />
-                </SelectTrigger>
-                <SelectContent>
-                  {resources?.map((resource) => (
-                    <SelectItem key={resource.id} value={resource.id}>
-                      {resource.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="member_id">Member</Label>
-              <Select value={formData.member_id} onValueChange={(value) => setFormData({ ...formData, member_id: value })}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select a member" />
-                </SelectTrigger>
-                <SelectContent>
-                  {members?.map((member) => (
-                    <SelectItem key={member.id} value={member.id}>
-                      {member.member_id}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="attendees">Attendees</Label>
-              <Input
-                id="attendees"
-                type="number"
-                min="1"
-                value={formData.attendees}
-                onChange={(e) => setFormData({ ...formData, attendees: parseInt(e.target.value) })}
-                required
-              />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="start_time">Start Time</Label>
-              <Input
-                id="start_time"
-                type="datetime-local"
-                value={formData.start_time}
-                onChange={(e) => setFormData({ ...formData, start_time: e.target.value })}
-                required
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="end_time">End Time</Label>
-              <Input
-                id="end_time"
-                type="datetime-local"
-                value={formData.end_time}
-                onChange={(e) => setFormData({ ...formData, end_time: e.target.value })}
-                required
-              />
-            </div>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="description">Description</Label>
-            <Textarea
-              id="description"
-              value={formData.description}
-              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-              rows={3}
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="special_requests">Special Requests</Label>
-            <Textarea
-              id="special_requests"
-              value={formData.special_requests}
-              onChange={(e) => setFormData({ ...formData, special_requests: e.target.value })}
-              rows={2}
-            />
-          </div>
+          <BookingBasicInfo formData={formData} onFormDataChange={setFormData} />
+          <BookingSelectors 
+            formData={formData} 
+            onFormDataChange={setFormData}
+            resources={resources}
+            members={members}
+          />
+          <BookingDateTime formData={formData} onFormDataChange={setFormData} />
+          <BookingSpecialRequests formData={formData} onFormDataChange={setFormData} />
 
           <Button 
             type="submit" 
