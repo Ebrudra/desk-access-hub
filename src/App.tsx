@@ -13,6 +13,7 @@ import MemberDetail from "./pages/MemberDetail";
 import EventDetail from "./pages/EventDetail";
 import SpaceDetail from "./pages/SpaceDetail";
 import ResourceDetail from "./pages/ResourceDetail";
+import NewBooking from "./pages/NewBooking";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient({
@@ -35,6 +36,14 @@ const App = () => (
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/auth" element={<Auth />} />
+            <Route 
+              path="/bookings/new" 
+              element={
+                <ProtectedRoute>
+                  <NewBooking />
+                </ProtectedRoute>
+              } 
+            />
             <Route 
               path="/bookings/:id" 
               element={

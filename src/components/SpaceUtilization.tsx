@@ -6,7 +6,7 @@ import { useSpaces } from "@/hooks/useSpaces";
 import { useResources } from "@/hooks/useResources";
 import { useBookings } from "@/hooks/useBookings";
 import { MapPin, Users, Calendar } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 
 interface SpaceUtilizationProps {
   expanded?: boolean;
@@ -14,6 +14,7 @@ interface SpaceUtilizationProps {
 
 export const SpaceUtilization = ({ expanded = false }: SpaceUtilizationProps) => {
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const { data: spaces, isLoading: spacesLoading } = useSpaces();
   const { data: resources, isLoading: resourcesLoading } = useResources();
   const { data: bookings, isLoading: bookingsLoading } = useBookings();
@@ -55,6 +56,16 @@ export const SpaceUtilization = ({ expanded = false }: SpaceUtilizationProps) =>
   const availableResources = resources?.filter(resource => resource.is_available) || [];
   const displayResources = expanded ? availableResources : availableResources.slice(0, 3);
 
+  const handleResourceClick = (resourceId: string) => {
+    navigate(`/resources/${resourceId}`);
+  };
+
+  const handleViewAllResources = () => {
+    const newSearchParams = new URLSearchParams(searchParams);
+    newSearchParams.set('tab', 'crud');
+    setSearchParams(newSearchParams);
+  };
+
   return (
     <Card>
       <CardHeader>
@@ -74,7 +85,7 @@ export const SpaceUtilization = ({ expanded = false }: SpaceUtilizationProps) =>
               <div 
                 key={resource.id} 
                 className="cursor-pointer hover:bg-gray-50 p-2 rounded-lg transition-colors"
-                onClick={() => navigate(`/resources/${resource.id}`)}
+                onClick={() => handleResourceClick(resource.id)}
               >
                 <div className="flex items-center justify-between mb-2">
                   <div className="flex items-center space-x-2">
@@ -102,7 +113,7 @@ export const SpaceUtilization = ({ expanded = false }: SpaceUtilizationProps) =>
           
           {!expanded && availableResources.length > 3 && (
             <button 
-              onClick={() => navigate("/resources")}
+              onClick={handleViewAllResources}
               className="w-full text-center text-sm text-blue-600 hover:text-blue-800 py-2"
             >
               View all resources ({availableResources.length - 3} more)

@@ -2,8 +2,14 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Plus, UserPlus, Calendar, KeyRound, Mail, Settings } from "lucide-react";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import { createNavigationHandler, quickActionRoutes } from "@/utils/navigationUtils";
 
 export const QuickActions = () => {
+  const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const navigationHandler = createNavigationHandler(navigate);
+
   const actions = [
     {
       icon: UserPlus,
@@ -33,7 +39,23 @@ export const QuickActions = () => {
 
   const handleAction = (actionLabel: string) => {
     console.log(`Triggered action: ${actionLabel}`);
-    // In a real app, this would navigate to the appropriate form or modal
+    
+    const route = quickActionRoutes[actionLabel as keyof typeof quickActionRoutes];
+    if (route) {
+      if (route.type === 'tab') {
+        const newSearchParams = new URLSearchParams(searchParams);
+        newSearchParams.set('tab', route.target);
+        setSearchParams(newSearchParams);
+      } else {
+        navigationHandler(route);
+      }
+    }
+  };
+
+  const handleSettings = () => {
+    const newSearchParams = new URLSearchParams(searchParams);
+    newSearchParams.set('tab', 'crud');
+    setSearchParams(newSearchParams);
   };
 
   return (
@@ -66,7 +88,7 @@ export const QuickActions = () => {
           <Button 
             variant="ghost" 
             className="w-full flex items-center space-x-2"
-            onClick={() => handleAction("Settings")}
+            onClick={handleSettings}
           >
             <Settings className="h-4 w-4" />
             <span>System Settings</span>
