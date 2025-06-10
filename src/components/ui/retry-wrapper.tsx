@@ -1,14 +1,14 @@
 
-import { useState, useEffect } from 'react';
-import { Button } from '@/components/ui/button';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { RefreshCw, AlertCircle } from 'lucide-react';
+import { ReactNode, useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { RefreshCw, AlertTriangle } from "lucide-react";
 
 interface RetryWrapperProps {
-  children: React.ReactNode;
-  onRetry: () => Promise<void> | void;
+  children: ReactNode;
+  onRetry: () => void;
   error?: Error | null;
-  isLoading?: boolean;
+  loading?: boolean;
   maxRetries?: number;
 }
 
@@ -16,40 +16,32 @@ export const RetryWrapper = ({
   children, 
   onRetry, 
   error, 
-  isLoading = false,
+  loading = false,
   maxRetries = 3 
 }: RetryWrapperProps) => {
   const [retryCount, setRetryCount] = useState(0);
-  const [isRetrying, setIsRetrying] = useState(false);
 
-  const handleRetry = async () => {
-    if (retryCount >= maxRetries) return;
-    
-    setIsRetrying(true);
-    try {
-      await onRetry();
-      setRetryCount(0);
-    } catch (err) {
+  const handleRetry = () => {
+    if (retryCount < maxRetries) {
       setRetryCount(prev => prev + 1);
-    } finally {
-      setIsRetrying(false);
+      onRetry();
     }
   };
 
-  if (error && !isLoading) {
+  if (error && !loading) {
     return (
       <Alert variant="destructive" className="my-4">
-        <AlertCircle className="h-4 w-4" />
+        <AlertTriangle className="h-4 w-4" />
         <AlertDescription className="flex items-center justify-between">
-          <span>{error.message}</span>
+          <span>{error.message || "Something went wrong"}</span>
           {retryCount < maxRetries && (
             <Button 
-              onClick={handleRetry} 
               variant="outline" 
-              size="sm"
-              disabled={isRetrying}
+              size="sm" 
+              onClick={handleRetry}
+              className="ml-2"
             >
-              <RefreshCw className={`h-4 w-4 mr-2 ${isRetrying ? 'animate-spin' : ''}`} />
+              <RefreshCw className="h-3 w-3 mr-1" />
               Retry ({maxRetries - retryCount} left)
             </Button>
           )}

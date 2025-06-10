@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { User, Session } from "@supabase/supabase-js";
 import { useNavigate, useLocation } from "react-router-dom";
+import { useSessionPersistence } from "./useSessionPersistence";
 
 export const useAuth = () => {
   const [user, setUser] = useState<User | null>(null);
@@ -10,6 +11,7 @@ export const useAuth = () => {
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
   const location = useLocation();
+  const { clearCache } = useSessionPersistence();
 
   useEffect(() => {
     // Set up auth state listener FIRST
@@ -27,6 +29,7 @@ export const useAuth = () => {
             navigate('/');
           }
         } else if (event === 'SIGNED_OUT') {
+          clearCache();
           // Redirect to auth page after logout
           navigate('/auth');
         }
@@ -41,7 +44,7 @@ export const useAuth = () => {
     });
 
     return () => subscription.unsubscribe();
-  }, [navigate, location.pathname]);
+  }, [navigate, location.pathname, clearCache]);
 
   const signOut = async () => {
     await supabase.auth.signOut();
