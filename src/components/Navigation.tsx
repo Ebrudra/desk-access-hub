@@ -7,7 +7,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { useAuth } from "@/hooks/useAuth";
 import { useAuthRole } from "@/hooks/useAuthRole";
 import { supabase } from "@/integrations/supabase/client";
-import { Home, Users, Calendar, Settings, LogOut, Menu, X, Shield } from "lucide-react";
+import { Home, Settings, LogOut, Menu, X, Shield } from "lucide-react";
 import { NotificationCenter } from "./notifications/NotificationCenter";
 import { Badge } from "@/components/ui/badge";
 import { MobileDrawer } from "@/components/ui/mobile-drawer";
@@ -26,8 +26,6 @@ export const Navigation = () => {
 
   const navItems = [
     { icon: Home, label: "Dashboard", path: "/" },
-    { icon: Calendar, label: "Bookings", path: "/bookings" },
-    { icon: Users, label: "Members", path: "/members" },
   ];
 
   const isActivePath = (path: string) => {

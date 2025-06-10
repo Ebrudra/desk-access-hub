@@ -7,6 +7,7 @@ import { useResources } from "@/hooks/useResources";
 import { useBookings } from "@/hooks/useBookings";
 import { MapPin, Users, Calendar } from "lucide-react";
 import { useNavigate, useSearchParams } from "react-router-dom";
+import { createResourcesTabHandler } from "@/utils/navigationUtils";
 
 interface SpaceUtilizationProps {
   expanded?: boolean;
@@ -18,6 +19,8 @@ export const SpaceUtilization = ({ expanded = false }: SpaceUtilizationProps) =>
   const { data: spaces, isLoading: spacesLoading } = useSpaces();
   const { data: resources, isLoading: resourcesLoading } = useResources();
   const { data: bookings, isLoading: bookingsLoading } = useBookings();
+
+  const resourcesTabHandler = createResourcesTabHandler(setSearchParams, searchParams);
 
   if (spacesLoading || resourcesLoading || bookingsLoading) {
     return (
@@ -58,12 +61,6 @@ export const SpaceUtilization = ({ expanded = false }: SpaceUtilizationProps) =>
 
   const handleResourceClick = (resourceId: string) => {
     navigate(`/resources/${resourceId}`);
-  };
-
-  const handleViewAllResources = () => {
-    const newSearchParams = new URLSearchParams(searchParams);
-    newSearchParams.set('tab', 'crud');
-    setSearchParams(newSearchParams);
   };
 
   return (
@@ -113,7 +110,7 @@ export const SpaceUtilization = ({ expanded = false }: SpaceUtilizationProps) =>
           
           {!expanded && availableResources.length > 3 && (
             <button 
-              onClick={handleViewAllResources}
+              onClick={resourcesTabHandler}
               className="w-full text-center text-sm text-blue-600 hover:text-blue-800 py-2"
             >
               View all resources ({availableResources.length - 3} more)

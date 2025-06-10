@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { BookingsList } from "./BookingsList";
@@ -8,9 +8,19 @@ import { MembersList } from "./MembersList";
 import { ResourcesList } from "./ResourcesList";
 import { EventsList } from "./EventsList";
 import { Calendar, Building2, Users, MapPin, Settings } from "lucide-react";
+import { useSearchParams } from "react-router-dom";
 
 export const CrudManagement = () => {
+  const [searchParams] = useSearchParams();
   const [activeTab, setActiveTab] = useState("bookings");
+
+  // Handle subtab parameter
+  useEffect(() => {
+    const subtab = searchParams.get('subtab');
+    if (subtab) {
+      setActiveTab(subtab);
+    }
+  }, [searchParams]);
 
   return (
     <div className="container mx-auto px-4 py-8">

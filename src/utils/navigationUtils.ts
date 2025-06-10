@@ -30,7 +30,7 @@ export const createNavigationHandler = (navigate: NavigateFunction) => {
 };
 
 export const quickActionRoutes = {
-  'Add Member': { type: 'tab' as const, target: 'crud' },
+  'Add Member': { type: 'navigate' as const, target: '/members/new' },
   'New Booking': { type: 'navigate' as const, target: '/bookings/new' },
   'Grant Access': { type: 'tab' as const, target: 'crud' },
   'Send Notice': { type: 'modal' as const, target: 'notifications' },
@@ -57,5 +57,15 @@ export const createTabHandler = (setSearchParams: (params: URLSearchParams) => v
 export const createDetailNavigationHandler = (navigate: NavigateFunction) => {
   return (type: 'bookings' | 'members' | 'events' | 'spaces' | 'resources', id: string) => {
     navigate(`/${type}/${id}`);
+  };
+};
+
+export const createResourcesTabHandler = (setSearchParams: (params: URLSearchParams) => void, searchParams: URLSearchParams) => {
+  return () => {
+    const newSearchParams = new URLSearchParams(searchParams);
+    newSearchParams.set('tab', 'crud');
+    // Add a sub-tab parameter to open the resources tab within management
+    newSearchParams.set('subtab', 'resources');
+    setSearchParams(newSearchParams);
   };
 };
