@@ -1,220 +1,179 @@
 
 import { useParams, useNavigate } from "react-router-dom";
-import { useSpace } from "@/hooks/useSpaces";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, MapPin, Clock, Wifi, Coffee, Users, Calendar } from "lucide-react";
-import { format } from "date-fns";
+import { ArrowLeft, Building2, MapPin, Phone, Mail, Globe, Clock } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { Navigation } from "@/components/Navigation";
 
 const SpaceDetail = () => {
-  const { id } = useParams<{ id: string }>();
+  const { id } = useParams();
   const navigate = useNavigate();
-  const { data: space, isLoading, error } = useSpace(id!);
+
+  const { data: space, isLoading } = useQuery({
+    queryKey: ["space", id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("spaces")
+        .select("*")
+        .eq("id", id)
+        .single();
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!id,
+  });
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg mx-auto mb-4 animate-pulse"></div>
-          <p className="text-gray-600">Loading space details...</p>
-        </div>
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
+        <Navigation />
+        <div className="flex justify-center p-8">Loading space details...</div>
       </div>
     );
   }
 
-  if (error || !space) {
+  if (!space) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 flex items-center justify-center">
-        <div className="text-center">
-          <p className="text-red-600">Error loading space details</p>
-          <Button onClick={() => navigate("/")} className="mt-4">
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Back to Dashboard
-          </Button>
-        </div>
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
+        <Navigation />
+        <div className="text-center p-8">Space not found</div>
       </div>
     );
   }
-
-  const getAmenityIcon = (amenity: string) => {
-    switch (amenity.toLowerCase()) {
-      case 'wifi':
-      case 'wi-fi':
-        return <Wifi className="h-4 w-4" />;
-      case 'coffee':
-        return <Coffee className="h-4 w-4" />;
-      default:
-        return <Users className="h-4 w-4" />;
-    }
-  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
+      <Navigation />
+      
       <div className="container mx-auto px-4 py-8">
         <div className="mb-6">
-          <Button 
-            variant="ghost" 
+          <Button
+            variant="outline"
             onClick={() => navigate("/")}
             className="mb-4"
           >
-            <ArrowLeft className="mr-2 h-4 w-4" />
+            <ArrowLeft className="h-4 w-4 mr-2" />
             Back to Dashboard
           </Button>
-          
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900">
-                {space.name}
-              </h1>
-              <p className="text-gray-600 mt-1 flex items-center">
-                <MapPin className="mr-1 h-4 w-4" />
-                {space.address}, {space.city}, {space.country}
-              </p>
-            </div>
-          </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-2 space-y-6">
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-2xl flex items-center gap-2">
+              <Building2 className="h-6 w-6" />
+              {space.name}
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-6">
             {space.image_url && (
-              <Card>
-                <CardContent className="p-0">
-                  <img 
-                    src={space.image_url} 
-                    alt={space.name}
-                    className="w-full h-64 object-cover rounded-t-lg"
-                  />
-                </CardContent>
-              </Card>
+              <img 
+                src={space.image_url} 
+                alt={space.name}
+                className="w-full h-64 object-cover rounded-lg"
+              />
             )}
 
-            <Card>
-              <CardHeader>
-                <CardTitle>About This Space</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {space.description && (
-                  <p className="text-gray-900">{space.description}</p>
-                )}
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-4">
+                <div className="flex items-start space-x-2">
+                  <MapPin className="h-4 w-4 text-gray-400 mt-1" />
                   <div>
-                    <p className="text-sm font-medium text-gray-500">Address</p>
-                    <p className="text-gray-900">{space.address}</p>
-                    <p className="text-gray-600">{space.city}, {space.country} {space.postal_code}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium text-gray-500">Timezone</p>
-                    <p className="text-gray-900">{space.timezone}</p>
+                    <p className="font-medium">Address</p>
+                    <p className="text-sm text-gray-600">
+                      {space.address}<br />
+                      {space.city}, {space.country}
+                      {space.postal_code && ` ${space.postal_code}`}
+                    </p>
                   </div>
                 </div>
 
-                {space.operating_hours && (
+                <div className="flex items-center space-x-2">
+                  <Clock className="h-4 w-4 text-gray-400" />
                   <div>
-                    <p className="text-sm font-medium text-gray-500 mb-2">Operating Hours</p>
-                    <div className="bg-gray-50 p-3 rounded-lg">
-                      <pre className="text-sm text-gray-700 whitespace-pre-wrap">
-                        {JSON.stringify(space.operating_hours, null, 2)}
-                      </pre>
+                    <p className="font-medium">Timezone</p>
+                    <p className="text-sm text-gray-600">{space.timezone}</p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                {space.phone && (
+                  <div className="flex items-center space-x-2">
+                    <Phone className="h-4 w-4 text-gray-400" />
+                    <div>
+                      <p className="font-medium">Phone</p>
+                      <p className="text-sm text-gray-600">{space.phone}</p>
                     </div>
                   </div>
                 )}
-              </CardContent>
-            </Card>
+
+                {space.email && (
+                  <div className="flex items-center space-x-2">
+                    <Mail className="h-4 w-4 text-gray-400" />
+                    <div>
+                      <p className="font-medium">Email</p>
+                      <p className="text-sm text-gray-600">{space.email}</p>
+                    </div>
+                  </div>
+                )}
+
+                {space.website_url && (
+                  <div className="flex items-center space-x-2">
+                    <Globe className="h-4 w-4 text-gray-400" />
+                    <div>
+                      <p className="font-medium">Website</p>
+                      <a 
+                        href={space.website_url} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="text-sm text-blue-600 hover:underline"
+                      >
+                        {space.website_url}
+                      </a>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {space.description && (
+              <div>
+                <h3 className="font-medium mb-2">Description</h3>
+                <p className="text-sm text-gray-600 whitespace-pre-wrap">{space.description}</p>
+              </div>
+            )}
 
             {space.amenities && space.amenities.length > 0 && (
-              <Card>
-                <CardHeader>
-                  <CardTitle>Amenities</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                    {space.amenities.map((amenity, index) => (
-                      <div key={index} className="flex items-center space-x-2 p-2 bg-gray-50 rounded-lg">
-                        {getAmenityIcon(amenity)}
-                        <span className="text-sm capitalize">{amenity}</span>
-                      </div>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
+              <div>
+                <h3 className="font-medium mb-2">Amenities</h3>
+                <div className="flex flex-wrap gap-2">
+                  {space.amenities.map((amenity, index) => (
+                    <Badge key={index} variant="outline">{amenity}</Badge>
+                  ))}
+                </div>
+              </div>
             )}
-          </div>
 
-          <div className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Contact Information</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                {space.phone && (
-                  <div>
-                    <p className="text-sm font-medium text-gray-500">Phone</p>
-                    <p className="text-gray-900">{space.phone}</p>
-                  </div>
-                )}
-                {space.email && (
-                  <div>
-                    <p className="text-sm font-medium text-gray-500">Email</p>
-                    <p className="text-gray-900">{space.email}</p>
-                  </div>
-                )}
-                {space.website_url && (
-                  <div>
-                    <p className="text-sm font-medium text-gray-500">Website</p>
-                    <a 
-                      href={space.website_url} 
-                      target="_blank" 
-                      rel="noopener noreferrer"
-                      className="text-blue-600 hover:text-blue-800"
-                    >
-                      Visit Website
-                    </a>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
+            {space.operating_hours && (
+              <div>
+                <h3 className="font-medium mb-2">Operating Hours</h3>
+                <pre className="text-xs bg-gray-100 p-2 rounded">
+                  {JSON.stringify(space.operating_hours, null, 2)}
+                </pre>
+              </div>
+            )}
 
-            <Card>
-              <CardHeader>
-                <CardTitle>Quick Actions</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-2">
-                <Button className="w-full">
-                  <Calendar className="mr-2 h-4 w-4" />
-                  Book a Resource
-                </Button>
-                <Button className="w-full" variant="outline">
-                  View Events
-                </Button>
-                <Button className="w-full" variant="outline">
-                  Contact Space
-                </Button>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>Space Details</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-2">
-                <div>
-                  <p className="text-sm text-gray-500">Space ID</p>
-                  <p className="font-mono text-sm bg-gray-100 px-2 py-1 rounded">
-                    {space.id.slice(0, 8)}...
-                  </p>
-                </div>
-                <div>
-                  <p className="text-sm text-gray-500">Created</p>
-                  <p className="text-sm">
-                    {format(new Date(space.created_at), "PPP")}
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
+            <div className="pt-4 border-t">
+              <p className="text-xs text-gray-500">
+                Created: {new Date(space.created_at).toLocaleString()} | 
+                Last updated: {new Date(space.updated_at).toLocaleString()}
+              </p>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );

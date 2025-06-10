@@ -1,236 +1,169 @@
 
 import { useParams, useNavigate } from "react-router-dom";
-import { useEvent } from "@/hooks/useEvents";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Calendar, Clock, MapPin, Users, DollarSign, User } from "lucide-react";
-import { format } from "date-fns";
-import { Breadcrumbs } from "@/components/Breadcrumbs";
+import { ArrowLeft, Calendar, MapPin, Users, DollarSign, Clock } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { Navigation } from "@/components/Navigation";
 
 const EventDetail = () => {
-  const { id } = useParams<{ id: string }>();
+  const { id } = useParams();
   const navigate = useNavigate();
-  const { data: event, isLoading, error } = useEvent(id!);
+
+  const { data: event, isLoading } = useQuery({
+    queryKey: ["event", id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("events")
+        .select(`
+          *,
+          spaces(name),
+          profiles!events_organizer_id_fkey(first_name, last_name)
+        `)
+        .eq("id", id)
+        .single();
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!id,
+  });
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg mx-auto mb-4 animate-pulse"></div>
-          <p className="text-gray-600">Loading event details...</p>
-        </div>
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
+        <Navigation />
+        <div className="flex justify-center p-8">Loading event details...</div>
       </div>
     );
   }
 
-  if (error || !event) {
+  if (!event) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 flex items-center justify-center">
-        <div className="text-center">
-          <p className="text-red-600">Error loading event details</p>
-          <Button onClick={() => navigate("/")} className="mt-4">
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Back to Dashboard
-          </Button>
-        </div>
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
+        <Navigation />
+        <div className="text-center p-8">Event not found</div>
       </div>
     );
   }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
+      <Navigation />
+      
       <div className="container mx-auto px-4 py-8">
-        <Breadcrumbs />
-        
         <div className="mb-6">
-          <Button 
-            variant="ghost" 
+          <Button
+            variant="outline"
             onClick={() => navigate("/")}
             className="mb-4"
           >
-            <ArrowLeft className="mr-2 h-4 w-4" />
+            <ArrowLeft className="h-4 w-4 mr-2" />
             Back to Dashboard
           </Button>
-          
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900">
-                {event.title}
-              </h1>
-              <p className="text-gray-600 mt-1">
-                Event ID: {event.id.slice(0, 8)}...
-              </p>
-            </div>
-            <div className="flex items-center space-x-2">
-              <Badge variant={event.is_public ? "default" : "secondary"}>
-                {event.is_public ? "Public" : "Private"}
-              </Badge>
-              {event.registration_required && (
-                <Badge variant="outline">Registration Required</Badge>
-              )}
-            </div>
-          </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-2 space-y-6">
+        <Card>
+          <CardHeader>
+            <div className="flex justify-between items-start">
+              <CardTitle className="text-2xl">{event.title}</CardTitle>
+              <div className="flex gap-2">
+                <Badge variant={event.is_public ? "default" : "secondary"}>
+                  {event.is_public ? "Public" : "Private"}
+                </Badge>
+                {event.registration_required && (
+                  <Badge variant="outline">Registration Required</Badge>
+                )}
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-6">
             {event.image_url && (
-              <Card>
-                <CardContent className="p-0">
-                  <img 
-                    src={event.image_url} 
-                    alt={event.title}
-                    className="w-full h-64 object-cover rounded-t-lg"
-                  />
-                </CardContent>
-              </Card>
+              <img 
+                src={event.image_url} 
+                alt={event.title}
+                className="w-full h-64 object-cover rounded-lg"
+              />
             )}
 
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center">
-                  <Calendar className="mr-2 h-5 w-5" />
-                  Event Information
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-4">
+                <div className="flex items-center space-x-2">
+                  <Calendar className="h-4 w-4 text-gray-400" />
                   <div>
-                    <p className="text-sm font-medium text-gray-500">Start Time</p>
-                    <p className="text-lg">
-                      {format(new Date(event.start_time), "PPP 'at' p")}
+                    <p className="font-medium">Date & Time</p>
+                    <p className="text-sm text-gray-600">
+                      {new Date(event.start_time).toLocaleDateString()}
                     </p>
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium text-gray-500">End Time</p>
-                    <p className="text-lg">
-                      {format(new Date(event.end_time), "PPP 'at' p")}
+                    <p className="text-sm text-gray-600">
+                      {new Date(event.start_time).toLocaleTimeString()} - {new Date(event.end_time).toLocaleTimeString()}
                     </p>
                   </div>
                 </div>
-                
-                {event.description && (
+
+                <div className="flex items-center space-x-2">
+                  <MapPin className="h-4 w-4 text-gray-400" />
                   <div>
-                    <p className="text-sm font-medium text-gray-500">Description</p>
-                    <p className="text-gray-900">{event.description}</p>
+                    <p className="font-medium">Location</p>
+                    <p className="text-sm text-gray-600">
+                      {event.spaces?.name || "Location TBA"}
+                    </p>
+                    {event.location_details && (
+                      <p className="text-sm text-gray-500">{event.location_details}</p>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                {event.capacity && (
+                  <div className="flex items-center space-x-2">
+                    <Users className="h-4 w-4 text-gray-400" />
+                    <div>
+                      <p className="font-medium">Capacity</p>
+                      <p className="text-sm text-gray-600">{event.capacity} people</p>
+                    </div>
+                  </div>
+                )}
+
+                {event.price && event.price > 0 && (
+                  <div className="flex items-center space-x-2">
+                    <DollarSign className="h-4 w-4 text-gray-400" />
+                    <div>
+                      <p className="font-medium">Price</p>
+                      <p className="text-sm text-gray-600">${event.price}</p>
+                    </div>
                   </div>
                 )}
 
                 {event.event_type && (
-                  <div>
-                    <p className="text-sm font-medium text-gray-500">Event Type</p>
-                    <Badge variant="outline">{event.event_type}</Badge>
+                  <div className="flex items-center space-x-2">
+                    <Clock className="h-4 w-4 text-gray-400" />
+                    <div>
+                      <p className="font-medium">Event Type</p>
+                      <p className="text-sm text-gray-600">{event.event_type}</p>
+                    </div>
                   </div>
                 )}
+              </div>
+            </div>
 
-                {event.location_details && (
-                  <div>
-                    <p className="text-sm font-medium text-gray-500">Location Details</p>
-                    <p className="text-gray-900">{event.location_details}</p>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-
-            {event.spaces && (
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center">
-                    <MapPin className="mr-2 h-5 w-5" />
-                    Venue Details
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-2">
-                    <h3 className="font-semibold">{event.spaces.name}</h3>
-                    <p className="text-gray-600">{event.spaces.description}</p>
-                    <p className="text-sm text-gray-500">{event.spaces.address}, {event.spaces.city}</p>
-                  </div>
-                </CardContent>
-              </Card>
-            )}
-          </div>
-
-          <div className="space-y-6">
-            {event.capacity && (
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center">
-                    <Users className="mr-2 h-5 w-5" />
-                    Capacity
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">{event.capacity}</div>
-                  <p className="text-sm text-gray-500">Maximum attendees</p>
-                </CardContent>
-              </Card>
+            {event.description && (
+              <div>
+                <h3 className="font-medium mb-2">Description</h3>
+                <p className="text-sm text-gray-600 whitespace-pre-wrap">{event.description}</p>
+              </div>
             )}
 
-            {event.price !== null && event.price > 0 && (
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center">
-                    <DollarSign className="mr-2 h-5 w-5" />
-                    Price
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">${event.price}</div>
-                  <p className="text-sm text-gray-500">Per person</p>
-                </CardContent>
-              </Card>
-            )}
-
-            {event.organizer && (
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center">
-                    <User className="mr-2 h-5 w-5" />
-                    Organizer
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-2">
-                    {event.organizer.profiles ? (
-                      <>
-                        <p className="font-semibold">
-                          {event.organizer.profiles.first_name} {event.organizer.profiles.last_name}
-                        </p>
-                        {event.organizer.profiles.company && (
-                          <p className="text-sm text-gray-500">{event.organizer.profiles.company}</p>
-                        )}
-                      </>
-                    ) : (
-                      <p className="font-semibold">Member ID: {event.organizer.member_id}</p>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
-            )}
-
-            <Card>
-              <CardHeader>
-                <CardTitle>Actions</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-2">
-                {event.registration_required ? (
-                  <Button className="w-full">
-                    Register for Event
-                  </Button>
-                ) : (
-                  <Button className="w-full" variant="outline">
-                    Add to Calendar
-                  </Button>
-                )}
-                <Button className="w-full" variant="outline">
-                  Share Event
-                </Button>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
+            <div className="pt-4 border-t">
+              <p className="text-xs text-gray-500">
+                Created: {new Date(event.created_at).toLocaleString()} | 
+                Last updated: {new Date(event.updated_at).toLocaleString()}
+              </p>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );

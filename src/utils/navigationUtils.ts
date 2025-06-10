@@ -36,3 +36,26 @@ export const quickActionRoutes = {
   'Send Notice': { type: 'modal' as const, target: 'notifications' },
   'Settings': { type: 'tab' as const, target: 'crud' }
 };
+
+export const dashboardRoutes = {
+  'View Calendar': { type: 'tab' as const, target: 'calendar' },
+  'Check Availability': { type: 'tab' as const, target: 'smart-booking' },
+  'Book Now': { type: 'navigate' as const, target: '/bookings/new' },
+  'View All': { type: 'tab' as const, target: 'crud' },
+  'Manage Members': { type: 'tab' as const, target: 'crud' },
+  'View Analytics': { type: 'tab' as const, target: 'analytics' }
+};
+
+export const createTabHandler = (setSearchParams: (params: URLSearchParams) => void, searchParams: URLSearchParams) => {
+  return (tabName: string) => {
+    const newSearchParams = new URLSearchParams(searchParams);
+    newSearchParams.set('tab', tabName);
+    setSearchParams(newSearchParams);
+  };
+};
+
+export const createDetailNavigationHandler = (navigate: NavigateFunction) => {
+  return (type: 'bookings' | 'members' | 'events' | 'spaces' | 'resources', id: string) => {
+    navigate(`/${type}/${id}`);
+  };
+};

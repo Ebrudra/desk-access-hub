@@ -1,226 +1,182 @@
 
 import { useParams, useNavigate } from "react-router-dom";
-import { useResource } from "@/hooks/useResources";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Users, DollarSign, MapPin, Calendar, Clock } from "lucide-react";
+import { ArrowLeft, MapPin, Building2, DollarSign, Users } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { Navigation } from "@/components/Navigation";
 
 const ResourceDetail = () => {
-  const { id } = useParams<{ id: string }>();
+  const { id } = useParams();
   const navigate = useNavigate();
-  const { data: resource, isLoading, error } = useResource(id!);
+
+  const { data: resource, isLoading } = useQuery({
+    queryKey: ["resource", id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("resources")
+        .select(`
+          *,
+          spaces(name)
+        `)
+        .eq("id", id)
+        .single();
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!id,
+  });
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg mx-auto mb-4 animate-pulse"></div>
-          <p className="text-gray-600">Loading resource details...</p>
-        </div>
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
+        <Navigation />
+        <div className="flex justify-center p-8">Loading resource details...</div>
       </div>
     );
   }
 
-  if (error || !resource) {
+  if (!resource) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 flex items-center justify-center">
-        <div className="text-center">
-          <p className="text-red-600">Error loading resource details</p>
-          <Button onClick={() => navigate("/")} className="mt-4">
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Back to Dashboard
-          </Button>
-        </div>
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
+        <Navigation />
+        <div className="text-center p-8">Resource not found</div>
       </div>
     );
   }
 
-  const getStatusColor = (isAvailable: boolean) => {
-    return isAvailable ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800";
-  };
-
-  const formatResourceType = (type: string) => {
-    return type.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+  const getTypeColor = (type: string) => {
+    switch (type) {
+      case "meeting_room": return "bg-blue-100 text-blue-800";
+      case "desk": return "bg-green-100 text-green-800";
+      case "office": return "bg-purple-100 text-purple-800";
+      case "equipment": return "bg-orange-100 text-orange-800";
+      case "lounge": return "bg-pink-100 text-pink-800";
+      default: return "bg-gray-100 text-gray-800";
+    }
   };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
+      <Navigation />
+      
       <div className="container mx-auto px-4 py-8">
         <div className="mb-6">
-          <Button 
-            variant="ghost" 
+          <Button
+            variant="outline"
             onClick={() => navigate("/")}
             className="mb-4"
           >
-            <ArrowLeft className="mr-2 h-4 w-4" />
+            <ArrowLeft className="h-4 w-4 mr-2" />
             Back to Dashboard
           </Button>
-          
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900">
-                {resource.name}
-              </h1>
-              <p className="text-gray-600 mt-1">
-                Resource ID: {resource.id.slice(0, 8)}...
-              </p>
-            </div>
-            <div className="flex items-center space-x-2">
-              <Badge className={getStatusColor(resource.is_available || false)}>
-                {resource.is_available ? "Available" : "Unavailable"}
-              </Badge>
-              <Badge variant="outline">
-                {formatResourceType(resource.type)}
-              </Badge>
-            </div>
-          </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-2 space-y-6">
+        <Card>
+          <CardHeader>
+            <div className="flex justify-between items-start">
+              <CardTitle className="text-2xl">{resource.name}</CardTitle>
+              <div className="flex gap-2">
+                <Badge className={getTypeColor(resource.type)}>
+                  {resource.type.replace('_', ' ')}
+                </Badge>
+                <Badge variant={resource.is_available ? "default" : "secondary"}>
+                  {resource.is_available ? "Available" : "Unavailable"}
+                </Badge>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-6">
             {resource.image_url && (
-              <Card>
-                <CardContent className="p-0">
-                  <img 
-                    src={resource.image_url} 
-                    alt={resource.name}
-                    className="w-full h-64 object-cover rounded-t-lg"
-                  />
-                </CardContent>
-              </Card>
+              <img 
+                src={resource.image_url} 
+                alt={resource.name}
+                className="w-full h-64 object-cover rounded-lg"
+              />
             )}
 
-            <Card>
-              <CardHeader>
-                <CardTitle>Resource Information</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {resource.description && (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-4">
+                <div className="flex items-center space-x-2">
+                  <Building2 className="h-4 w-4 text-gray-400" />
                   <div>
-                    <p className="text-sm font-medium text-gray-500">Description</p>
-                    <p className="text-gray-900">{resource.description}</p>
+                    <p className="font-medium">Space</p>
+                    <p className="text-sm text-gray-600">
+                      {resource.spaces?.name || "No space assigned"}
+                    </p>
                   </div>
-                )}
+                </div>
+
+                <div className="flex items-center space-x-2">
+                  <Users className="h-4 w-4 text-gray-400" />
+                  <div>
+                    <p className="font-medium">Capacity</p>
+                    <p className="text-sm text-gray-600">{resource.capacity} people</p>
+                  </div>
+                </div>
 
                 {resource.location_details && (
-                  <div>
-                    <p className="text-sm font-medium text-gray-500">Location Details</p>
-                    <p className="text-gray-900">{resource.location_details}</p>
+                  <div className="flex items-start space-x-2">
+                    <MapPin className="h-4 w-4 text-gray-400 mt-1" />
+                    <div>
+                      <p className="font-medium">Location Details</p>
+                      <p className="text-sm text-gray-600">{resource.location_details}</p>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              <div className="space-y-4">
+                {resource.hourly_rate && (
+                  <div className="flex items-center space-x-2">
+                    <DollarSign className="h-4 w-4 text-gray-400" />
+                    <div>
+                      <p className="font-medium">Hourly Rate</p>
+                      <p className="text-sm text-gray-600">${resource.hourly_rate}</p>
+                    </div>
                   </div>
                 )}
 
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <p className="text-sm font-medium text-gray-500">Resource Type</p>
-                    <p className="text-lg">{formatResourceType(resource.type)}</p>
+                {resource.daily_rate && (
+                  <div className="flex items-center space-x-2">
+                    <DollarSign className="h-4 w-4 text-gray-400" />
+                    <div>
+                      <p className="font-medium">Daily Rate</p>
+                      <p className="text-sm text-gray-600">${resource.daily_rate}</p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="text-sm font-medium text-gray-500">Capacity</p>
-                    <p className="text-lg">{resource.capacity} people</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+                )}
+              </div>
+            </div>
 
-            {resource.amenities && resource.amenities.length > 0 && (
-              <Card>
-                <CardHeader>
-                  <CardTitle>Amenities</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-                    {resource.amenities.map((amenity, index) => (
-                      <Badge key={index} variant="outline" className="justify-center">
-                        {amenity}
-                      </Badge>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
+            {resource.description && (
+              <div>
+                <h3 className="font-medium mb-2">Description</h3>
+                <p className="text-sm text-gray-600 whitespace-pre-wrap">{resource.description}</p>
+              </div>
             )}
 
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center">
-                  <DollarSign className="mr-2 h-5 w-5" />
-                  Pricing
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <div className="grid grid-cols-2 gap-4">
-                  {resource.hourly_rate && (
-                    <div className="text-center p-4 bg-gray-50 rounded-lg">
-                      <div className="text-2xl font-bold">${resource.hourly_rate}</div>
-                      <p className="text-sm text-gray-500">per hour</p>
-                    </div>
-                  )}
-                  {resource.daily_rate && (
-                    <div className="text-center p-4 bg-gray-50 rounded-lg">
-                      <div className="text-2xl font-bold">${resource.daily_rate}</div>
-                      <p className="text-sm text-gray-500">per day</p>
-                    </div>
-                  )}
+            {resource.amenities && resource.amenities.length > 0 && (
+              <div>
+                <h3 className="font-medium mb-2">Amenities</h3>
+                <div className="flex flex-wrap gap-2">
+                  {resource.amenities.map((amenity, index) => (
+                    <Badge key={index} variant="outline">{amenity}</Badge>
+                  ))}
                 </div>
-              </CardContent>
-            </Card>
-          </div>
+              </div>
+            )}
 
-          <div className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center">
-                  <Users className="mr-2 h-5 w-5" />
-                  Capacity
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{resource.capacity}</div>
-                <p className="text-sm text-gray-500">Maximum occupancy</p>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center">
-                  <Calendar className="mr-2 h-5 w-5" />
-                  Book This Resource
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <Button 
-                  className="w-full" 
-                  disabled={!resource.is_available}
-                >
-                  {resource.is_available ? "Book Now" : "Currently Unavailable"}
-                </Button>
-                <Button className="w-full" variant="outline">
-                  Check Availability
-                </Button>
-                <Button className="w-full" variant="outline">
-                  View Calendar
-                </Button>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>Resource Actions</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-2">
-                <Button className="w-full" variant="outline">
-                  Add to Favorites
-                </Button>
-                <Button className="w-full" variant="outline">
-                  Share Resource
-                </Button>
-                <Button className="w-full" variant="outline">
-                  Report Issue
-                </Button>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
+            <div className="pt-4 border-t">
+              <p className="text-xs text-gray-500">
+                Created: {new Date(resource.created_at).toLocaleString()} | 
+                Last updated: {new Date(resource.updated_at).toLocaleString()}
+              </p>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );
