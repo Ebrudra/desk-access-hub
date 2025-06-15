@@ -9,6 +9,57 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      access_codes: {
+        Row: {
+          booking_id: string
+          code: string
+          created_at: string
+          expires_at: string
+          id: string
+          is_active: boolean
+          member_id: string
+          qr_code_url: string | null
+          updated_at: string
+        }
+        Insert: {
+          booking_id: string
+          code: string
+          created_at?: string
+          expires_at: string
+          id?: string
+          is_active?: boolean
+          member_id: string
+          qr_code_url?: string | null
+          updated_at?: string
+        }
+        Update: {
+          booking_id?: string
+          code?: string
+          created_at?: string
+          expires_at?: string
+          id?: string
+          is_active?: boolean
+          member_id?: string
+          qr_code_url?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "access_codes_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: false
+            referencedRelation: "bookings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "access_codes_member_id_fkey"
+            columns: ["member_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       access_logs: {
         Row: {
           access_method: string | null
@@ -592,6 +643,53 @@ export type Database = {
           website_url?: string | null
         }
         Relationships: []
+      }
+      user_preferences: {
+        Row: {
+          created_at: string
+          default_attendees: number | null
+          default_duration: number | null
+          favorite_resources: string[] | null
+          id: string
+          notification_settings: Json | null
+          preferred_resource_types: string[] | null
+          preferred_times: string[] | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          default_attendees?: number | null
+          default_duration?: number | null
+          favorite_resources?: string[] | null
+          id?: string
+          notification_settings?: Json | null
+          preferred_resource_types?: string[] | null
+          preferred_times?: string[] | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          default_attendees?: number | null
+          default_duration?: number | null
+          favorite_resources?: string[] | null
+          id?: string
+          notification_settings?: Json | null
+          preferred_resource_types?: string[] | null
+          preferred_times?: string[] | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_preferences_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_roles: {
         Row: {

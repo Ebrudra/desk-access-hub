@@ -62,14 +62,19 @@ export const BookingPreferencesManager = () => {
     queryFn: async () => {
       if (!user?.id) return null;
       
-      const { data, error } = await supabase
-        .from("user_preferences")
-        .select("*")
-        .eq("user_id", user.id)
-        .single();
-      
-      if (error && error.code !== 'PGRST116') throw error;
-      return data;
+      try {
+        const { data, error } = await supabase
+          .from("user_preferences" as any)
+          .select("*")
+          .eq("user_id", user.id)
+          .single();
+        
+        if (error && error.code !== 'PGRST116') throw error;
+        return data;
+      } catch (error) {
+        console.error("Error fetching user preferences:", error);
+        return null;
+      }
     },
     enabled: !!user?.id,
   });
@@ -129,7 +134,7 @@ export const BookingPreferencesManager = () => {
       };
 
       const { error } = await supabase
-        .from("user_preferences")
+        .from("user_preferences" as any)
         .upsert(preferenceData, { onConflict: 'user_id' });
 
       if (error) throw error;

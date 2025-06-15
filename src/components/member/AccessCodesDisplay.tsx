@@ -27,6 +27,18 @@ interface AccessCode {
   };
 }
 
+interface Booking {
+  id: string;
+  title: string;
+  start_time: string;
+  end_time: string;
+  status: string;
+  resources: {
+    name: string;
+    location_details?: string;
+  };
+}
+
 export const AccessCodesDisplay = () => {
   const { user } = useAuth();
   const { toast } = useToast();
@@ -37,31 +49,36 @@ export const AccessCodesDisplay = () => {
     queryFn: async () => {
       if (!user?.id) return [];
       
-      const { data, error } = await supabase
-        .from("access_codes")
-        .select(`
-          id,
-          booking_id,
-          code,
-          qr_code_url,
-          expires_at,
-          is_active,
-          bookings (
-            title,
-            start_time,
-            end_time,
-            resources (
-              name,
-              location_details
+      try {
+        const { data, error } = await supabase
+          .from("access_codes" as any)
+          .select(`
+            id,
+            booking_id,
+            code,
+            qr_code_url,
+            expires_at,
+            is_active,
+            bookings (
+              title,
+              start_time,
+              end_time,
+              resources (
+                name,
+                location_details
+              )
             )
-          )
-        `)
-        .eq("member_id", user.id)
-        .gte("expires_at", new Date().toISOString())
-        .order("expires_at", { ascending: true });
-      
-      if (error) throw error;
-      return data as AccessCode[];
+          `)
+          .eq("member_id", user.id)
+          .gte("expires_at", new Date().toISOString())
+          .order("expires_at", { ascending: true });
+        
+        if (error) throw error;
+        return data as AccessCode[];
+      } catch (error) {
+        console.error("Error fetching access codes:", error);
+        return [];
+      }
     },
     enabled: !!user?.id,
   });
@@ -71,29 +88,34 @@ export const AccessCodesDisplay = () => {
     queryFn: async () => {
       if (!user?.id) return [];
       
-      const { data, error } = await supabase
-        .from("bookings")
-        .select(`
-          id,
-          title,
-          start_time,
-          end_time,
-          status,
-          resources (
-            name,
-            location_details
-          )
-        `)
-        .eq("member_id", user.id)
-        .eq("status", "confirmed")
-        .gte("start_time", new Date().toISOString())
-        .order("start_time", { ascending: true });
-      
-      if (error) throw error;
-      
-      // Filter out bookings that already have access codes
-      const existingCodeBookings = accessCodes?.map(ac => ac.booking_id) || [];
-      return data.filter(booking => !existingCodeBookings.includes(booking.id));
+      try {
+        const { data, error } = await supabase
+          .from("bookings")
+          .select(`
+            id,
+            title,
+            start_time,
+            end_time,
+            status,
+            resources (
+              name,
+              location_details
+            )
+          `)
+          .eq("member_id", user.id)
+          .eq("status", "confirmed")
+          .gte("start_time", new Date().toISOString())
+          .order("start_time", { ascending: true });
+        
+        if (error) throw error;
+        
+        // Filter out bookings that already have access codes
+        const existingCodeBookings = accessCodes?.map(ac => ac.booking_id) || [];
+        return (data as Booking[]).filter(booking => !existingCodeBookings.includes(booking.id));
+      } catch (error) {
+        console.error("Error fetching upcoming bookings:", error);
+        return [];
+      }
     },
     enabled: !!user?.id && !!accessCodes,
   });
@@ -113,7 +135,7 @@ export const AccessCodesDisplay = () => {
       expiresAt.setHours(expiresAt.getHours() + 24);
       
       const { error } = await supabase
-        .from("access_codes")
+        .from("access_codes" as any)
         .insert({
           booking_id: bookingId,
           member_id: user?.id,
