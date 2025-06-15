@@ -1,6 +1,7 @@
 
 import { Suspense, lazy, ComponentType } from "react";
-import { LoadingSkeleton } from "@/components/ui/loading-skeleton";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface LazyLoadWrapperProps {
   component: () => Promise<{ default: ComponentType<any> }>;
@@ -8,9 +9,26 @@ interface LazyLoadWrapperProps {
   [key: string]: any;
 }
 
+const DefaultSkeleton = () => (
+  <Card>
+    <CardHeader>
+      <CardTitle>
+        <Skeleton className="h-6 w-48" />
+      </CardTitle>
+    </CardHeader>
+    <CardContent>
+      <div className="space-y-3">
+        <Skeleton className="h-4 w-full" />
+        <Skeleton className="h-4 w-3/4" />
+        <Skeleton className="h-4 w-1/2" />
+      </div>
+    </CardContent>
+  </Card>
+);
+
 export const LazyLoadWrapper = ({ 
   component, 
-  fallback = <LoadingSkeleton />, 
+  fallback = <DefaultSkeleton />, 
   ...props 
 }: LazyLoadWrapperProps) => {
   const LazyComponent = lazy(component);
@@ -21,16 +39,3 @@ export const LazyLoadWrapper = ({
     </Suspense>
   );
 };
-
-// Pre-configured lazy components for common use cases
-export const LazyAnalytics = () => LazyLoadWrapper({
-  component: () => import("@/components/analytics/AdvancedMetrics")
-});
-
-export const LazyBookingForm = () => LazyLoadWrapper({
-  component: () => import("@/components/booking/EnhancedBookingForm")
-});
-
-export const LazyMemberProfile = () => LazyLoadWrapper({
-  component: () => import("@/components/member/EnhancedProfileDashboard")
-});
