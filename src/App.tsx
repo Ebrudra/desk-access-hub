@@ -25,6 +25,7 @@ import Billing from "./pages/Billing";
 import UserManagement from "./pages/UserManagement";
 import LandingPage from "./components/landing/LandingPage";
 import BlogPage from "./pages/BlogPage";
+import BlogArticle from "./pages/BlogArticle";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -52,6 +53,7 @@ const App = () => (
               <Route path="/" element={<LandingPage />} />
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/blog" element={<BlogPage />} />
+              <Route path="/blog/:id" element={<BlogArticle />} />
               <Route path="/auth" element={<Auth />} />
               <Route path="/enhanced-auth" element={<EnhancedAuth />} />
               <Route path="/auth/callback" element={<AuthCallback />} />

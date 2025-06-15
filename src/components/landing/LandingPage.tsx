@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -257,45 +256,48 @@ const LandingPage = () => {
             Transform your coworking space with AI-powered booking management, real-time analytics, 
             smart member engagement, and automated operations. Everything you need in one powerful platform.
           </p>
-
-          {/* Live Stats Demo */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-4xl mx-auto mb-8">
-            {liveFeatures.map((feature, index) => {
-              const Icon = feature.icon;
-              return (
-                <Card key={index} className="bg-white/5 border-white/10 backdrop-blur-sm">
-                  <CardContent className="p-4 text-center">
-                    <Icon className={`h-5 w-5 mx-auto mb-2 ${feature.color}`} />
-                    <div className="text-lg md:text-2xl font-bold text-white animate-pulse">
-                      {feature.value}
-                    </div>
-                    <div className="text-xs text-gray-400">{feature.label}</div>
-                  </CardContent>
-                </Card>
-              );
-            })}
-          </div>
-
-          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center max-w-md mx-auto">
-            <Input
-              type="email"
-              placeholder="Enter your email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="bg-white/10 border-white/20 text-white placeholder:text-gray-400"
-            />
-            <Button 
-              className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 w-full sm:w-auto"
-              asChild
-            >
-              <Link to="/auth">
-                Get Started <ArrowRight className="ml-2 h-4 w-4" />
-              </Link>
-            </Button>
-          </div>
-          <p className="text-sm text-gray-400 mt-4">
-            Free 14-day trial • No credit card required • Full feature access
-          </p>
+          {!user ? (
+            <>
+              <div className="flex flex-col sm:flex-row gap-4 justify-center items-center max-w-md mx-auto">
+                <Input
+                  type="email"
+                  placeholder="Enter your email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="bg-white/10 border-white/20 text-white placeholder:text-gray-400"
+                />
+                <Button 
+                  className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 w-full sm:w-auto"
+                  asChild
+                >
+                  <Link to="/auth">
+                    Start my trial now <ArrowRight className="ml-2 h-4 w-4" />
+                  </Link>
+                </Button>
+              </div>
+              <p className="text-sm text-gray-400 mt-4">
+                Free 14-day trial • No credit card required • Full feature access
+              </p>
+            </>
+          ) : (
+            <>
+              <div className="flex flex-col sm:flex-row gap-4 justify-center items-center max-w-md mx-auto">
+                <Button
+                  className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 w-full sm:w-auto"
+                  asChild
+                >
+                  <Link to="/dashboard">
+                    Take me to the Dashboard <ArrowRight className="ml-2 h-4 w-4" />
+                  </Link>
+                </Button>
+                <Button variant="outline" className="w-full sm:w-auto" asChild>
+                  <a href="https://www.youtube.com/watch?v=dQw4w9WgXcQ" target="_blank" rel="noopener noreferrer">
+                    Watch Tutorials
+                  </a>
+                </Button>
+              </div>
+            </>
+          )}
         </div>
       </section>
 
@@ -314,25 +316,51 @@ const LandingPage = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {features.map((feature, index) => {
               const Icon = feature.icon;
+              // Micro-animation classes: beam + hover icon BG on card
+              // We'll use group/hover: pseudo selectors plus a basic cursor-follow beam via mouse events for demo
               return (
-                <Card key={index} className="bg-white/5 border-white/10 backdrop-blur-sm hover:bg-white/10 transition-all duration-300 group">
-                  <CardHeader>
-                    <div className="flex items-center justify-between mb-4">
-                      <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform">
-                        <Icon className="h-6 w-6 text-white" />
+                <div
+                  key={index}
+                  className="relative group"
+                >
+                  <Card className="bg-white/5 border-white/10 backdrop-blur-sm hover:bg-white/10 transition-all duration-300 group hover-scale overflow-hidden"
+                    style={{ minHeight: "260px" }}
+                  >
+                    {/* Light beam animation */}
+                    <div className="pointer-events-none absolute left-1/2 top-1/2 w-60 h-16 opacity-0 group-hover:opacity-60 group-hover:animate-fade-in blur-2xl rounded-full"
+                      style={{
+                        background: "radial-gradient(ellipse at center, #A78BFA77 0%, transparent 80%)",
+                        transform: "translate(-50%, -50%)"
+                      }}
+                    />
+                    {/* Animated calendar icon for Unified Calendar feature */}
+                    {feature.title === "Unified Calendar System" && (
+                      <Calendar className="absolute right-4 bottom-2 text-blue-400/20 group-hover:text-blue-500/40 w-24 h-24 transition-all duration-500 pointer-events-none" style={{zIndex:0}} />
+                    )}
+                    {/* Animated Zap for Real-time Booking */}
+                    {feature.title === "Real-time Booking Management" && (
+                      <Zap className="absolute left-0 bottom-0 text-yellow-300/10 group-hover:text-yellow-300/30 w-28 h-28 transition-all duration-500 pointer-events-none" style={{zIndex:0}} />
+                    )}
+                    {/* Choose suitable animated background icons for others as needed */}
+
+                    <CardHeader>
+                      <div className="flex items-center justify-between mb-4">
+                        <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform relative z-10">
+                          <Icon className="h-6 w-6 text-white" />
+                        </div>
+                        <Badge variant="outline" className="text-xs border-white/20 text-white z-10">
+                          {feature.highlight}
+                        </Badge>
                       </div>
-                      <Badge variant="outline" className="text-xs border-white/20 text-white">
-                        {feature.highlight}
-                      </Badge>
-                    </div>
-                    <CardTitle className="text-white text-lg">{feature.title}</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <CardDescription className="text-gray-300 text-sm leading-relaxed">
-                      {feature.description}
-                    </CardDescription>
-                  </CardContent>
-                </Card>
+                      <CardTitle className="text-white text-lg z-10 relative">{feature.title}</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <CardDescription className="text-gray-300 text-sm leading-relaxed z-10 relative">
+                        {feature.description}
+                      </CardDescription>
+                    </CardContent>
+                  </Card>
+                </div>
               );
             })}
           </div>
