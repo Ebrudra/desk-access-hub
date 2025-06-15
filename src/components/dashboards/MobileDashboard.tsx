@@ -8,6 +8,10 @@ import { GlobalSearch } from "@/components/search/GlobalSearch";
 import { MobileTabNavigation } from "@/components/ui/mobile-tab-navigation";
 import { useAuthRole } from "@/hooks/useAuthRole";
 import { useSearchParams } from "react-router-dom";
+import { BookingCalendar } from "@/components/BookingCalendar";
+import { SmartBookingDashboard } from "@/components/booking/SmartBookingDashboard";
+import { AnalyticsDashboard } from "@/components/analytics/AnalyticsDashboard";
+import { CrudManagement } from "@/components/crud/CrudManagement";
 import { 
   Calendar, 
   Users, 
@@ -52,23 +56,35 @@ export const MobileDashboard = () => {
       label: "Book Space",
       description: "Reserve a workspace",
       color: "bg-blue-500",
-      action: () => console.log("Book space"),
-      available: hasRole('member')
+      action: () => {
+        const params = new URLSearchParams(searchParams);
+        params.set('tab', 'smart-booking');
+        setSearchParams(params);
+      },
+      available: true
     },
     {
       icon: Calendar,
       label: "My Bookings",
       description: "View reservations",
       color: "bg-green-500",
-      action: () => console.log("View bookings"),
-      available: hasRole('member')
+      action: () => {
+        const params = new URLSearchParams(searchParams);
+        params.set('tab', 'calendar');
+        setSearchParams(params);
+      },
+      available: true
     },
     {
       icon: BarChart3,
       label: "Analytics",
       description: "Performance data",
       color: "bg-purple-500",
-      action: () => console.log("View analytics"),
+      action: () => {
+        const params = new URLSearchParams(searchParams);
+        params.set('tab', 'analytics');
+        setSearchParams(params);
+      },
       available: hasRole('manager')
     },
     {
@@ -76,7 +92,11 @@ export const MobileDashboard = () => {
       label: "Members",
       description: "Manage users",
       color: "bg-orange-500",
-      action: () => console.log("Manage members"),
+      action: () => {
+        const params = new URLSearchParams(searchParams);
+        params.set('tab', 'crud');
+        setSearchParams(params);
+      },
       available: hasRole('manager')
     }
   ];
@@ -222,32 +242,45 @@ export const MobileDashboard = () => {
       case "calendar":
         return (
           <div className="p-4">
-            <Card className="rounded-xl">
-              <CardContent className="p-6">
-                <h2 className="text-xl font-semibold mb-4">Calendar View</h2>
-                <p className="text-gray-600">Calendar functionality will be displayed here.</p>
-              </CardContent>
-            </Card>
+            <BookingCalendar />
           </div>
         );
       case "smart-booking":
         return (
           <div className="p-4">
-            <Card className="rounded-xl">
-              <CardContent className="p-6">
-                <h2 className="text-xl font-semibold mb-4">Smart Booking</h2>
-                <p className="text-gray-600">AI-powered booking suggestions will be displayed here.</p>
-              </CardContent>
-            </Card>
+            <SmartBookingDashboard />
           </div>
         );
       case "analytics":
         return (
           <div className="p-4">
+            <AnalyticsDashboard />
+          </div>
+        );
+      case "crud":
+        return (
+          <div className="p-4">
+            <CrudManagement />
+          </div>
+        );
+      case "spaces":
+        return (
+          <div className="p-4">
             <Card className="rounded-xl">
               <CardContent className="p-6">
-                <h2 className="text-xl font-semibold mb-4">Analytics</h2>
-                <p className="text-gray-600">Performance metrics will be displayed here.</p>
+                <h2 className="text-xl font-semibold mb-4">Spaces Management</h2>
+                <p className="text-gray-600">Space management functionality will be displayed here.</p>
+              </CardContent>
+            </Card>
+          </div>
+        );
+      case "members":
+        return (
+          <div className="p-4">
+            <Card className="rounded-xl">
+              <CardContent className="p-6">
+                <h2 className="text-xl font-semibold mb-4">Members Management</h2>
+                <p className="text-gray-600">Member management functionality will be displayed here.</p>
               </CardContent>
             </Card>
           </div>

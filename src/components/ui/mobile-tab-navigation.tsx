@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { useState } from "react";
 
 interface Tab {
   value: string;
@@ -45,6 +46,8 @@ const iconMap = {
 };
 
 export const MobileTabNavigation = ({ tabs, currentTab, onTabChange }: MobileTabNavigationProps) => {
+  const [isSheetOpen, setIsSheetOpen] = useState(false);
+  
   // Show first 4 tabs directly, rest in overflow menu
   const visibleTabs = tabs.slice(0, 4);
   const overflowTabs = tabs.slice(4);
@@ -70,6 +73,11 @@ export const MobileTabNavigation = ({ tabs, currentTab, onTabChange }: MobileTab
     );
   };
 
+  const handleOverflowTabClick = (tabValue: string) => {
+    onTabChange(tabValue);
+    setIsSheetOpen(false);
+  };
+
   return (
     <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-50">
       <div className="flex items-center">
@@ -84,7 +92,7 @@ export const MobileTabNavigation = ({ tabs, currentTab, onTabChange }: MobileTab
         
         {/* Overflow menu */}
         {overflowTabs.length > 0 && (
-          <Sheet>
+          <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
             <SheetTrigger asChild>
               <Button
                 variant="ghost"
@@ -114,7 +122,7 @@ export const MobileTabNavigation = ({ tabs, currentTab, onTabChange }: MobileTab
                           key={tab.value}
                           variant={isActive ? "default" : "outline"}
                           className="flex items-center justify-start h-14 px-4"
-                          onClick={() => onTabChange(tab.value)}
+                          onClick={() => handleOverflowTabClick(tab.value)}
                         >
                           <IconComponent className="h-5 w-5 mr-3" />
                           <span className="font-medium">{tab.label}</span>
