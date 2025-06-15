@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -5,6 +6,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { EnhancedErrorBoundary } from "@/components/ui/enhanced-error-boundary";
+import { ThemeProvider } from "@/contexts/ThemeContext";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import AuthCallback from "./pages/AuthCallback";
@@ -38,128 +40,130 @@ const queryClient = new QueryClient({
 
 const App = () => (
   <EnhancedErrorBoundary>
-    <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <Routes>
-            <Route path="/" element={<Index />} />
-            <Route path="/auth" element={<Auth />} />
-            <Route path="/enhanced-auth" element={<EnhancedAuth />} />
-            <Route path="/auth/callback" element={<AuthCallback />} />
-            <Route path="/pricing" element={<Pricing />} />
-            <Route path="/payment-success" element={<PaymentSuccess />} />
-            <Route path="/payment-canceled" element={<PaymentCanceled />} />
-            <Route 
-              path="/billing" 
-              element={
-                <ProtectedRoute>
-                  <Billing />
-                </ProtectedRoute>
-              } 
-            />
-            <Route 
-              path="/bookings/new" 
-              element={
-                <ProtectedRoute>
-                  <NewBooking />
-                </ProtectedRoute>
-              } 
-            />
-            <Route 
-              path="/members/new" 
-              element={
-                <ProtectedRoute>
-                  <NewMember />
-                </ProtectedRoute>
-              } 
-            />
-            <Route 
-              path="/bookings/:id" 
-              element={
-                <ProtectedRoute>
-                  <BookingDetail />
-                </ProtectedRoute>
-              } 
-            />
-            <Route 
-              path="/members/:id" 
-              element={
-                <ProtectedRoute>
-                  <MemberDetail />
-                </ProtectedRoute>
-              } 
-            />
-            <Route 
-              path="/events/:id" 
-              element={
-                <ProtectedRoute>
-                  <EventDetail />
-                </ProtectedRoute>
-              } 
-            />
-            <Route 
-              path="/spaces/:id" 
-              element={
-                <ProtectedRoute>
-                  <SpaceDetail />
-                </ProtectedRoute>
-              } 
-            />
-            <Route 
-              path="/resources/:id" 
-              element={
-                <ProtectedRoute>
-                  <ResourceDetail />
-                </ProtectedRoute>
-              } 
-            />
-            <Route 
-              path="/crud/bookings/:id" 
-              element={
-                <ProtectedRoute>
-                  <BookingDetail />
-                </ProtectedRoute>
-              } 
-            />
-            <Route 
-              path="/crud/members/:id" 
-              element={
-                <ProtectedRoute>
-                  <MemberDetail />
-                </ProtectedRoute>
-              } 
-            />
-            <Route 
-              path="/crud/events/:id" 
-              element={
-                <ProtectedRoute>
-                  <EventDetail />
-                </ProtectedRoute>
-              } 
-            />
-            <Route 
-              path="/crud/spaces/:id" 
-              element={
-                <ProtectedRoute>
-                  <SpaceDetail />
-                </ProtectedRoute>
-              } 
-            />
-            <Route 
-              path="/crud/resources/:id" 
-              element={
-                <ProtectedRoute>
-                  <ResourceDetail />
-                </ProtectedRoute>
-              } 
-            />
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </BrowserRouter>
-      </TooltipProvider>
-    </QueryClientProvider>
+    <ThemeProvider defaultTheme="system" defaultColorScheme="default">
+      <QueryClientProvider client={queryClient}>
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
+          <BrowserRouter>
+            <Routes>
+              <Route path="/" element={<Index />} />
+              <Route path="/auth" element={<Auth />} />
+              <Route path="/enhanced-auth" element={<EnhancedAuth />} />
+              <Route path="/auth/callback" element={<AuthCallback />} />
+              <Route path="/pricing" element={<Pricing />} />
+              <Route path="/payment-success" element={<PaymentSuccess />} />
+              <Route path="/payment-canceled" element={<PaymentCanceled />} />
+              <Route 
+                path="/billing" 
+                element={
+                  <ProtectedRoute>
+                    <Billing />
+                  </ProtectedRoute>
+                } 
+              />
+              <Route 
+                path="/bookings/new" 
+                element={
+                  <ProtectedRoute>
+                    <NewBooking />
+                  </ProtectedRoute>
+                } 
+              />
+              <Route 
+                path="/members/new" 
+                element={
+                  <ProtectedRoute>
+                    <NewMember />
+                  </ProtectedRoute>
+                } 
+              />
+              <Route 
+                path="/bookings/:id" 
+                element={
+                  <ProtectedRoute>
+                    <BookingDetail />
+                  </ProtectedRoute>
+                } 
+              />
+              <Route 
+                path="/members/:id" 
+                element={
+                  <ProtectedRoute>
+                    <MemberDetail />
+                  </ProtectedRoute>
+                } 
+              />
+              <Route 
+                path="/events/:id" 
+                element={
+                  <ProtectedRoute>
+                    <EventDetail />
+                  </ProtectedRoute>
+                } 
+              />
+              <Route 
+                path="/spaces/:id" 
+                element={
+                  <ProtectedRoute>
+                    <SpaceDetail />
+                  </ProtectedRoute>
+                } 
+              />
+              <Route 
+                path="/resources/:id" 
+                element={
+                  <ProtectedRoute>
+                    <ResourceDetail />
+                  </ProtectedRoute>
+                } 
+              />
+              <Route 
+                path="/crud/bookings/:id" 
+                element={
+                  <ProtectedRoute>
+                    <BookingDetail />
+                  </ProtectedRoute>
+                } 
+              />
+              <Route 
+                path="/crud/members/:id" 
+                element={
+                  <ProtectedRoute>
+                    <MemberDetail />
+                  </ProtectedRoute>
+                } 
+              />
+              <Route 
+                path="/crud/events/:id" 
+                element={
+                  <ProtectedRoute>
+                    <EventDetail />
+                  </ProtectedRoute>
+                } 
+              />
+              <Route 
+                path="/crud/spaces/:id" 
+                element={
+                  <ProtectedRoute>
+                    <SpaceDetail />
+                  </ProtectedRoute>
+                } 
+              />
+              <Route 
+                path="/crud/resources/:id" 
+                element={
+                  <ProtectedRoute>
+                    <ResourceDetail />
+                  </ProtectedRoute>
+                } 
+              />
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </BrowserRouter>
+        </TooltipProvider>
+      </QueryClientProvider>
+    </ThemeProvider>
   </EnhancedErrorBoundary>
 );
 

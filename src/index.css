@@ -45,6 +45,46 @@
     --sidebar-ring: 210 100% 50%;
   }
 
+  /* Blue Color Scheme */
+  .theme-blue {
+    --primary: 217 91% 60%;
+    --primary-foreground: 0 0% 98%;
+    --accent: 217 91% 60%;
+    --ring: 217 91% 60%;
+    --sidebar-primary: 217 91% 60%;
+    --sidebar-ring: 217 91% 60%;
+  }
+
+  /* Green Color Scheme */
+  .theme-green {
+    --primary: 142 76% 36%;
+    --primary-foreground: 0 0% 98%;
+    --accent: 142 76% 36%;
+    --ring: 142 76% 36%;
+    --sidebar-primary: 142 76% 36%;
+    --sidebar-ring: 142 76% 36%;
+  }
+
+  /* Purple Color Scheme */
+  .theme-purple {
+    --primary: 262 83% 58%;
+    --primary-foreground: 0 0% 98%;
+    --accent: 262 83% 58%;
+    --ring: 262 83% 58%;
+    --sidebar-primary: 262 83% 58%;
+    --sidebar-ring: 262 83% 58%;
+  }
+
+  /* Orange Color Scheme */
+  .theme-orange {
+    --primary: 25 95% 53%;
+    --primary-foreground: 0 0% 98%;
+    --accent: 25 95% 53%;
+    --ring: 25 95% 53%;
+    --sidebar-primary: 25 95% 53%;
+    --sidebar-ring: 25 95% 53%;
+  }
+
   .dark {
     --background: 222.2 84% 4.9%;
     --foreground: 210 40% 98%;
@@ -82,6 +122,39 @@
     --sidebar-border: 240 3.7% 15.9%;
     --sidebar-ring: 210 100% 60%;
   }
+
+  /* Dark theme color schemes */
+  .dark.theme-blue {
+    --primary: 217 91% 70%;
+    --accent: 217 91% 70%;
+    --ring: 217 91% 70%;
+    --sidebar-primary: 217 91% 70%;
+    --sidebar-ring: 217 91% 70%;
+  }
+
+  .dark.theme-green {
+    --primary: 142 76% 46%;
+    --accent: 142 76% 46%;
+    --ring: 142 76% 46%;
+    --sidebar-primary: 142 76% 46%;
+    --sidebar-ring: 142 76% 46%;
+  }
+
+  .dark.theme-purple {
+    --primary: 262 83% 68%;
+    --accent: 262 83% 68%;
+    --ring: 262 83% 68%;
+    --sidebar-primary: 262 83% 68%;
+    --sidebar-ring: 262 83% 68%;
+  }
+
+  .dark.theme-orange {
+    --primary: 25 95% 63%;
+    --accent: 25 95% 63%;
+    --ring: 25 95% 63%;
+    --sidebar-primary: 25 95% 63%;
+    --sidebar-ring: 25 95% 63%;
+  }
 }
 
 @layer base {
@@ -91,6 +164,7 @@
 
   body {
     @apply bg-background text-foreground;
+    font-feature-settings: "rlig" 1, "calt" 1;
   }
 }
 
@@ -121,5 +195,10 @@
   @keyframes slideUp {
     from { opacity: 0; transform: translateY(10px); }
     to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* Theme transition animations */
+  * {
+    transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
   }
 }
