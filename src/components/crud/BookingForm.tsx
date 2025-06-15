@@ -10,16 +10,28 @@ import { BookingSelectors } from "@/components/forms/BookingSelectors";
 import { BookingDateTime } from "@/components/forms/BookingDateTime";
 import { BookingSpecialRequests } from "@/components/forms/BookingSpecialRequests";
 
+// Define type for booking form data so it can be referenced in props and state
+export interface BookingFormData {
+  title: string;
+  description: string;
+  resource_id: string;
+  member_id: string;
+  start_time: string;
+  end_time: string;
+  attendees: number;
+  special_requests: string;
+}
+
 interface BookingFormProps {
   bookingId?: string;
   onSuccess?: () => void;
-  prefill?: Partial<typeof formData>;
+  prefill?: Partial<BookingFormData>;
 }
 
 export const BookingForm = ({ bookingId, onSuccess, prefill }: BookingFormProps) => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<BookingFormData>({
     title: prefill?.title || "",
     description: prefill?.description || "",
     resource_id: prefill?.resource_id || "",

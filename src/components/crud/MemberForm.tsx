@@ -9,16 +9,29 @@ import { Users } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
+// Define type for member form data so it can be referenced in props and state
+export interface MemberFormData {
+  member_id: string;
+  space_id: string;
+  membership_tier: string;
+  membership_status: string;
+  monthly_rate: string;
+  start_date: string;
+  end_date: string;
+  access_code: string;
+  rfid_card_id: string;
+}
+
 interface MemberFormProps {
   memberId?: string;
   onSuccess?: () => void;
-  prefill?: Partial<typeof formData>;
+  prefill?: Partial<MemberFormData>;
 }
 
 export const MemberForm = ({ memberId, onSuccess, prefill }: MemberFormProps) => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<MemberFormData>({
     member_id: prefill?.member_id || "",
     space_id: prefill?.space_id || "",
     membership_tier: prefill?.membership_tier || "basic",
