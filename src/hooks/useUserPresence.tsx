@@ -15,11 +15,17 @@ export const useUserPresence = (channelName: string = 'workspace') => {
   const { user } = useAuth();
   const [presenceState, setPresenceState] = useState<Record<string, UserPresence[]>>({});
   const [isOnline, setIsOnline] = useState(false);
+  const [channel, setChannel] = useState<any>(null);
 
   useEffect(() => {
     if (!user) return;
 
-    const channel = supabase.channel(channelName);
+    // Clean up existing channel if it exists
+    if (channel) {
+      supabase.removeChannel(channel);
+    }
+
+    const newChannel = supabase.channel(channelName);
 
     const userStatus: UserPresence = {
       user_id: user.id,
@@ -30,13 +36,25 @@ export const useUserPresence = (channelName: string = 'workspace') => {
     };
 
     // Track presence
-    channel
+    newChannel
       .on('presence', { event: 'sync' }, () => {
-        const newState = channel.presenceState();
+        const newState = newChannel.presenceState();
+        console.log('Presence sync state:', newState);
+        
         // Transform the presence state to match our expected type
         const transformedState: Record<string, UserPresence[]> = {};
         Object.entries(newState).forEach(([key, presences]) => {
-          transformedState[key] = presences as UserPresence[];
+          // Each presence array contains the actual tracked data
+          if (Array.isArray(presences) && presences.length > 0) {
+            // Filter out any presences that don't have our expected structure
+            const validPresences = presences.filter((p: any) => 
+              p && typeof p === 'object' && p.user_id && p.user_email
+            ) as UserPresence[];
+            
+            if (validPresences.length > 0) {
+              transformedState[key] = validPresences;
+            }
+          }
         });
         setPresenceState(transformedState);
       })
@@ -47,27 +65,35 @@ export const useUserPresence = (channelName: string = 'workspace') => {
         console.log('User left:', key, leftPresences);
       })
       .subscribe(async (status) => {
+        console.log('Channel subscription status:', status);
         if (status === 'SUBSCRIBED') {
-          const presenceTrackStatus = await channel.track(userStatus);
+          const presenceTrackStatus = await newChannel.track(userStatus);
+          console.log('Presence track status:', presenceTrackStatus);
           setIsOnline(presenceTrackStatus === 'ok');
         }
       });
 
+    setChannel(newChannel);
+
     // Update presence when page changes
     const handlePageChange = () => {
-      channel.track({
-        ...userStatus,
-        current_page: window.location.pathname,
-        last_seen: new Date().toISOString(),
-      });
+      if (newChannel) {
+        newChannel.track({
+          ...userStatus,
+          current_page: window.location.pathname,
+          last_seen: new Date().toISOString(),
+        });
+      }
     };
 
     // Update presence periodically
     const interval = setInterval(() => {
-      channel.track({
-        ...userStatus,
-        last_seen: new Date().toISOString(),
-      });
+      if (newChannel) {
+        newChannel.track({
+          ...userStatus,
+          last_seen: new Date().toISOString(),
+        });
+      }
     }, 30000); // Every 30 seconds
 
     window.addEventListener('popstate', handlePageChange);
@@ -75,7 +101,9 @@ export const useUserPresence = (channelName: string = 'workspace') => {
     return () => {
       window.removeEventListener('popstate', handlePageChange);
       clearInterval(interval);
-      supabase.removeChannel(channel);
+      if (newChannel) {
+        supabase.removeChannel(newChannel);
+      }
     };
   }, [user, channelName]);
 
