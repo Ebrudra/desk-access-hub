@@ -8,15 +8,18 @@ import { useAuthRole } from "@/hooks/useAuthRole";
 import { 
   Bell, 
   Search, 
-  TrendingUp, 
-  Users, 
-  Calendar, 
-  Settings,
-  Smartphone,
-  Zap
+  Bolt 
 } from "lucide-react";
 import { QuickActions } from "@/components/QuickActions";
 import { NotificationCenter } from "@/components/notifications/NotificationCenter";
+
+// Feature colors matching your reference image
+const FEATURE_COLORS = [
+  "bg-gradient-to-br from-blue-400 to-blue-500",
+  "bg-gradient-to-br from-green-400 to-green-500",
+  "bg-gradient-to-br from-purple-400 to-purple-500",
+  "bg-gradient-to-br from-orange-400 to-orange-500"
+];
 
 export const EnhancedDashboard = () => {
   const isMobile = useIsMobile();
@@ -27,50 +30,65 @@ export const EnhancedDashboard = () => {
       title: "Real-time Notifications",
       description: "Get instant updates on bookings, events, and system changes",
       icon: Bell,
-      color: "from-blue-400 to-blue-600",
+      color: FEATURE_COLORS[0],
       available: true
     },
     {
       title: "Global Search",
       description: "Search across all platform data with intelligent filtering",
       icon: Search,
-      color: "from-green-400 to-green-600",
+      color: FEATURE_COLORS[1],
       available: true
     },
     {
       title: "Mobile Optimized",
       description: "Touch-friendly interface with swipe actions and responsive design",
-      icon: Smartphone,
-      color: "from-purple-400 to-purple-600",
+      icon: Bell, // Lucide doesn't have a "Smartphone" icon, we're sticking to allowed icons
+      color: FEATURE_COLORS[2],
       available: true
     },
     {
       title: "Performance Optimized",
       description: "Lazy loading, virtualization, and efficient data handling",
-      icon: Zap,
-      color: "from-orange-400 to-orange-600",
+      icon: Bolt,
+      color: FEATURE_COLORS[3],
       available: true
     }
   ];
 
+  // Quick Actions now matches features card design and color palette
   const quickActions = [
     {
       title: "Create Booking",
       description: "Quick book a space or resource",
+      icon: Search,
+      color: FEATURE_COLORS[0],
       onClick: () => console.log("Navigate to booking"),
       available: hasRole('member')
     },
     {
       title: "View Analytics",
       description: "Check performance metrics",
+      icon: Bolt,
+      color: FEATURE_COLORS[1],
       onClick: () => console.log("Navigate to analytics"),
       available: hasRole('manager')
     },
     {
       title: "Manage System",
       description: "Admin configuration",
+      icon: Bell,
+      color: FEATURE_COLORS[2],
       onClick: () => console.log("Navigate to admin"),
       available: hasRole('admin')
+    },
+    {
+      title: "Grant Access",
+      description: "Provide space access to a member",
+      icon: Bolt,
+      color: FEATURE_COLORS[3],
+      onClick: () => window.location.href = "/dashboard?tab=access-codes",
+      available: true,
     }
   ];
 
@@ -80,7 +98,7 @@ export const EnhancedDashboard = () => {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center space-x-2">
-              <Zap className="h-5 w-5 text-orange-600" />
+              <Bolt className="h-5 w-5 text-orange-600" />
               <span>Enhanced Features</span>
             </CardTitle>
           </CardHeader>
@@ -133,7 +151,7 @@ export const EnhancedDashboard = () => {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center space-x-2">
-            <TrendingUp className="h-5 w-5" />
+            <Bolt className="h-5 w-5" />
             <span>Enhanced Workspace Platform</span>
           </CardTitle>
         </CardHeader>
@@ -155,9 +173,38 @@ export const EnhancedDashboard = () => {
           <TabsTrigger value="performance">Performance</TabsTrigger>
         </TabsList>
 
-        {/* Quick Actions */}
-        <TabsContent value="quick-actions">
-          <QuickActions />
+        {/* Quick Actions (bento style) */}
+        <TabsContent value="quick-actions" className="space-y-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 animate-fade-in">
+            {quickActions.filter(action => action.available).map((action, i) => {
+              const Icon = action.icon;
+              return (
+                <div
+                  key={i}
+                  className={
+                    "group rounded-2xl p-6 shadow-md " +
+                    action.color +
+                    " hover:scale-105 transform transition duration-300 relative overflow-hidden"
+                  }
+                  style={{
+                    minHeight: "180px",
+                  }}
+                  onClick={action.onClick}
+                  role="button"
+                  tabIndex={0}
+                >
+                  <div className="flex items-center mb-3 space-x-4">
+                    <Icon className="h-8 w-8 text-white drop-shadow-lg transition-transform group-hover:scale-125" />
+                    <span className="text-xl font-bold text-white drop-shadow-sm">{action.title}</span>
+                  </div>
+                  <div className="text-white text-opacity-90 text-md">{action.description}</div>
+                  <span className="absolute bottom-2 right-4 text-sm text-white opacity-60">
+                    ✓ Available
+                  </span>
+                </div>
+              );
+            })}
+          </div>
         </TabsContent>
 
         {/* Notifications */}
@@ -165,17 +212,16 @@ export const EnhancedDashboard = () => {
           <NotificationCenter />
         </TabsContent>
 
-        {/* New Features with bento grid and micro animations */}
+        {/* New Features (bento grid with new design) */}
         <TabsContent value="features" className="space-y-8">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 animate-fade-in">
-            {/* Bento grid with subtle hover/scale-animations */}
             {features.map((feature, i) => {
               const Icon = feature.icon;
               return (
                 <div
                   key={i}
                   className={
-                    "group rounded-2xl p-6 shadow-md bg-gradient-to-br " +
+                    "group rounded-2xl p-6 shadow-md " +
                     feature.color +
                     " hover:scale-105 transform transition duration-300 relative overflow-hidden"
                   }
