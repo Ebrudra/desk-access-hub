@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -57,7 +56,7 @@ export const BookingCalendar = ({ expanded = false }: BookingCalendarProps) => {
   }
 
   return (
-    <Card className={expanded ? "col-span-full" : ""}>
+    <Card className={expanded ? "col-span-full h-full" : "h-full"}>
       <CardHeader>
         <div className="flex items-center justify-between">
           <div>
@@ -72,9 +71,12 @@ export const BookingCalendar = ({ expanded = false }: BookingCalendarProps) => {
           </Button>
         </div>
       </CardHeader>
-      <CardContent>
-        <div className={`grid ${expanded ? 'grid-cols-1 lg:grid-cols-2' : 'grid-cols-1'} gap-6 h-full`}>
-          <div className="rounded-md border w-full h-full flex flex-col"> {/* updated: fill parent, use flex to allow children to grow */}
+      <CardContent className="h-full flex flex-col">
+        <div
+          className={`grid ${expanded ? "grid-cols-1 lg:grid-cols-2" : "grid-cols-1"} gap-6 h-full min-h-[550px]`}
+          style={{ minHeight: 400 }}
+        >
+          <div className="rounded-md border w-full h-full flex flex-col">
             <Calendar
               mode="single"
               selected={selectedDate}
@@ -82,16 +84,16 @@ export const BookingCalendar = ({ expanded = false }: BookingCalendarProps) => {
               className="rounded-md border flex-1 w-full h-full"
               modifiers={{
                 hasBooking: datesWithBookings,
-                today: [new Date()]
+                today: [new Date()],
               }}
               modifiersClassNames={{
                 hasBooking: "bg-blue-100 text-blue-900 font-semibold",
-                today: "bg-orange-100 text-orange-900"
+                today: "bg-orange-100 text-orange-900",
               }}
             />
           </div>
-          
-          <div>
+
+          <div className="flex flex-col h-full">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-semibold">
                 {isToday(selectedDate) ? "Today's Bookings" : format(selectedDate, "PPP")}
@@ -100,8 +102,8 @@ export const BookingCalendar = ({ expanded = false }: BookingCalendarProps) => {
                 {selectedDateBookings.length} bookings
               </Badge>
             </div>
-            
-            <div className="space-y-3 max-h-96 overflow-y-auto">
+
+            <div className="space-y-3 flex-1 overflow-y-auto">
               {selectedDateBookings.length === 0 ? (
                 <div className="text-center py-8 text-gray-500">
                   <Calendar className="mx-auto h-8 w-8 mb-2 opacity-50" />
