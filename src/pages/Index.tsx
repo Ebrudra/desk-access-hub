@@ -10,6 +10,9 @@ import { CrudManagement } from "@/components/crud/CrudManagement";
 import { MobileTabNavigation } from "@/components/ui/mobile-tab-navigation";
 import { RoleManagement } from "@/components/RoleManagement";
 import { RoleDashboardRenderer } from "@/components/RoleDashboardRenderer";
+import { EnhancedDashboard } from "@/components/dashboards/EnhancedDashboard";
+import { MobileDashboard } from "@/components/dashboards/MobileDashboard";
+import { RealtimeNotifications } from "@/components/notifications/RealtimeNotifications";
 import { useSearchParams } from "react-router-dom";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useAuthRole } from "@/hooks/useAuthRole";
@@ -35,7 +38,8 @@ const Index = () => {
         { value: "smart-booking", label: "Smart Booking", icon: "Brain" },
         { value: "bookings", label: "My Bookings", icon: "Calendar" },
         { value: "spaces", label: "Browse Spaces", icon: "Building2" },
-        { value: "access-codes", label: "Access Codes", icon: "KeyRound" }
+        { value: "access-codes", label: "Access Codes", icon: "KeyRound" },
+        { value: "notifications", label: "Notifications", icon: "Bell" }
       );
     }
 
@@ -53,7 +57,8 @@ const Index = () => {
       baseTabs.push(
         { value: "crud", label: "Management", icon: "Settings" },
         { value: "roles", label: "Roles", icon: "Shield" },
-        { value: "analytics", label: "Analytics", icon: "BarChart3" }
+        { value: "analytics", label: "Analytics", icon: "BarChart3" },
+        { value: "enhanced", label: "Enhanced Features", icon: "Zap" }
       );
     }
 
@@ -65,7 +70,11 @@ const Index = () => {
   const renderTabContent = (tabValue: string) => {
     switch (tabValue) {
       case "dashboard":
-        return <RoleDashboardRenderer />;
+        return isMobile ? <MobileDashboard /> : <RoleDashboardRenderer />;
+      case "enhanced":
+        return <EnhancedDashboard />;
+      case "notifications":
+        return <RealtimeNotifications />;
       case "smart-booking":
         return hasRole('member') ? <SmartBookingDashboard /> : <div>Access denied</div>;
       case "analytics":
