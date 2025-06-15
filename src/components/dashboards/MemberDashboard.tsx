@@ -15,19 +15,27 @@ export const MemberDashboard = () => {
   const { data: userBookings } = useQuery({
     queryKey: ["user-bookings", user?.id],
     queryFn: async () => {
+      if (!user?.id) return [];
+      
       const { data, error } = await supabase
         .from("bookings")
         .select(`
-          *,
-          resources (name, type)
+          id,
+          start_time,
+          end_time,
+          status,
+          resources (
+            name,
+            type
+          )
         `)
-        .eq("user_id", user?.id)
+        .eq("member_id", user.id)
         .gte("start_time", new Date().toISOString())
         .order("start_time", { ascending: true })
         .limit(3);
       
       if (error) throw error;
-      return data;
+      return data || [];
     },
     enabled: !!user?.id,
   });

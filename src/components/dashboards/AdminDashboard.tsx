@@ -1,4 +1,3 @@
-
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useSearchParams } from "react-router-dom";
@@ -20,7 +19,7 @@ export const AdminDashboard = () => {
       ]);
 
       const totalRevenue = bookingsRes.data?.reduce((sum, booking) => {
-        return sum + (booking.total_price || 0);
+        return sum + (booking.total_amount || 0);
       }, 0) || 0;
 
       const thisMonth = new Date();
@@ -33,7 +32,7 @@ export const AdminDashboard = () => {
 
       return {
         totalRevenue,
-        monthlyRevenue: monthlyBookings.reduce((sum, b) => sum + (b.total_price || 0), 0),
+        monthlyRevenue: monthlyBookings.reduce((sum, b) => sum + (b.total_amount || 0), 0),
         totalMembers: membersRes.data?.length || 0,
         totalSpaces: resourcesRes.data?.length || 0,
         totalBookings: bookingsRes.data?.length || 0,
