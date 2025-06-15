@@ -53,7 +53,7 @@ export const BookingPreferencesManager = () => {
         .eq("is_available", true);
       
       if (error) throw error;
-      return data;
+      return data || [];
     }
   });
 
@@ -64,7 +64,7 @@ export const BookingPreferencesManager = () => {
       
       try {
         const { data, error } = await supabase
-          .from("user_preferences" as any)
+          .from("user_preferences")
           .select("*")
           .eq("user_id", user.id)
           .single();
@@ -134,7 +134,7 @@ export const BookingPreferencesManager = () => {
       };
 
       const { error } = await supabase
-        .from("user_preferences" as any)
+        .from("user_preferences")
         .upsert(preferenceData, { onConflict: 'user_id' });
 
       if (error) throw error;

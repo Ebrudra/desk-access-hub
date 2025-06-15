@@ -51,7 +51,7 @@ export const AccessCodesDisplay = () => {
       
       try {
         const { data, error } = await supabase
-          .from("access_codes" as any)
+          .from("access_codes")
           .select(`
             id,
             booking_id,
@@ -74,7 +74,7 @@ export const AccessCodesDisplay = () => {
           .order("expires_at", { ascending: true });
         
         if (error) throw error;
-        return data as AccessCode[];
+        return data || [];
       } catch (error) {
         console.error("Error fetching access codes:", error);
         return [];
@@ -111,7 +111,7 @@ export const AccessCodesDisplay = () => {
         
         // Filter out bookings that already have access codes
         const existingCodeBookings = accessCodes?.map(ac => ac.booking_id) || [];
-        return (data as Booking[]).filter(booking => !existingCodeBookings.includes(booking.id));
+        return (data || []).filter(booking => !existingCodeBookings.includes(booking.id));
       } catch (error) {
         console.error("Error fetching upcoming bookings:", error);
         return [];
@@ -135,7 +135,7 @@ export const AccessCodesDisplay = () => {
       expiresAt.setHours(expiresAt.getHours() + 24);
       
       const { error } = await supabase
-        .from("access_codes" as any)
+        .from("access_codes")
         .insert({
           booking_id: bookingId,
           member_id: user?.id,
@@ -195,7 +195,7 @@ export const AccessCodesDisplay = () => {
               <Card key={accessCode.id} className="border-l-4 border-l-green-500">
                 <CardHeader className="pb-3">
                   <div className="flex items-center justify-between">
-                    <CardTitle className="text-lg">{accessCode.booking.title}</CardTitle>
+                    <CardTitle className="text-lg">{accessCode.bookings?.title || 'Booking'}</CardTitle>
                     <Badge variant={isCodeActive(accessCode.expires_at) ? "default" : "secondary"}>
                       {isCodeActive(accessCode.expires_at) ? "Active" : "Expired"}
                     </Badge>
@@ -203,12 +203,16 @@ export const AccessCodesDisplay = () => {
                   <div className="flex items-center gap-4 text-sm text-gray-600">
                     <div className="flex items-center gap-1">
                       <MapPin className="h-4 w-4" />
-                      {accessCode.booking.resources.name}
+                      {accessCode.bookings?.resources?.name || 'Unknown Resource'}
                     </div>
                     <div className="flex items-center gap-1">
                       <Clock className="h-4 w-4" />
-                      {new Date(accessCode.booking.start_time).toLocaleDateString()} at{" "}
-                      {new Date(accessCode.booking.start_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                      {accessCode.bookings?.start_time ? (
+                        <>
+                          {new Date(accessCode.bookings.start_time).toLocaleDateString()} at{" "}
+                          {new Date(accessCode.bookings.start_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                        </>
+                      ) : 'Time TBD'}
                     </div>
                   </div>
                 </CardHeader>
@@ -250,7 +254,7 @@ export const AccessCodesDisplay = () => {
                           <Button
                             size="sm"
                             variant="outline"
-                            onClick={() => downloadQRCode(accessCode.qr_code_url!, accessCode.booking.title)}
+                            onClick={() => downloadQRCode(accessCode.qr_code_url!, accessCode.bookings?.title || 'booking')}
                           >
                             <Download className="h-4 w-4 mr-1" />
                             Download
@@ -274,11 +278,11 @@ export const AccessCodesDisplay = () => {
             {upcomingBookings.map((booking) => (
               <Card key={booking.id} className="border-l-4 border-l-blue-500">
                 <CardHeader className="pb-3">
-                  <CardTitle className="text-lg">{booking.title}</CardTitle>
+                  <CardTitle className="text-lg">{booking.title || 'Booking'}</CardTitle>
                   <div className="flex items-center gap-4 text-sm text-gray-600">
                     <div className="flex items-center gap-1">
                       <MapPin className="h-4 w-4" />
-                      {booking.resources.name}
+                      {booking.resources?.name || 'Unknown Resource'}
                     </div>
                     <div className="flex items-center gap-1">
                       <Clock className="h-4 w-4" />
