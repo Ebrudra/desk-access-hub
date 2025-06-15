@@ -1,35 +1,24 @@
 
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { 
-  Home, 
-  Brain, 
-  BarChart3, 
-  Calendar, 
-  Users, 
-  Building2, 
-  CalendarDays, 
-  Settings,
+import {
+  Home,
+  Calendar,
+  BarChart3,
   MoreHorizontal,
+  Users,
   Shield,
   KeyRound,
-  AlertTriangle
+  Brain,
+  CalendarDays,
+  Building2,
+  Settings,
+  AlertTriangle,
+  Bell
 } from "lucide-react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useState } from "react";
-
-interface Tab {
-  value: string;
-  label: string;
-  icon: string;
-}
-
-interface MobileTabNavigationProps {
-  tabs: Tab[];
-  currentTab: string;
-  onTabChange: (value: string) => void;
-}
 
 const iconMap = {
   Home,
@@ -42,27 +31,49 @@ const iconMap = {
   Settings,
   Shield,
   KeyRound,
-  AlertTriangle
+  AlertTriangle,
+  Notifications: Bell,
+  MoreHorizontal
 };
 
-export const MobileTabNavigation = ({ tabs, currentTab, onTabChange }: MobileTabNavigationProps) => {
+interface Tab {
+  value: string;
+  label: string;
+  icon: string;
+}
+
+interface MobileTabNavigationProps {
+  tabs: Tab[];
+  currentTab: string;
+  onTabChange: (value: string) => void;
+  moreItems?: Tab[];
+  setSearchParams?: (p: URLSearchParams) => void;
+  searchParams?: URLSearchParams;
+}
+
+export const MobileTabNavigation = ({
+  tabs,
+  currentTab,
+  onTabChange,
+  moreItems = [],
+  setSearchParams,
+  searchParams
+}: MobileTabNavigationProps) => {
   const [isSheetOpen, setIsSheetOpen] = useState(false);
-  
-  // Show first 4 tabs directly, rest in overflow menu
-  const visibleTabs = tabs.slice(0, 4);
-  const overflowTabs = tabs.slice(4);
+
+  // The last tab is always "More"
+  const mainTabs = tabs.slice(0, tabs.length - 1);
 
   const TabButton = ({ tab, isActive }: { tab: Tab; isActive: boolean }) => {
     const IconComponent = iconMap[tab.icon as keyof typeof iconMap] || Home;
-    
     return (
       <Button
         variant="ghost"
         size="sm"
         className={cn(
           "flex flex-col items-center justify-center h-12 px-2 py-1 min-w-0 flex-1",
-          isActive 
-            ? "text-blue-600 bg-blue-50" 
+          isActive
+            ? "text-blue-600 bg-blue-50"
             : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
         )}
         onClick={() => onTabChange(tab.value)}
@@ -73,25 +84,29 @@ export const MobileTabNavigation = ({ tabs, currentTab, onTabChange }: MobileTab
     );
   };
 
+  const handleMoreClick = () => setIsSheetOpen(true);
+
   const handleOverflowTabClick = (tabValue: string) => {
-    onTabChange(tabValue);
+    if (!setSearchParams || !searchParams) return;
+    const params = new URLSearchParams(searchParams);
+    params.set('tab', tabValue);
+    setSearchParams(params);
     setIsSheetOpen(false);
   };
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-50">
-      <div className="flex items-center">
-        {/* Visible tabs */}
-        {visibleTabs.map((tab) => (
-          <TabButton 
-            key={tab.value} 
-            tab={tab} 
-            isActive={currentTab === tab.value} 
-          />
-        ))}
-        
-        {/* Overflow menu */}
-        {overflowTabs.length > 0 && (
+    <div className="fixed bottom-0 left-0 right-0 z-50">
+      <div className="bg-white border-t border-gray-200 rounded-t-xl shadow-md mx-2 mb-2 mt-2">
+        <div className="flex items-center px-1">
+          {/* Main tabs */}
+          {mainTabs.map((tab) => (
+            <TabButton
+              key={tab.value}
+              tab={tab}
+              isActive={currentTab === tab.value}
+            />
+          ))}
+          {/* More menu */}
           <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
             <SheetTrigger asChild>
               <Button
@@ -99,24 +114,24 @@ export const MobileTabNavigation = ({ tabs, currentTab, onTabChange }: MobileTab
                 size="sm"
                 className={cn(
                   "flex flex-col items-center justify-center h-12 px-2 py-1 min-w-0 flex-1",
-                  overflowTabs.some(tab => tab.value === currentTab)
+                  moreItems.some(tab => tab.value === currentTab)
                     ? "text-blue-600 bg-blue-50"
                     : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
                 )}
+                onClick={handleMoreClick}
               >
                 <MoreHorizontal className="h-5 w-5 mb-1" />
                 <span className="text-xs font-medium">More</span>
               </Button>
             </SheetTrigger>
-            <SheetContent side="bottom" className="h-auto">
+            <SheetContent side="bottom" className="h-auto pb-8">
               <div className="py-4">
                 <h3 className="text-lg font-semibold mb-4">More Options</h3>
                 <ScrollArea className="max-h-60">
                   <div className="grid grid-cols-2 gap-3">
-                    {overflowTabs.map((tab) => {
+                    {moreItems.map((tab) => {
                       const IconComponent = iconMap[tab.icon as keyof typeof iconMap] || Home;
                       const isActive = currentTab === tab.value;
-                      
                       return (
                         <Button
                           key={tab.value}
@@ -134,7 +149,7 @@ export const MobileTabNavigation = ({ tabs, currentTab, onTabChange }: MobileTab
               </div>
             </SheetContent>
           </Sheet>
-        )}
+        </div>
       </div>
     </div>
   );

@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -25,8 +24,10 @@ import {
   Home,
   Brain,
   Building2,
-  Settings
+  Settings,
+  KeyRound
 } from "lucide-react";
+import { MobileHeaderMenu } from "@/components/mobile/MobileHeaderMenu";
 
 export const MobileDashboard = () => {
   const { hasRole } = useAuthRole();
@@ -52,22 +53,10 @@ export const MobileDashboard = () => {
 
   const quickActions = [
     {
-      icon: Plus,
-      label: "Book Space",
-      description: "Reserve a workspace",
+      icon: "Calendar",
+      label: "New Booking",
+      description: "Create a booking",
       color: "bg-blue-500",
-      action: () => {
-        const params = new URLSearchParams(searchParams);
-        params.set('tab', 'smart-booking');
-        setSearchParams(params);
-      },
-      available: true
-    },
-    {
-      icon: Calendar,
-      label: "My Bookings",
-      description: "View reservations",
-      color: "bg-green-500",
       action: () => {
         const params = new URLSearchParams(searchParams);
         params.set('tab', 'calendar');
@@ -76,42 +65,55 @@ export const MobileDashboard = () => {
       available: true
     },
     {
-      icon: BarChart3,
-      label: "Analytics",
-      description: "Performance data",
-      color: "bg-purple-500",
+      icon: "KeyRound",
+      label: "Grant Access",
+      description: "Give access",
+      color: "bg-green-500",
       action: () => {
         const params = new URLSearchParams(searchParams);
-        params.set('tab', 'analytics');
+        params.set('tab', 'access-codes');
         setSearchParams(params);
       },
-      available: hasRole('manager')
-    },
-    {
-      icon: Users,
-      label: "Members",
-      description: "Manage users",
-      color: "bg-orange-500",
-      action: () => {
-        const params = new URLSearchParams(searchParams);
-        params.set('tab', 'crud');
-        setSearchParams(params);
-      },
-      available: hasRole('manager')
+      available: true
     }
   ];
 
   const tabs = [
     { value: "dashboard", label: "Home", icon: "Home" },
     { value: "calendar", label: "Calendar", icon: "Calendar" },
-    { value: "smart-booking", label: "Smart", icon: "Brain" },
-    { value: "analytics", label: "Analytics", icon: "BarChart3" },
-    { value: "crud", label: "Manage", icon: "Settings" },
-    { value: "spaces", label: "Spaces", icon: "Building2" },
-    { value: "members", label: "Members", icon: "Users" }
+    { value: "analytics", label: "Analytics", icon: "Analytics" },
+    { value: "notifications", label: "Notifications", icon: "Notifications" },
+    { value: "more", label: "More", icon: "MoreHorizontal" }, // The More icon itself is handled in mobile-tab-navigation
   ];
 
+  const moreItems = [
+    { value: "smart-booking", label: "Smart Booking", icon: "Brain" },
+    { value: "access-codes", label: "Grant Access", icon: "KeyRound" },
+    { value: "calendar", label: "Booking", icon: "Calendar" },
+    { value: "members", label: "Members", icon: "Users" },
+    { value: "events", label: "Events", icon: "CalendarDays" },
+    { value: "resources", label: "Resources", icon: "Building2" },
+    { value: "billing", label: "Billing", icon: "BarChart3" },
+    { value: "payments", label: "Payment", icon: "BarChart3" },
+  ];
+
+  const iconMap = {
+    Calendar: Calendar,
+    KeyRound: KeyRound,
+    Home: Home,
+    Brain: Brain,
+    Building2: Building2,
+    Settings: Settings,
+    Plus: Plus,
+    Star: Star,
+    Edit: Edit,
+    Trash: Trash,
+    Clock: Clock,
+    MapPin: MapPin,
+  };
+
   const handleTabChange = (value: string) => {
+    if (value === "more") return; // Do nothing, More menu opens via its own logic
     const params = new URLSearchParams(searchParams);
     params.set('tab', value);
     setSearchParams(params);
@@ -120,50 +122,48 @@ export const MobileDashboard = () => {
   const renderDashboardContent = () => (
     <div className="space-y-4">
       {/* Search Block */}
-      <Card className="rounded-xl shadow-sm border-slate-200">
-        <CardHeader className="pb-3">
-          <CardTitle className="text-lg font-semibold text-gray-800">Search</CardTitle>
-        </CardHeader>
-        <CardContent className="pt-0">
+      <div className="rounded-xl shadow-sm border border-slate-200 bg-white/80 backdrop-blur-md">
+        <div className="pb-3 px-4 pt-4">
+          <div className="text-lg font-semibold text-gray-800 mb-1">Search</div>
+        </div>
+        <div className="px-4 pb-4">
           <GlobalSearch />
-        </CardContent>
-      </Card>
+        </div>
+      </div>
 
       {/* Quick Actions Block */}
-      <Card className="rounded-xl shadow-sm border-slate-200">
-        <CardHeader className="pb-3">
-          <CardTitle className="text-lg font-semibold text-gray-800">Quick Actions</CardTitle>
-        </CardHeader>
-        <CardContent className="pt-0">
+      <div className="rounded-xl shadow-sm border border-slate-200 bg-white/80 backdrop-blur-md">
+        <div className="pb-3 px-4 pt-4">
+          <div className="text-lg font-semibold text-gray-800 mb-1">Quick Actions</div>
+        </div>
+        <div className="px-4 pb-4">
           <div className="grid grid-cols-2 gap-3">
-            {quickActions
-              .filter(action => action.available)
-              .map((action, index) => {
-                const Icon = action.icon;
-                return (
-                  <Button
-                    key={index}
-                    variant="outline"
-                    className="flex flex-col items-center justify-center h-20 p-3 space-y-2 rounded-lg border-2 border-slate-200 bg-white shadow-sm hover:shadow-md transition-all"
-                    onClick={action.action}
-                  >
-                    <span className={`p-2 rounded-full ${action.color} flex items-center justify-center`}>
-                      <Icon className="h-4 w-4 text-white" />
-                    </span>
-                    <span className="font-medium text-xs text-gray-700 text-center leading-tight">{action.label}</span>
-                  </Button>
-                );
-              })}
+            {quickActions.map((action, index) => {
+              const Icon = iconMap[action.icon as keyof typeof iconMap] || Home;
+              return (
+                <Button
+                  key={index}
+                  variant="outline"
+                  className="flex flex-col items-center justify-center h-20 p-3 space-y-2 rounded-lg border-2 border-slate-200 bg-white shadow-sm hover:shadow-md transition-all"
+                  onClick={action.action}
+                >
+                  <span className={`p-2 rounded-full ${action.color} flex items-center justify-center`}>
+                    <Icon className="h-4 w-4 text-white" />
+                  </span>
+                  <span className="font-medium text-xs text-gray-700 text-center leading-tight">{action.label}</span>
+                </Button>
+              );
+            })}
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
 
       {/* Quick Insights Block */}
-      <Card className="rounded-xl shadow-sm border-slate-200">
-        <CardHeader className="pb-3">
-          <CardTitle className="text-lg font-semibold text-gray-800">Quick Insights</CardTitle>
-        </CardHeader>
-        <CardContent className="pt-0">
+      <div className="rounded-xl shadow-sm border border-slate-200 bg-white/80 backdrop-blur-md">
+        <div className="pb-3 px-4 pt-4">
+          <div className="text-lg font-semibold text-gray-800 mb-1">Quick Insights</div>
+        </div>
+        <div className="px-4 pb-4">
           <div className="grid grid-cols-2 gap-3">
             <div className="bg-blue-50 rounded-lg p-4 text-center">
               <div className="flex items-center justify-center mb-2">
@@ -180,16 +180,16 @@ export const MobileDashboard = () => {
               <div className="text-xs text-green-600 font-medium">Available</div>
             </div>
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
 
       {/* Recent Bookings */}
       {hasRole('member') && (
-        <Card className="rounded-xl shadow-sm border-slate-200">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-lg font-semibold text-gray-800">Recent Bookings</CardTitle>
-          </CardHeader>
-          <CardContent className="pt-0 space-y-3">
+        <div className="rounded-xl shadow-sm border border-slate-200 bg-white/80 backdrop-blur-md">
+          <div className="pb-3 px-4 pt-4">
+            <div className="text-lg font-semibold text-gray-800 mb-1">Recent Bookings</div>
+          </div>
+          <div className="px-4 pb-4 space-y-3">
             {bookings.length === 0 ? (
               <div className="text-center text-sm text-gray-400 py-4">No bookings found.</div>
             ) : (
@@ -229,8 +229,8 @@ export const MobileDashboard = () => {
                 </SwipeActions>
               ))
             )}
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       )}
     </div>
   );
@@ -290,15 +290,25 @@ export const MobileDashboard = () => {
     }
   };
 
+  const Header = () => (
+    <div className="bg-gradient-to-br from-blue-700 via-blue-500 to-blue-400 p-4 sticky top-0 z-40 flex items-center justify-between shadow-xl">
+      <div className="flex items-center">
+        <MobileHeaderMenu />
+        <span className="ml-1 text-2xl sm:text-3xl font-extrabold text-white font-display tracking-tight drop-shadow">
+          WorkSpace Hub
+        </span>
+      </div>
+      {/* Can place notification icon or avatar here if needed */}
+    </div>
+  );
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
       {/* Header */}
-      <div className="bg-white border-b border-slate-200 p-4 sticky top-0 z-40">
-        <h1 className="text-xl font-bold text-gray-900">WorkSpace Hub</h1>
-      </div>
+      <Header />
 
       {/* Main Content */}
-      <div className="p-4 pb-20">
+      <div className="p-4 pb-24">
         {renderTabContent()}
       </div>
 
@@ -307,6 +317,9 @@ export const MobileDashboard = () => {
         tabs={tabs}
         currentTab={activeTab}
         onTabChange={handleTabChange}
+        moreItems={moreItems}
+        setSearchParams={setSearchParams}
+        searchParams={searchParams}
       />
     </div>
   );
