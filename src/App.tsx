@@ -8,6 +8,7 @@ import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { ErrorBoundary } from "@/components/ui/error-boundary";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
+import AuthCallback from "./pages/AuthCallback";
 import BookingDetail from "./pages/BookingDetail";
 import MemberDetail from "./pages/MemberDetail";
 import EventDetail from "./pages/EventDetail";
