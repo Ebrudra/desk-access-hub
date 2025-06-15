@@ -1,7 +1,7 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Plus, UserPlus, Calendar, KeyRound, Mail, Settings } from "lucide-react";
+import { Plus, UserPlus, Calendar, KeyRound, Mail, Settings, Brain } from "lucide-react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { createNavigationHandler, quickActionRoutes } from "@/utils/navigationUtils";
 
@@ -11,6 +11,12 @@ export const QuickActions = () => {
   const navigationHandler = createNavigationHandler(navigate);
 
   const actions = [
+    {
+      icon: Brain,
+      label: "Smart Booking",
+      description: "AI-powered suggestions",
+      color: "bg-purple-500 hover:bg-purple-600"
+    },
     {
       icon: UserPlus,
       label: "Add Member",
@@ -27,18 +33,19 @@ export const QuickActions = () => {
       icon: KeyRound,
       label: "Grant Access",
       description: "Provide space access",
-      color: "bg-purple-500 hover:bg-purple-600"
-    },
-    {
-      icon: Mail,
-      label: "Send Notice",
-      description: "Member announcement",
       color: "bg-orange-500 hover:bg-orange-600"
     }
   ];
 
   const handleAction = (actionLabel: string) => {
     console.log(`Triggered action: ${actionLabel}`);
+    
+    if (actionLabel === "Smart Booking") {
+      const newSearchParams = new URLSearchParams(searchParams);
+      newSearchParams.set('tab', 'smart-booking');
+      setSearchParams(newSearchParams);
+      return;
+    }
     
     const route = quickActionRoutes[actionLabel as keyof typeof quickActionRoutes];
     if (route) {

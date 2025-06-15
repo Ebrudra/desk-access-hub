@@ -7,6 +7,7 @@ import { QuickActions } from "@/components/QuickActions";
 import { SpaceUtilization } from "@/components/SpaceUtilization";
 import { BookingCalendar } from "@/components/BookingCalendar";
 import { MemberList } from "@/components/MemberList";
+import { SmartBookingDashboard } from "@/components/booking/SmartBookingDashboard";
 import { useSearchParams } from "react-router-dom";
 import { useEffect } from "react";
 
@@ -33,8 +34,9 @@ const Index = () => {
         </div>
 
         <Tabs value={currentTab} onValueChange={handleTabChange} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-6">
+          <TabsList className="grid w-full grid-cols-7">
             <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
+            <TabsTrigger value="smart-booking">Smart Booking</TabsTrigger>
             <TabsTrigger value="analytics">Analytics</TabsTrigger>
             <TabsTrigger value="bookings">Bookings</TabsTrigger>
             <TabsTrigger value="members">Members</TabsTrigger>
@@ -52,6 +54,10 @@ const Index = () => {
                 <QuickActions />
               </div>
             </div>
+          </TabsContent>
+
+          <TabsContent value="smart-booking">
+            <SmartBookingDashboard />
           </TabsContent>
 
           <TabsContent value="analytics">
