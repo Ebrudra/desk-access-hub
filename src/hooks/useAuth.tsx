@@ -33,8 +33,8 @@ export const useAuth = () => {
           }
         } else if (event === 'SIGNED_OUT') {
           clearCache();
-          // Redirect to auth page after logout
-          navigate('/auth');
+          // Redirect to landing page after logout
+          navigate('/landing');
         }
       }
     );

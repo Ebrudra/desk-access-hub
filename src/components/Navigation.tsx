@@ -1,5 +1,6 @@
+
 import { useState } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
@@ -15,16 +16,28 @@ import { useRealtimeData } from "@/hooks/useRealtimeData";
 import { Badge } from "@/components/ui/badge";
 import { MobileDrawer } from "@/components/ui/mobile-drawer";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { ThemeToggle } from "@/components/ui/theme-toggle";
+import { LanguageToggle } from "@/components/ui/language-toggle";
 
 export const Navigation = () => {
   const { user } = useAuth();
   const { role, isAdmin } = useAuthRole();
   const location = useLocation();
+  const navigate = useNavigate();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const isMobile = useIsMobile();
 
   const handleSignOut = async () => {
     await supabase.auth.signOut();
+    navigate('/landing');
+  };
+
+  const handleLogoClick = () => {
+    if (user) {
+      navigate('/');
+    } else {
+      navigate('/landing');
+    }
   };
 
   const navItems = [
@@ -73,70 +86,82 @@ export const Navigation = () => {
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
-          <Link to="/" className="flex items-center space-x-2">
+          <button onClick={handleLogoClick} className="flex items-center space-x-2 hover:opacity-80 transition-opacity">
             <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg"></div>
             <span className="text-xl font-bold text-gray-900">WorkSpace Hub</span>
-          </Link>
+          </button>
 
           {/* Desktop Navigation */}
-          {!isMobile && <NavigationItems />}
+          {!isMobile && user && <NavigationItems />}
 
           {/* Right side items */}
           <div className="ml-auto flex items-center space-x-4">
+            <ThemeToggle />
+            <LanguageToggle />
             <ConnectionStatus 
               status={useRealtimeData('bookings', ['bookings']).connectionStatus}
               className="hidden sm:flex"
             />
             <LiveUserCount />
-            <NotificationCenter
-              notifications={useRealtimeNotifications().notifications}
-              onMarkAsRead={useRealtimeNotifications().markAsRead}
-              onMarkAllAsRead={useRealtimeNotifications().markAllAsRead}
-              onDismiss={useRealtimeNotifications().dismissNotification}
-            />
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="relative h-8 w-8 rounded-full">
-                  <Avatar className="h-8 w-8">
-                    <AvatarImage src={user?.user_metadata?.avatar_url} />
-                    <AvatarFallback>
-                      {user?.email?.charAt(0).toUpperCase() || "U"}
-                    </AvatarFallback>
-                  </Avatar>
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent className="w-56" align="end" forceMount>
-                <div className="flex items-center justify-between px-2 py-1.5">
-                  <span className="text-sm font-medium truncate max-w-32">{user?.email}</span>
-                  {role && (
-                    <Badge className={getRoleBadgeColor()}>
-                      {role}
-                    </Badge>
-                  )}
-                </div>
-                <DropdownMenuSeparator />
-                {isAdmin && (
-                  <DropdownMenuItem asChild>
-                    <Link to="/?tab=roles" className="flex items-center">
-                      <Shield className="mr-2 h-4 w-4" />
-                      <span>Manage Roles</span>
-                    </Link>
-                  </DropdownMenuItem>
-                )}
-                <DropdownMenuItem>
-                  <Settings className="mr-2 h-4 w-4" />
-                  <span>Settings</span>
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={handleSignOut}>
-                  <LogOut className="mr-2 h-4 w-4" />
-                  <span>Log out</span>
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+            {user && (
+              <>
+                <NotificationCenter
+                  notifications={useRealtimeNotifications().notifications}
+                  onMarkAsRead={useRealtimeNotifications().markAsRead}
+                  onMarkAllAsRead={useRealtimeNotifications().markAllAsRead}
+                  onDismiss={useRealtimeNotifications().dismissNotification}
+                />
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" className="relative h-8 w-8 rounded-full">
+                      <Avatar className="h-8 w-8">
+                        <AvatarImage src={user?.user_metadata?.avatar_url} />
+                        <AvatarFallback>
+                          {user?.email?.charAt(0).toUpperCase() || "U"}
+                        </AvatarFallback>
+                      </Avatar>
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent className="w-56" align="end" forceMount>
+                    <div className="flex items-center justify-between px-2 py-1.5">
+                      <span className="text-sm font-medium truncate max-w-32">{user?.email}</span>
+                      {role && (
+                        <Badge className={getRoleBadgeColor()}>
+                          {role}
+                        </Badge>
+                      )}
+                    </div>
+                    <DropdownMenuSeparator />
+                    {isAdmin && (
+                      <DropdownMenuItem asChild>
+                        <Link to="/?tab=roles" className="flex items-center">
+                          <Shield className="mr-2 h-4 w-4" />
+                          <span>Manage Roles</span>
+                        </Link>
+                      </DropdownMenuItem>
+                    )}
+                    <DropdownMenuItem>
+                      <Settings className="mr-2 h-4 w-4" />
+                      <span>Settings</span>
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={handleSignOut}>
+                      <LogOut className="mr-2 h-4 w-4" />
+                      <span>Log out</span>
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </>
+            )}
+
+            {!user && (
+              <Button asChild>
+                <Link to="/auth">Sign In</Link>
+              </Button>
+            )}
 
             {/* Mobile menu */}
-            {isMobile && (
+            {isMobile && user && (
               <MobileDrawer>
                 <div className="pt-6">
                   <NavigationItems />

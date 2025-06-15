@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -7,6 +6,8 @@ import { Input } from "@/components/ui/input";
 import { ArrowRight, Building2, Calendar, Users, Zap, Shield, BarChart3, CheckCircle, Wifi, Bell, Activity, Sparkles } from "lucide-react";
 import { ConnectionStatus } from "@/components/ui/connection-status";
 import { LiveUserCount } from "@/components/ui/live-user-count";
+import { ThemeToggle } from "@/components/ui/theme-toggle";
+import { LanguageToggle } from "@/components/ui/language-toggle";
 import { useAuth } from "@/hooks/useAuth";
 import { useRealtimeData } from "@/hooks/useRealtimeData";
 import { useRealtimeNotifications } from "@/hooks/useRealtimeNotifications";
@@ -110,6 +111,8 @@ const LandingPage = () => {
         </div>
         <div className="hidden md:flex items-center space-x-8">
           <div className="flex items-center gap-4">
+            <ThemeToggle />
+            <LanguageToggle />
             <ConnectionStatus status={connectionStatus} />
             {user && <LiveUserCount />}
           </div>

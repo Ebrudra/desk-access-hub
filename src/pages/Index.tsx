@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Navigation } from "@/components/Navigation";
 import { DashboardStats } from "@/components/DashboardStats";
@@ -22,6 +23,7 @@ import { ErrorBoundary } from "@/components/ui/error-boundary";
 import { LoadingSkeleton } from "@/components/ui/loading-skeleton";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { ActivityFeed } from "@/components/ui/activity-feed";
+import LandingPage from "@/components/landing/LandingPage";
 
 const Index = () => {
   const { user, loading } = useAuth();
@@ -44,6 +46,11 @@ const Index = () => {
         </div>
       </div>
     );
+  }
+
+  // If user is not authenticated, show the landing page
+  if (!user) {
+    return <LandingPage />;
   }
 
   return (
