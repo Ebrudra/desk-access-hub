@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -6,26 +5,30 @@ import { Button } from "@/components/ui/button";
 import { ArrowLeft, Calendar, Clock, Users, MapPin } from "lucide-react";
 import { Navigation } from "@/components/Navigation";
 import { BookingForm } from "@/components/crud/BookingForm";
+import { useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
 const roomPresets = [
   {
     title: "Meeting Room (4 people)",
     prefill: {
-      title: "Meeting Room",
-      attendees: 4,
+      title: "Quick Meeting",
+      attendees: 4
+      // resource_id, start_time, end_time filled dynamically
     }
   },
   {
     title: "Conference Hall (20 people)",
     prefill: {
-      title: "Conference Hall",
-      attendees: 20,
+      title: "Quick Conference",
+      attendees: 20
     }
   },
   {
     title: "Hot Desk (1 person)",
     prefill: {
-      title: "Hot Desk",
+      title: "Quick Desk",
       attendees: 1,
     }
   },
@@ -35,12 +38,40 @@ const NewBooking = () => {
   const navigate = useNavigate();
   const [formPrefill, setFormPrefill] = useState<any>(null);
 
+  // Get resources and members for dynamic prefill
+  const { data: resources } = useQuery({
+    queryKey: ["resources"],
+    queryFn: async () => {
+      const { data } = await supabase.from("resources").select("*");
+      return data;
+    }
+  });
+  const { data: members } = useQuery({
+    queryKey: ["members"],
+    queryFn: async () => {
+      const { data } = await supabase.from("members").select("*");
+      return data;
+    }
+  });
+
   const handleBookingSuccess = () => {
     navigate("/dashboard?tab=crud&subtab=bookings");
   };
 
-  const handleQuickBook = (prefill: any) => {
-    setFormPrefill(prefill);
+  const handleQuickBook = (presetPrefill: any) => {
+    const now = new Date();
+    const inOneHour = new Date(now.getTime() + 60 * 60 * 1000);
+    // Find first available resource and member
+    const resource_id = resources?.length ? resources[0].id : "";
+    const member_id = members?.length ? members[0].id : "";
+
+    setFormPrefill({
+      ...presetPrefill,
+      resource_id,
+      member_id,
+      start_time: now.toISOString().slice(0, 16),
+      end_time: inOneHour.toISOString().slice(0, 16),
+    });
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -41,6 +41,16 @@ export const BookingForm = ({ bookingId, onSuccess, prefill }: BookingFormProps)
     attendees: prefill?.attendees ?? 1,
     special_requests: prefill?.special_requests || ""
   });
+
+  // If prefill changes, update formData (handle quick actions)
+  useEffect(() => {
+    if (prefill) {
+      setFormData((fd) => ({
+        ...fd,
+        ...prefill,
+      }));
+    }
+  }, [prefill]);
 
   const { data: resources } = useQuery({
     queryKey: ["resources"],

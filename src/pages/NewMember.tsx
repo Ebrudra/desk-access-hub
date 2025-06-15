@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -11,17 +10,17 @@ const quickPresets = [
   {
     label: "Invite via Email",
     icon: <Mail className="mr-2 h-4 w-4" />,
-    prefill: { membership_status: "pending" }
+    prefill: { membership_status: "pending", member_id: "quick-email" }
   },
   {
     label: "Add via Phone",
     icon: <Phone className="mr-2 h-4 w-4" />,
-    prefill: { membership_status: "active" }
+    prefill: { membership_status: "active", member_id: "quick-phone" }
   },
   {
     label: "Bulk Import",
     icon: <UserPlus className="mr-2 h-4 w-4" />,
-    prefill: { membership_tier: "basic" }
+    prefill: { membership_tier: "basic", member_id: "quick-bulk" }
   },
 ];
 

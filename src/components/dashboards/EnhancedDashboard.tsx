@@ -63,24 +63,26 @@ export const EnhancedDashboard = () => {
       description: "Quick book a space or resource",
       icon: Search,
       color: FEATURE_COLORS[0],
-      onClick: () => console.log("Navigate to booking"),
-      available: hasRole('member')
+      onClick: () => {
+        window.location.href = "/bookings/new";
+      },
+      available: true // force always available for testing
     },
     {
       title: "View Analytics",
       description: "Check performance metrics",
       icon: Bolt,
       color: FEATURE_COLORS[1],
-      onClick: () => console.log("Navigate to analytics"),
-      available: hasRole('manager')
+      onClick: () => window.location.href = "/dashboard?tab=analytics",
+      available: true
     },
     {
       title: "Manage System",
       description: "Admin configuration",
       icon: Bell,
       color: FEATURE_COLORS[2],
-      onClick: () => console.log("Navigate to admin"),
-      available: hasRole('admin')
+      onClick: () => window.location.href = "/dashboard?tab=crud",
+      available: true
     },
     {
       title: "Grant Access",

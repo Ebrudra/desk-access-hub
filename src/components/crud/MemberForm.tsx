@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -42,6 +42,16 @@ export const MemberForm = ({ memberId, onSuccess, prefill }: MemberFormProps) =>
     access_code: prefill?.access_code || "",
     rfid_card_id: prefill?.rfid_card_id || ""
   });
+
+  // If prefill changes, update formData (handle quick actions)
+  useEffect(() => {
+    if (prefill) {
+      setFormData((fd) => ({
+        ...fd,
+        ...prefill,
+      }));
+    }
+  }, [prefill]);
 
   const { data: spaces } = useQuery({
     queryKey: ["spaces"],

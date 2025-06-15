@@ -26,6 +26,9 @@ export const CrudManagement = () => {
     }
   }, [searchParams]);
 
+  // Add debug log for troubleshooting
+  console.log("CrudManagement rendered and mounted");
+
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="mb-8 flex items-center justify-between">
