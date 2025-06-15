@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -8,7 +7,11 @@ import { useAuth } from "@/hooks/useAuth";
 import { useAuthRole } from "@/hooks/useAuthRole";
 import { supabase } from "@/integrations/supabase/client";
 import { Home, Settings, LogOut, Menu, X, Shield } from "lucide-react";
-import { NotificationCenter } from "./notifications/NotificationCenter";
+import { NotificationCenter } from "@/components/ui/notification-center";
+import { LiveUserCount } from "@/components/ui/live-user-count";
+import { ConnectionStatus } from "@/components/ui/connection-status";
+import { useRealtimeNotifications } from "@/hooks/useRealtimeNotifications";
+import { useRealtimeData } from "@/hooks/useRealtimeData";
 import { Badge } from "@/components/ui/badge";
 import { MobileDrawer } from "@/components/ui/mobile-drawer";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -79,9 +82,18 @@ export const Navigation = () => {
           {!isMobile && <NavigationItems />}
 
           {/* Right side items */}
-          <div className="flex items-center space-x-4">
-            <NotificationCenter />
-            
+          <div className="ml-auto flex items-center space-x-4">
+            <ConnectionStatus 
+              status={useRealtimeData('bookings', ['bookings']).connectionStatus}
+              className="hidden sm:flex"
+            />
+            <LiveUserCount />
+            <NotificationCenter
+              notifications={useRealtimeNotifications().notifications}
+              onMarkAsRead={useRealtimeNotifications().markAsRead}
+              onMarkAllAsRead={useRealtimeNotifications().markAllAsRead}
+              onDismiss={useRealtimeNotifications().dismissNotification}
+            />
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" className="relative h-8 w-8 rounded-full">

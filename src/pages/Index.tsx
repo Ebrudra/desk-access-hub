@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Navigation } from "@/components/Navigation";
 import { DashboardStats } from "@/components/DashboardStats";
@@ -22,6 +21,7 @@ import { GlobalKeyboardShortcuts } from "@/components/ui/keyboard-shortcuts";
 import { ErrorBoundary } from "@/components/ui/error-boundary";
 import { LoadingSkeleton } from "@/components/ui/loading-skeleton";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { ActivityFeed } from "@/components/ui/activity-feed";
 
 const Index = () => {
   const { user, loading } = useAuth();
@@ -77,11 +77,14 @@ const Index = () => {
 
               <TabsContent value="dashboard" className="space-y-6">
                 <DashboardStats />
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
                   <BookingCalendar />
                   <div className="space-y-6">
                     <QuickActions />
                     <SpaceUtilization />
+                  </div>
+                  <div className="md:col-span-2 lg:col-span-1">
+                    <ActivityFeed />
                   </div>
                 </div>
                 <MemberList />
