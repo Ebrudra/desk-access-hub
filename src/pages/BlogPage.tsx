@@ -107,7 +107,6 @@ const BlogPage = () => {
               <Badge className="mb-4">Featured Article</Badge>
               <h2 className="text-3xl font-bold text-gray-900 mb-4">Latest Insights</h2>
             </div>
-            
             <Card className="overflow-hidden">
               <div className="aspect-video w-full">
                 <img 
@@ -119,7 +118,11 @@ const BlogPage = () => {
               <CardHeader>
                 <div className="flex items-center justify-between mb-4">
                   <Badge variant="outline">
-                    <articles[0].icon className="h-3 w-3 mr-1" />
+                    {/* Fix JSX error: must assign icon to variable */}
+                    {(() => {
+                      const Icon = articles[0].icon;
+                      return <Icon className="h-3 w-3 mr-1" />;
+                    })()}
                     {articles[0].category}
                   </Badge>
                   <div className="flex items-center text-sm text-gray-500 space-x-4">
@@ -160,43 +163,46 @@ const BlogPage = () => {
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
-            {articles.slice(1).map((article) => (
-              <Card key={article.id} className="overflow-hidden hover:shadow-lg transition-shadow">
-                <div className="aspect-video w-full">
-                  <img 
-                    src={article.image} 
-                    alt={article.title}
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-                <CardHeader>
-                  <div className="flex items-center justify-between mb-3">
-                    <Badge variant="outline" className="text-xs">
-                      <article.icon className="h-3 w-3 mr-1" />
-                      {article.category}
-                    </Badge>
-                    <span className="text-xs text-gray-500">{article.readTime}</span>
+            {articles.slice(1).map((article) => {
+              const Icon = article.icon;
+              return (
+                <Card key={article.id} className="overflow-hidden hover:shadow-lg transition-shadow">
+                  <div className="aspect-video w-full">
+                    <img 
+                      src={article.image} 
+                      alt={article.title}
+                      className="w-full h-full object-cover"
+                    />
                   </div>
-                  <CardTitle className="line-clamp-2">{article.title}</CardTitle>
-                  <CardDescription className="line-clamp-3">
-                    {article.excerpt}
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center text-sm text-gray-500">
-                      <User className="h-4 w-4 mr-1" />
-                      <span>{article.author}</span>
+                  <CardHeader>
+                    <div className="flex items-center justify-between mb-3">
+                      <Badge variant="outline" className="text-xs">
+                        <Icon className="h-3 w-3 mr-1" />
+                        {article.category}
+                      </Badge>
+                      <span className="text-xs text-gray-500">{article.readTime}</span>
                     </div>
-                    <Button variant="ghost" size="sm" asChild>
-                      <Link to={`/blog/${article.id}`}>
-                        Read More <ArrowRight className="h-3 w-3 ml-1" />
-                      </Link>
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
+                    <CardTitle className="line-clamp-2">{article.title}</CardTitle>
+                    <CardDescription className="line-clamp-3">
+                      {article.excerpt}
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center text-sm text-gray-500">
+                        <User className="h-4 w-4 mr-1" />
+                        <span>{article.author}</span>
+                      </div>
+                      <Button variant="ghost" size="sm" asChild>
+                        <Link to={`/blog/${article.id}`}>
+                          Read More <ArrowRight className="h-3 w-3 ml-1" />
+                        </Link>
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              );
+            })}
           </div>
         </div>
       </section>
