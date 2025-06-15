@@ -31,7 +31,9 @@ export const useUserPresence = (channelName: string = 'workspace') => {
       supabase.removeChannel(channel);
     }
 
-    const setupPresence = async () => {
+    let cleanupFunction: (() => void) | null = null;
+
+    const setupPresence = () => {
       try {
         const newChannel = supabase.channel(channelName, {
           config: {
@@ -131,7 +133,7 @@ export const useUserPresence = (channelName: string = 'workspace') => {
         window.addEventListener('popstate', handlePageChange);
         document.addEventListener('visibilitychange', handleVisibilityChange);
 
-        return () => {
+        cleanupFunction = () => {
           window.removeEventListener('popstate', handlePageChange);
           document.removeEventListener('visibilitychange', handleVisibilityChange);
           clearInterval(interval);
@@ -146,11 +148,11 @@ export const useUserPresence = (channelName: string = 'workspace') => {
       }
     };
 
-    const cleanup = setupPresence();
+    setupPresence();
 
     return () => {
-      if (cleanup && typeof cleanup === 'function') {
-        cleanup();
+      if (cleanupFunction) {
+        cleanupFunction();
       }
     };
   }, [user?.id, channelName]);
