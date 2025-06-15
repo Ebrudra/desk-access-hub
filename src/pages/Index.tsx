@@ -17,12 +17,12 @@ import { BillingDashboard } from "@/components/billing/BillingDashboard";
 import { NotificationCenter } from "@/components/notifications/NotificationCenter";
 import { UserRoleManager } from "@/components/admin/UserRoleManager";
 import { useAuthRole } from "@/hooks/useAuthRole";
-import { useMobile } from "@/hooks/use-mobile";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 export default function Index() {
   const [searchParams] = useSearchParams();
   const { hasRole } = useAuthRole();
-  const isMobile = useMobile();
+  const isMobile = useIsMobile();
   const activeTab = searchParams.get("tab") || "dashboard";
 
   if (isMobile) {

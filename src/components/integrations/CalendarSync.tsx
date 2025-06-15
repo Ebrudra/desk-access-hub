@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
-import { Calendar, Sync, ExternalLink, Settings, CheckCircle, AlertCircle } from "lucide-react";
+import { Calendar, RefreshCw, ExternalLink, Settings, CheckCircle, AlertCircle } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 
@@ -172,7 +172,7 @@ export const CalendarSync = () => {
     switch (status) {
       case "success": return <CheckCircle className="h-4 w-4 text-green-500" />;
       case "failed": return <AlertCircle className="h-4 w-4 text-red-500" />;
-      case "pending": return <Sync className="h-4 w-4 text-blue-500 animate-spin" />;
+      case "pending": return <RefreshCw className="h-4 w-4 text-blue-500 animate-spin" />;
       default: return <Calendar className="h-4 w-4 text-gray-400" />;
     }
   };
@@ -235,9 +235,9 @@ export const CalendarSync = () => {
                         disabled={syncInProgress === provider.id}
                       >
                         {syncInProgress === provider.id ? (
-                          <Sync className="h-4 w-4 animate-spin" />
+                          <RefreshCw className="h-4 w-4 animate-spin" />
                         ) : (
-                          <Sync className="h-4 w-4" />
+                          <RefreshCw className="h-4 w-4" />
                         )}
                         Sync Now
                       </Button>
