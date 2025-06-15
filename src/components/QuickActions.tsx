@@ -4,11 +4,13 @@ import { Button } from "@/components/ui/button";
 import { Plus, UserPlus, Calendar, KeyRound, Mail, Settings, Brain } from "lucide-react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { createNavigationHandler, quickActionRoutes } from "@/utils/navigationUtils";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 export const QuickActions = () => {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const navigationHandler = createNavigationHandler(navigate);
+  const isMobile = useIsMobile();
 
   const actions = [
     {
@@ -64,6 +66,46 @@ export const QuickActions = () => {
     newSearchParams.set('tab', 'crud');
     setSearchParams(newSearchParams);
   };
+
+  if (isMobile) {
+    return (
+      <Card className="hover:shadow-lg transition-shadow duration-200">
+        <CardHeader className="pb-4">
+          <CardTitle className="flex items-center space-x-2 text-lg">
+            <Plus className="h-5 w-5" />
+            <span>Quick Actions</span>
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          {actions.map((action, index) => (
+            <Button
+              key={index}
+              variant="outline"
+              className={`w-full h-16 flex items-center justify-start space-x-4 text-white border-0 ${action.color} transition-all duration-200`}
+              onClick={() => handleAction(action.label)}
+            >
+              <action.icon className="h-6 w-6" />
+              <div className="text-left">
+                <div className="text-sm font-medium">{action.label}</div>
+                <div className="text-xs opacity-90">{action.description}</div>
+              </div>
+            </Button>
+          ))}
+          
+          <div className="pt-3 border-t">
+            <Button 
+              variant="ghost" 
+              className="w-full flex items-center justify-start space-x-3 h-12"
+              onClick={handleSettings}
+            >
+              <Settings className="h-5 w-5" />
+              <span>System Settings</span>
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <Card className="hover:shadow-lg transition-shadow duration-200">
