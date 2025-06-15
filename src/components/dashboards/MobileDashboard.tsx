@@ -28,6 +28,15 @@ import {
   KeyRound
 } from "lucide-react";
 import { MobileHeaderMenu } from "@/components/mobile/MobileHeaderMenu";
+import { MobileHomeTab } from "../mobile/tabs/MobileHomeTab";
+import { MobileCalendarTab } from "../mobile/tabs/MobileCalendarTab";
+import { MobileAnalyticsTab } from "../mobile/tabs/MobileAnalyticsTab";
+import { MobileNotificationsTab } from "../mobile/tabs/MobileNotificationsTab";
+import { MobileCrudTab } from "../mobile/tabs/MobileCrudTab";
+import { MobileBillingTab } from "../mobile/tabs/MobileBillingTab";
+import { MobilePaymentsTab } from "../mobile/tabs/MobilePaymentsTab";
+import { MobileSmartBookingTab } from "../mobile/tabs/MobileSmartBookingTab";
+import { MobileAccessCodesTab } from "../mobile/tabs/MobileAccessCodesTab";
 
 export const MobileDashboard = () => {
   const { hasRole } = useAuthRole();
@@ -129,193 +138,24 @@ export const MobileDashboard = () => {
     </div>
   );
 
-  // Render tab content based on selected tab
-  const renderTabContent = () => {
-    switch (activeTab) {
-      case "dashboard":
-        return renderDashboardContent();
-      case "calendar":
-        return (
-          <div className="p-0 pt-4">
-            <BookingCalendar />
-          </div>
-        );
-      case "smart-booking":
-        return (
-          <div className="p-0 pt-4">
-            <SmartBookingDashboard />
-          </div>
-        );
-      case "analytics":
-        return (
-          <div className="p-0 pt-4">
-            <AnalyticsDashboard />
-          </div>
-        );
-      case "members":
-        // Swap placeholder with CrudManagement (if that's members manager)
-        return (
-          <div className="p-0 pt-4">
-            <CrudManagement />
-          </div>
-        );
-      case "events":
-        return (
-          <div className="p-0 pt-4">
-            <CrudManagement />
-          </div>
-        );
-      case "resources":
-        return (
-          <div className="p-0 pt-4">
-            <CrudManagement />
-          </div>
-        );
-      case "billing":
-        return (
-          <div className="p-0 pt-4">
-            <AnalyticsDashboard />
-          </div>
-        );
-      case "payments":
-        return (
-          <div className="p-0 pt-4">
-            <AnalyticsDashboard />
-          </div>
-        );
-      case "access-codes":
-        return (
-          <div className="p-0 pt-4">
-            <CrudManagement />
-          </div>
-        );
-      case "notifications":
-        // You may want a NotificationCenter component, here we use CrudManagement as placeholder
-        return (
-          <div className="p-0 pt-4">
-            <CrudManagement />
-          </div>
-        );
-      default:
-        return renderDashboardContent();
-    }
+  // Tab mapping system
+  const tabComponents: Record<string, React.ReactNode> = {
+    "dashboard": <MobileHomeTab bookings={bookings} />,
+    "calendar": <MobileCalendarTab />,
+    "analytics": <MobileAnalyticsTab />,
+    "notifications": <MobileNotificationsTab />,
+    "smart-booking": <MobileSmartBookingTab />,
+    "access-codes": <MobileAccessCodesTab />,
+    "billing": <MobileBillingTab />,
+    "payments": <MobilePaymentsTab />,
+    "members": <MobileCrudTab subtab="members" />,
+    "events": <MobileCrudTab subtab="events" />,
+    "resources": <MobileCrudTab subtab="resources" />,
+    "booking": <MobileCrudTab subtab="bookings" />,
   };
 
-  const renderDashboardContent = () => (
-    <div className="space-y-4">
-      {/* Search Block */}
-      <div className="rounded-xl shadow-sm border border-slate-200 bg-white/80 backdrop-blur-md">
-        <div className="pb-3 px-4 pt-4">
-          <div className="text-lg font-semibold text-gray-800 mb-1">Search</div>
-        </div>
-        <div className="px-4 pb-4">
-          <GlobalSearch />
-        </div>
-      </div>
-
-      {/* Quick Actions Block */}
-      <div className="rounded-xl shadow-sm border border-slate-200 bg-white/80 backdrop-blur-md">
-        <div className="pb-3 px-4 pt-4">
-          <div className="text-lg font-semibold text-gray-800 mb-1">Quick Actions</div>
-        </div>
-        <div className="px-4 pb-4">
-          <div className="grid grid-cols-2 gap-3">
-            {quickActions.map((action, index) => {
-              const Icon = iconMap[action.icon as keyof typeof iconMap] || Home;
-              return (
-                <Button
-                  key={index}
-                  variant="outline"
-                  className="flex flex-col items-center justify-center h-20 p-3 space-y-2 rounded-lg border-2 border-slate-200 bg-white shadow-sm hover:shadow-md transition-all"
-                  onClick={action.action}
-                >
-                  <span className={`p-2 rounded-full ${action.color} flex items-center justify-center`}>
-                    <Icon className="h-4 w-4 text-white" />
-                  </span>
-                  <span className="font-medium text-xs text-gray-700 text-center leading-tight">{action.label}</span>
-                </Button>
-              );
-            })}
-          </div>
-        </div>
-      </div>
-
-      {/* Quick Insights Block */}
-      <div className="rounded-xl shadow-sm border border-slate-200 bg-white/80 backdrop-blur-md">
-        <div className="pb-3 px-4 pt-4">
-          <div className="text-lg font-semibold text-gray-800 mb-1">Quick Insights</div>
-        </div>
-        <div className="px-4 pb-4">
-          <div className="grid grid-cols-2 gap-3">
-            <div className="bg-blue-50 rounded-lg p-4 text-center">
-              <div className="flex items-center justify-center mb-2">
-                <Clock className="h-5 w-5 text-blue-600" />
-              </div>
-              <div className="text-2xl font-bold text-blue-800">3</div>
-              <div className="text-xs text-blue-600 font-medium">Active Today</div>
-            </div>
-            <div className="bg-green-50 rounded-lg p-4 text-center">
-              <div className="flex items-center justify-center mb-2">
-                <MapPin className="h-5 w-5 text-green-600" />
-              </div>
-              <div className="text-2xl font-bold text-green-800">12</div>
-              <div className="text-xs text-green-600 font-medium">Available</div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Recent Bookings */}
-      {hasRole('member') && (
-        <div className="rounded-xl shadow-sm border border-slate-200 bg-white/80 backdrop-blur-md">
-          <div className="pb-3 px-4 pt-4">
-            <div className="text-lg font-semibold text-gray-800 mb-1">Recent Bookings</div>
-          </div>
-          <div className="px-4 pb-4 space-y-3">
-            {bookings.length === 0 ? (
-              <div className="text-center text-sm text-gray-400 py-4">No bookings found.</div>
-            ) : (
-              bookings.map((booking) => (
-                <SwipeActions
-                  key={booking.id}
-                  leftActions={[
-                    {
-                      label: "Edit",
-                      color: "blue",
-                      icon: <Edit className="h-4 w-4" />,
-                      onClick: () => console.log("Edit booking", booking.id)
-                    },
-                    {
-                      label: "Star",
-                      color: "orange",
-                      icon: <Star className="h-4 w-4" />,
-                      onClick: () => console.log("Star booking", booking.id)
-                    }
-                  ]}
-                  rightActions={[
-                    {
-                      label: "Cancel",
-                      color: "red",
-                      icon: <Trash className="h-4 w-4" />,
-                      onClick: () => console.log("Cancel booking", booking.id)
-                    }
-                  ]}
-                >
-                  <MobileOptimizedCard
-                    title={booking.title}
-                    subtitle={booking.time}
-                    description={`${booking.attendees} attendee${booking.attendees > 1 ? 's' : ''} • ${booking.status}`}
-                    onTap={() => console.log("View booking", booking.id)}
-                    className="rounded-lg border border-slate-200"
-                  />
-                </SwipeActions>
-              ))
-            )}
-          </div>
-        </div>
-      )}
-    </div>
-  );
+  // Default fallback to Home tab
+  const tabContent = tabComponents[activeTab] ?? <MobileHomeTab bookings={bookings} />;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
@@ -323,7 +163,7 @@ export const MobileDashboard = () => {
       <Header />
 
       {/* Main Content */}
-      <div className="p-4 pb-28">{renderTabContent()}</div>
+      <div className="p-4 pb-28">{tabContent}</div>
       {/* Bottom Navigation */}
       <MobileTabNavigation
         tabs={tabs}
