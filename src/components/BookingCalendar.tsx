@@ -73,13 +73,13 @@ export const BookingCalendar = ({ expanded = false }: BookingCalendarProps) => {
         </div>
       </CardHeader>
       <CardContent>
-        <div className={`grid ${expanded ? 'grid-cols-1 lg:grid-cols-2' : 'grid-cols-1'} gap-6`}>
-          <div>
+        <div className={`grid ${expanded ? 'grid-cols-1 lg:grid-cols-2' : 'grid-cols-1'} gap-6 h-full`}>
+          <div className="rounded-md border w-full h-full flex flex-col"> {/* updated: fill parent, use flex to allow children to grow */}
             <Calendar
               mode="single"
               selected={selectedDate}
               onSelect={(date) => date && setSelectedDate(date)}
-              className="rounded-md border"
+              className="rounded-md border flex-1 w-full h-full"
               modifiers={{
                 hasBooking: datesWithBookings,
                 today: [new Date()]
