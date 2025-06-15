@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -6,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { useBookings } from "@/hooks/useBookings";
 import { format, isSameDay, isToday } from "date-fns";
-import { CalendarPlus, Clock, MapPin, Users } from "lucide-react";
+import { CalendarPlus, Clock, MapPin, Users, Calendar as CalendarIcon } from "lucide-react"; // <-- Lucide's icon
 
 interface BookingCalendarProps {
   expanded?: boolean;
@@ -17,7 +18,7 @@ export const BookingCalendar = ({ expanded = false }: BookingCalendarProps) => {
   const navigate = useNavigate();
   const { data: bookings, isLoading } = useBookings();
 
-  const selectedDateBookings = bookings?.filter(booking => 
+  const selectedDateBookings = bookings?.filter(booking =>
     isSameDay(new Date(booking.start_time), selectedDate)
   ) || [];
 
@@ -36,7 +37,7 @@ export const BookingCalendar = ({ expanded = false }: BookingCalendarProps) => {
 
   if (isLoading) {
     return (
-      <Card className={expanded ? "col-span-full" : ""}>
+      <Card className={expanded ? "col-span-full h-full" : "h-full"}>
         <CardHeader>
           <CardTitle>Booking Calendar</CardTitle>
           <CardDescription>Loading booking data...</CardDescription>
@@ -56,7 +57,7 @@ export const BookingCalendar = ({ expanded = false }: BookingCalendarProps) => {
   }
 
   return (
-    <Card className={expanded ? "col-span-full h-full" : "h-full"}>
+    <Card className={expanded ? "col-span-full h-full flex flex-col" : "h-full flex flex-col"}>
       <CardHeader>
         <div className="flex items-center justify-between">
           <div>
@@ -65,35 +66,37 @@ export const BookingCalendar = ({ expanded = false }: BookingCalendarProps) => {
               View and manage space bookings
             </CardDescription>
           </div>
-          <Button>
+          <Button onClick={() => navigate("/new-booking")}>
             <CalendarPlus className="mr-2 h-4 w-4" />
             New Booking
           </Button>
         </div>
       </CardHeader>
-      <CardContent className="h-full flex flex-col">
+      <CardContent className="flex-1 min-h-0 flex flex-col">
         <div
-          className={`grid ${expanded ? "grid-cols-1 lg:grid-cols-2" : "grid-cols-1"} gap-6 h-full min-h-[550px]`}
-          style={{ minHeight: 400 }}
+          className={`grid ${expanded ? "grid-cols-1 lg:grid-cols-2" : "grid-cols-1"} gap-6 flex-1 min-h-0`}
         >
-          <div className="rounded-md border w-full h-full flex flex-col">
-            <Calendar
-              mode="single"
-              selected={selectedDate}
-              onSelect={(date) => date && setSelectedDate(date)}
-              className="rounded-md border flex-1 w-full h-full"
-              modifiers={{
-                hasBooking: datesWithBookings,
-                today: [new Date()],
-              }}
-              modifiersClassNames={{
-                hasBooking: "bg-blue-100 text-blue-900 font-semibold",
-                today: "bg-orange-100 text-orange-900",
-              }}
-            />
+          {/* Calendar column */}
+          <div className="rounded-md border w-full flex flex-col h-full min-h-0">
+            <div className="flex-1 min-h-0 flex">
+              <Calendar
+                mode="single"
+                selected={selectedDate}
+                onSelect={date => date && setSelectedDate(date)}
+                className="rounded-md border w-full h-full"
+                modifiers={{
+                  hasBooking: datesWithBookings,
+                  today: [new Date()],
+                }}
+                modifiersClassNames={{
+                  hasBooking: "bg-blue-100 text-blue-900 font-semibold",
+                  today: "bg-orange-100 text-orange-900",
+                }}
+              />
+            </div>
           </div>
-
-          <div className="flex flex-col h-full">
+          {/* Bookings column */}
+          <div className="flex flex-col h-full min-h-0">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-semibold">
                 {isToday(selectedDate) ? "Today's Bookings" : format(selectedDate, "PPP")}
@@ -102,17 +105,16 @@ export const BookingCalendar = ({ expanded = false }: BookingCalendarProps) => {
                 {selectedDateBookings.length} bookings
               </Badge>
             </div>
-
-            <div className="space-y-3 flex-1 overflow-y-auto">
+            <div className="space-y-3 flex-1 min-h-0 overflow-y-auto">
               {selectedDateBookings.length === 0 ? (
-                <div className="text-center py-8 text-gray-500">
-                  <Calendar className="mx-auto h-8 w-8 mb-2 opacity-50" />
+                <div className="text-center py-8 text-gray-500 flex flex-col items-center justify-center">
+                  <CalendarIcon className="mx-auto h-8 w-8 mb-2 opacity-50" /> {/* Use icon, not widget! */}
                   <p>No bookings for this date</p>
                 </div>
               ) : (
                 selectedDateBookings.map((booking) => (
-                  <Card 
-                    key={booking.id} 
+                  <Card
+                    key={booking.id}
                     className="cursor-pointer hover:shadow-md transition-shadow"
                     onClick={() => navigate(`/bookings/${booking.id}`)}
                   >
@@ -125,25 +127,21 @@ export const BookingCalendar = ({ expanded = false }: BookingCalendarProps) => {
                           {booking.status || "pending"}
                         </Badge>
                       </div>
-                      
                       <div className="space-y-1 text-sm text-gray-600">
                         <div className="flex items-center">
                           <Clock className="mr-1 h-3 w-3" />
                           {format(new Date(booking.start_time), "p")} - {format(new Date(booking.end_time), "p")}
                         </div>
-                        
                         {booking.resources && (
                           <div className="flex items-center">
                             <MapPin className="mr-1 h-3 w-3" />
                             {booking.resources.name}
                           </div>
                         )}
-                        
                         <div className="flex items-center">
                           <Users className="mr-1 h-3 w-3" />
                           {booking.attendees || 1} attendees
                         </div>
-                        
                         {booking.total_amount && (
                           <div className="text-green-600 font-medium">
                             ${booking.total_amount}

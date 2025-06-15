@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
@@ -65,6 +64,12 @@ export const BookingForm = ({ bookingId, onSuccess }: BookingFormProps) => {
 
   const createMutation = useMutation({
     mutationFn: async (data: any) => {
+      // Validation
+      if (!data.title || !data.resource_id || !data.member_id || !data.start_time || !data.end_time) {
+        throw new Error("Missing required booking fields");
+      }
+      // Extra debugging
+      console.log("Creating booking with data:", data);
       const { error } = await supabase.from("bookings").insert(data);
       if (error) throw error;
     },
@@ -73,13 +78,20 @@ export const BookingForm = ({ bookingId, onSuccess }: BookingFormProps) => {
       queryClient.invalidateQueries({ queryKey: ["bookings"] });
       onSuccess?.();
     },
-    onError: (error) => {
-      toast({ title: "Error", description: "Failed to create booking", variant: "destructive" });
+    onError: (error: any) => {
+      toast({ title: "Error", description: error?.message || "Failed to create booking", variant: "destructive" });
     },
   });
 
   const updateMutation = useMutation({
     mutationFn: async (data: any) => {
+      if (!bookingId) throw new Error("Missing bookingId for update");
+      // Validation
+      if (!data.title || !data.resource_id || !data.member_id || !data.start_time || !data.end_time) {
+        throw new Error("Missing required booking fields");
+      }
+      // Extra debugging
+      console.log("Updating booking with data:", data);
       const { error } = await supabase
         .from("bookings")
         .update(data)
@@ -91,8 +103,8 @@ export const BookingForm = ({ bookingId, onSuccess }: BookingFormProps) => {
       queryClient.invalidateQueries({ queryKey: ["bookings"] });
       onSuccess?.();
     },
-    onError: (error) => {
-      toast({ title: "Error", description: "Failed to update booking", variant: "destructive" });
+    onError: (error: any) => {
+      toast({ title: "Error", description: error?.message || "Failed to update booking", variant: "destructive" });
     },
   });
 
