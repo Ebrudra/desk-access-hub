@@ -27,13 +27,13 @@ export default function Dashboard() {
   const { hasRole } = useAuthRole();
   const isMobile = useIsMobile();
   const activeTab = searchParams.get("tab") || "dashboard";
-  const [searchQuery, setSearchQuery] = useState("");
-  const debouncedQuery = useDebounce(searchQuery, 300);
+  // const [searchQuery, setSearchQuery] = useState("");
+  // const debouncedQuery = useDebounce(searchQuery, 300);
 
   // Only show GlobalSearch bar for EnhancedDashboard and dashboard tab
-  const shouldShowGlobalSearch =
-    (activeTab === "dashboard" || activeTab === "enhanced-dashboard") &&
-    !isMobile;
+  // const shouldShowGlobalSearch =
+  //   (activeTab === "dashboard" || activeTab === "enhanced-dashboard") &&
+  //   !isMobile;
 
   // Determine which dashboard/content to show based on tab param
   const getContent = () => {
@@ -77,24 +77,7 @@ export default function Dashboard() {
           <div className="flex-1 flex flex-col">
             <DashboardHeader />
             <main className="flex-1 p-6">
-              {/* Show Global Search Bar only in dashboard/EnhancedDashboard */}
-              {shouldShowGlobalSearch && (
-                <div>
-                  <GlobalSearch />
-                </div>
-              )}
-
-              {/* Search Results Block, only appears after searching (debouncedQuery) and only when GlobalSearch is visible */}
-              {shouldShowGlobalSearch && debouncedQuery && debouncedQuery.length >= 2 && (
-                <div className="bg-background border rounded-lg shadow-sm mt-6 mb-6 p-4">
-                  <div className="font-semibold mb-2 text-gray-800">
-                    Search Results for &quot;{debouncedQuery}&quot;:
-                  </div>
-                  <div className="text-gray-500 text-sm">
-                    (See detailed results in the block below.)
-                  </div>
-                </div>
-              )}
+              {/* GlobalSearch bar and search results have been removed as requested */}
 
               {/* Main dynamic page content */}
               {getContent()}
