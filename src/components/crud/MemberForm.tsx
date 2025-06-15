@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
@@ -13,21 +12,22 @@ import { useToast } from "@/hooks/use-toast";
 interface MemberFormProps {
   memberId?: string;
   onSuccess?: () => void;
+  prefill?: Partial<typeof formData>;
 }
 
-export const MemberForm = ({ memberId, onSuccess }: MemberFormProps) => {
+export const MemberForm = ({ memberId, onSuccess, prefill }: MemberFormProps) => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [formData, setFormData] = useState({
-    member_id: "",
-    space_id: "",
-    membership_tier: "basic",
-    membership_status: "pending",
-    monthly_rate: "",
-    start_date: "",
-    end_date: "",
-    access_code: "",
-    rfid_card_id: ""
+    member_id: prefill?.member_id || "",
+    space_id: prefill?.space_id || "",
+    membership_tier: prefill?.membership_tier || "basic",
+    membership_status: prefill?.membership_status || "pending",
+    monthly_rate: prefill?.monthly_rate || "",
+    start_date: prefill?.start_date || "",
+    end_date: prefill?.end_date || "",
+    access_code: prefill?.access_code || "",
+    rfid_card_id: prefill?.rfid_card_id || ""
   });
 
   const { data: spaces } = useQuery({

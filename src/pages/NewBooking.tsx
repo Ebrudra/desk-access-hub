@@ -1,4 +1,5 @@
 
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -6,11 +7,41 @@ import { ArrowLeft, Calendar, Clock, Users, MapPin } from "lucide-react";
 import { Navigation } from "@/components/Navigation";
 import { BookingForm } from "@/components/crud/BookingForm";
 
+const roomPresets = [
+  {
+    title: "Meeting Room (4 people)",
+    prefill: {
+      title: "Meeting Room",
+      attendees: 4,
+    }
+  },
+  {
+    title: "Conference Hall (20 people)",
+    prefill: {
+      title: "Conference Hall",
+      attendees: 20,
+    }
+  },
+  {
+    title: "Hot Desk (1 person)",
+    prefill: {
+      title: "Hot Desk",
+      attendees: 1,
+    }
+  },
+];
+
 const NewBooking = () => {
   const navigate = useNavigate();
+  const [formPrefill, setFormPrefill] = useState<any>(null);
 
   const handleBookingSuccess = () => {
-    navigate("/?tab=crud&subtab=bookings");
+    navigate("/dashboard?tab=crud&subtab=bookings");
+  };
+
+  const handleQuickBook = (prefill: any) => {
+    setFormPrefill(prefill);
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   return (
@@ -21,13 +52,12 @@ const NewBooking = () => {
         <div className="mb-6">
           <Button 
             variant="ghost" 
-            onClick={() => navigate("/")}
+            onClick={() => navigate("/dashboard")}
             className="mb-4"
           >
             <ArrowLeft className="mr-2 h-4 w-4" />
             Back to Dashboard
           </Button>
-          
           <h1 className="text-3xl font-bold text-gray-900 mb-2">
             Create New Booking
           </h1>
@@ -38,9 +68,8 @@ const NewBooking = () => {
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2">
-            <BookingForm onSuccess={handleBookingSuccess} />
+            <BookingForm onSuccess={handleBookingSuccess} prefill={formPrefill} />
           </div>
-
           <div className="space-y-6">
             <Card>
               <CardHeader>
@@ -51,18 +80,21 @@ const NewBooking = () => {
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
-                  <Button className="w-full" variant="outline">
-                    <Users className="mr-2 h-4 w-4" />
-                    Meeting Room (4 people)
-                  </Button>
-                  <Button className="w-full" variant="outline">
-                    <MapPin className="mr-2 h-4 w-4" />
-                    Conference Hall (20 people)
-                  </Button>
-                  <Button className="w-full" variant="outline">
-                    <Users className="mr-2 h-4 w-4" />
-                    Hot Desk (1 person)
-                  </Button>
+                  {roomPresets.map((room, idx) => (
+                    <Button
+                      key={idx}
+                      className="w-full"
+                      variant="outline"
+                      onClick={() => handleQuickBook(room.prefill)}
+                    >
+                      {room.title.includes("Meeting") || room.title.includes("Hot Desk") ? (
+                        <Users className="mr-2 h-4 w-4" />
+                      ) : (
+                        <MapPin className="mr-2 h-4 w-4" />
+                      )}
+                      {room.title}
+                    </Button>
+                  ))}
                 </div>
               </CardContent>
             </Card>

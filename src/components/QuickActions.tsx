@@ -1,147 +1,85 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Plus, UserPlus, Calendar, KeyRound, Mail, Settings, Brain } from "lucide-react";
+import { Brain, UserPlus, Calendar, KeyRound, Settings, Plus } from "lucide-react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { createNavigationHandler, quickActionRoutes } from "@/utils/navigationUtils";
 import { useIsMobile } from "@/hooks/use-mobile";
 
+const quickActionFeatures = [
+  {
+    icon: Brain,
+    title: "Smart Booking",
+    description: "AI-powered suggestions for bookings.",
+    action: "smart-booking"
+  },
+  {
+    icon: UserPlus,
+    title: "Add Member",
+    description: "Register new member to your space.",
+    action: "members/new"
+  },
+  {
+    icon: Calendar,
+    title: "New Booking",
+    description: "Create a new booking.",
+    action: "bookings/new"
+  },
+  {
+    icon: KeyRound,
+    title: "Grant Access",
+    description: "Provide space access to a member.",
+    action: "access-codes"
+  }
+];
+
 export const QuickActions = () => {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
-  const navigationHandler = createNavigationHandler(navigate);
   const isMobile = useIsMobile();
 
-  const actions = [
-    {
-      icon: Brain,
-      label: "Smart Booking",
-      description: "AI-powered suggestions",
-      color: "bg-purple-500 hover:bg-purple-600"
-    },
-    {
-      icon: UserPlus,
-      label: "Add Member",
-      description: "Register new member",
-      color: "bg-blue-500 hover:bg-blue-600"
-    },
-    {
-      icon: Calendar,
-      label: "New Booking",
-      description: "Create space booking",
-      color: "bg-green-500 hover:bg-green-600"
-    },
-    {
-      icon: KeyRound,
-      label: "Grant Access",
-      description: "Provide space access",
-      color: "bg-orange-500 hover:bg-orange-600"
-    }
-  ];
-
-  const handleAction = (actionLabel: string) => {
-    console.log(`Triggered action: ${actionLabel}`);
-    
-    if (actionLabel === "Smart Booking") {
-      const newSearchParams = new URLSearchParams(searchParams);
-      newSearchParams.set('tab', 'smart-booking');
-      setSearchParams(newSearchParams);
-      return;
-    }
-    
-    const route = quickActionRoutes[actionLabel as keyof typeof quickActionRoutes];
-    if (route) {
-      if (route.type === 'tab') {
-        const newSearchParams = new URLSearchParams(searchParams);
-        newSearchParams.set('tab', route.target);
-        setSearchParams(newSearchParams);
-      } else {
-        navigationHandler(route);
-      }
+  const handleAction = (action: string) => {
+    if (action === "smart-booking") {
+      const params = new URLSearchParams(searchParams);
+      params.set('tab', 'smart-booking');
+      setSearchParams(params);
+    } else if (action === "members/new") {
+      navigate("/members/new");
+    } else if (action === "bookings/new") {
+      navigate("/bookings/new");
+    } else if (action === "access-codes") {
+      // This is now specifically fixed to new requirements:
+      navigate("/dashboard?tab=access-codes");
     }
   };
 
-  const handleSettings = () => {
-    const newSearchParams = new URLSearchParams(searchParams);
-    newSearchParams.set('tab', 'crud');
-    setSearchParams(newSearchParams);
-  };
-
-  if (isMobile) {
-    return (
-      <Card className="hover:shadow-lg transition-shadow duration-200">
-        <CardHeader className="pb-4">
-          <CardTitle className="flex items-center space-x-2 text-lg">
-            <Plus className="h-5 w-5" />
-            <span>Quick Actions</span>
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-3">
-          {actions.map((action, index) => (
-            <Button
-              key={index}
-              variant="outline"
-              className={`w-full h-16 flex items-center justify-start space-x-4 text-white border-0 ${action.color} transition-all duration-200`}
-              onClick={() => handleAction(action.label)}
-            >
-              <action.icon className="h-6 w-6" />
-              <div className="text-left">
-                <div className="text-sm font-medium">{action.label}</div>
-                <div className="text-xs opacity-90">{action.description}</div>
-              </div>
-            </Button>
-          ))}
-          
-          <div className="pt-3 border-t">
-            <Button 
-              variant="ghost" 
-              className="w-full flex items-center justify-start space-x-3 h-12"
-              onClick={handleSettings}
-            >
-              <Settings className="h-5 w-5" />
-              <span>System Settings</span>
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
-    );
-  }
-
+  // Use bento/micro-animation style layout
   return (
-    <Card className="hover:shadow-lg transition-shadow duration-200">
+    <Card className="rounded-2xl shadow-md bg-gradient-to-br from-indigo-50/70 to-white/90 overflow-hidden">
       <CardHeader>
-        <CardTitle className="flex items-center space-x-2">
-          <Plus className="h-5 w-5" />
-          <span>Quick Actions</span>
+        <CardTitle className="flex items-center gap-2">
+          <Plus className="h-5 w-5 text-indigo-600" />
+          Quick Actions
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="grid grid-cols-2 gap-3">
-          {actions.map((action, index) => (
-            <Button
-              key={index}
-              variant="outline"
-              className={`h-20 flex flex-col items-center justify-center space-y-2 text-white border-0 ${action.color} transition-all duration-200 hover:scale-105`}
-              onClick={() => handleAction(action.label)}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 animate-fade-in">
+          {quickActionFeatures.map(({ icon: Icon, title, description, action }, idx) => (
+            <div
+              key={idx}
+              tabIndex={0}
+              role="button"
+              onClick={() => handleAction(action)}
+              className="group rounded-xl px-5 py-6 bg-gradient-to-br from-white to-indigo-100 shadow group-hover:shadow-lg border border-indigo-100 cursor-pointer focus:outline-none transform transition-transform duration-200 ease-in-out hover:scale-105 hover:bg-indigo-50/60"
+              style={{ minHeight: "120px" }}
             >
-              <action.icon className="h-5 w-5" />
-              <div className="text-center">
-                <div className="text-sm font-medium">{action.label}</div>
-                <div className="text-xs opacity-90">{action.description}</div>
+              <div className="flex items-center gap-3 mb-2">
+                <Icon className="h-7 w-7 text-indigo-500 group-hover:scale-125 transition-transform drop-shadow" />
+                <span className="text-lg font-semibold text-indigo-800">{title}</span>
               </div>
-            </Button>
+              <div className="text-sm text-indigo-800 opacity-80">{description}</div>
+            </div>
           ))}
-        </div>
-        
-        <div className="mt-4 pt-4 border-t">
-          <Button 
-            variant="ghost" 
-            className="w-full flex items-center space-x-2"
-            onClick={handleSettings}
-          >
-            <Settings className="h-4 w-4" />
-            <span>System Settings</span>
-          </Button>
         </div>
       </CardContent>
     </Card>

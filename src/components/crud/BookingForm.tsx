@@ -13,20 +13,21 @@ import { BookingSpecialRequests } from "@/components/forms/BookingSpecialRequest
 interface BookingFormProps {
   bookingId?: string;
   onSuccess?: () => void;
+  prefill?: Partial<typeof formData>;
 }
 
-export const BookingForm = ({ bookingId, onSuccess }: BookingFormProps) => {
+export const BookingForm = ({ bookingId, onSuccess, prefill }: BookingFormProps) => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [formData, setFormData] = useState({
-    title: "",
-    description: "",
-    resource_id: "",
-    member_id: "",
-    start_time: "",
-    end_time: "",
-    attendees: 1,
-    special_requests: ""
+    title: prefill?.title || "",
+    description: prefill?.description || "",
+    resource_id: prefill?.resource_id || "",
+    member_id: prefill?.member_id || "",
+    start_time: prefill?.start_time || "",
+    end_time: prefill?.end_time || "",
+    attendees: prefill?.attendees ?? 1,
+    special_requests: prefill?.special_requests || ""
   });
 
   const { data: resources } = useQuery({
@@ -110,13 +111,14 @@ export const BookingForm = ({ bookingId, onSuccess }: BookingFormProps) => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    // Use current formData or fallback to logged-in user's id if required
     const data = {
       ...formData,
       attendees: parseInt(formData.attendees.toString()),
       start_time: new Date(formData.start_time).toISOString(),
       end_time: new Date(formData.end_time).toISOString(),
+      member_id: formData.member_id,
     };
-
     if (bookingId) {
       updateMutation.mutate(data);
     } else {

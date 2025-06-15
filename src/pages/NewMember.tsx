@@ -1,28 +1,49 @@
 
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, UserPlus, Mail, Phone } from "lucide-react";
 import { Navigation } from "@/components/Navigation";
+import { MemberForm } from "@/components/crud/MemberForm";
+
+const quickPresets = [
+  {
+    label: "Invite via Email",
+    icon: <Mail className="mr-2 h-4 w-4" />,
+    prefill: { membership_status: "pending" }
+  },
+  {
+    label: "Add via Phone",
+    icon: <Phone className="mr-2 h-4 w-4" />,
+    prefill: { membership_status: "active" }
+  },
+  {
+    label: "Bulk Import",
+    icon: <UserPlus className="mr-2 h-4 w-4" />,
+    prefill: { membership_tier: "basic" }
+  },
+];
 
 const NewMember = () => {
   const navigate = useNavigate();
+  const [formPrefill, setFormPrefill] = useState<any>(null);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
       <Navigation />
-      
+
       <div className="container mx-auto px-4 py-8">
         <div className="mb-6">
-          <Button 
-            variant="ghost" 
-            onClick={() => navigate("/")}
+          <Button
+            variant="ghost"
+            onClick={() => navigate("/dashboard?tab=crud&subtab=members")}
             className="mb-4"
           >
             <ArrowLeft className="mr-2 h-4 w-4" />
             Back to Dashboard
           </Button>
-          
+
           <h1 className="text-3xl font-bold text-gray-900 mb-2">
             Add New Member
           </h1>
@@ -44,16 +65,10 @@ const NewMember = () => {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="text-center py-8">
-                  <p className="text-gray-500 mb-4">Member registration form will be implemented in next phase</p>
-                  <Button onClick={() => navigate("/?tab=crud&subtab=members")}>
-                    Go to Member Management
-                  </Button>
-                </div>
+                <MemberForm onSuccess={() => navigate("/dashboard?tab=crud&subtab=members")} prefill={formPrefill} />
               </CardContent>
             </Card>
           </div>
-
           <div className="space-y-6">
             <Card>
               <CardHeader>
@@ -64,18 +79,17 @@ const NewMember = () => {
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
-                  <Button className="w-full" variant="outline">
-                    <Mail className="mr-2 h-4 w-4" />
-                    Invite via Email
-                  </Button>
-                  <Button className="w-full" variant="outline">
-                    <Phone className="mr-2 h-4 w-4" />
-                    Add via Phone
-                  </Button>
-                  <Button className="w-full" variant="outline">
-                    <UserPlus className="mr-2 h-4 w-4" />
-                    Bulk Import
-                  </Button>
+                  {quickPresets.map((preset, idx) => (
+                    <Button
+                      key={idx}
+                      className="w-full"
+                      variant="outline"
+                      onClick={() => setFormPrefill(preset.prefill)}
+                    >
+                      {preset.icon}
+                      {preset.label}
+                    </Button>
+                  ))}
                 </div>
               </CardContent>
             </Card>
