@@ -62,15 +62,21 @@ export const SpacesList = () => {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
           {spaces.map((space: any) => (
-            <Card key={space.id}>
-              <CardHeader>
-                <CardTitle>{space.name}</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-gray-700 mb-2">{space.description}</div>
-                <div className="text-xs text-gray-500">{space.city}, {space.country}</div>
-              </CardContent>
-            </Card>
+            <a
+              key={space.id}
+              href={`/spaces/${space.id}`}
+              className="block"
+            >
+              <Card className="hover:ring-2 hover:ring-primary/50 transition cursor-pointer">
+                <CardHeader>
+                  <CardTitle>{space.name}</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-gray-700 mb-2">{space.description}</div>
+                  <div className="text-xs text-gray-500">{space.city}, {space.country}</div>
+                </CardContent>
+              </Card>
+            </a>
           ))}
         </div>
       )}

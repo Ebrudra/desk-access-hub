@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
@@ -50,14 +49,9 @@ export function DashboardHeader() {
           <SidebarTrigger />
           <h1 className="text-xl font-semibold text-gray-900">Dashboard</h1>
         </div>
-
         <div className="flex items-center space-x-4">
           <ThemeToggle />
           <LanguageToggle />
-          <ConnectionStatus 
-            status={realtimeData.connectionStatus}
-            className="hidden sm:flex"
-          />
           <LiveUserCount />
           
           {user && (

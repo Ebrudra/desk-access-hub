@@ -197,6 +197,24 @@ export const GlobalSearch = () => {
     return colors[type as keyof typeof colors] || 'bg-gray-100 text-gray-800';
   };
 
+  // Helper: get URL for each result type
+  const getResultUrl = (result) => {
+    switch (result.type) {
+      case 'booking':
+        return `/bookings/${result.id}`;
+      case 'member':
+        return `/members/${result.id}`;
+      case 'space':
+        return `/spaces/${result.id}`;
+      case 'resource':
+        return `/resources/${result.id}`;
+      case 'event':
+        return `/events/${result.id}`;
+      default:
+        return "#";
+    }
+  };
+
   return (
     <div className="relative">
       <div className="flex items-center space-x-2">
@@ -260,9 +278,10 @@ export const GlobalSearch = () => {
               ) : searchResults && searchResults.length > 0 ? (
                 <div className="py-2">
                   {searchResults.map((result) => (
-                    <div
+                    <a
                       key={`${result.type}-${result.id}`}
-                      className="px-4 py-3 cursor-default border-b last:border-b-0"
+                      href={getResultUrl(result)}
+                      className="block px-4 py-3 cursor-pointer border-b last:border-b-0 hover:bg-gray-100 transition"
                     >
                       <div className="flex items-start space-x-3">
                         <div className="flex-shrink-0 mt-1">
@@ -283,7 +302,7 @@ export const GlobalSearch = () => {
                           )}
                         </div>
                       </div>
-                    </div>
+                    </a>
                   ))}
                 </div>
               ) : (
