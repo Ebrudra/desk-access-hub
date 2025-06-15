@@ -1,3 +1,4 @@
+
 import { Calendar, Home, Users, BarChart3, Settings, CreditCard, Shield, Sparkles, Key } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import {
@@ -12,7 +13,9 @@ import {
   SidebarHeader,
 } from "@/components/ui/sidebar";
 import { useAuthRole } from "@/hooks/useAuthRole";
+import { ConnectionStatus } from "@/components/ui/connection-status";
 
+// Lateral menu items including Access Code and Billing
 const menuItems = [
   {
     title: "Dashboard",
@@ -89,6 +92,13 @@ export function DashboardSidebar() {
           <span className="text-xl font-bold">WorkSpace Hub</span>
         </Link>
       </SidebarHeader>
+
+      {/* Connection Status tag */}
+      <div className="pl-5 pb-2 mt-2">
+        {/* In a real app, status would be dynamic */}
+        <ConnectionStatus status="connected" />
+      </div>
+      
       <SidebarContent>
         <SidebarGroup>
           <SidebarGroupLabel>Main Menu</SidebarGroupLabel>

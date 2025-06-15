@@ -1,6 +1,6 @@
+
 import { useState } from "react";
 import { useSearchParams } from "react-router-dom";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { EnhancedDashboard } from "@/components/dashboards/EnhancedDashboard";
@@ -20,13 +20,42 @@ import { useAuthRole } from "@/hooks/useAuthRole";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { DashboardSidebar } from "@/components/dashboard/DashboardSidebar";
 import { DashboardHeader } from "@/components/dashboard/DashboardHeader";
-import { CoworkingSpacesList } from "@/components/dashboard/CoworkingSpacesList";
+import { GlobalSearch } from "@/components/search/GlobalSearch";
+import { useDebounce } from "@/hooks/useDebounce";
 
 export default function Dashboard() {
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const { hasRole } = useAuthRole();
   const isMobile = useIsMobile();
   const activeTab = searchParams.get("tab") || "dashboard";
+  const [searchQuery, setSearchQuery] = useState("");
+  const debouncedQuery = useDebounce(searchQuery, 300);
+
+  // Determine which dashboard/content to show based on tab param
+  const getContent = () => {
+    switch (activeTab) {
+      case "dashboard":
+        return <EnhancedDashboard />;
+      case "calendar":
+        return <BookingCalendar />;
+      case "smart-booking":
+        return <SmartBookingDashboard />;
+      case "crud":
+        return (
+          <CrudManagement />
+        );
+      case "analytics":
+        return <AnalyticsDashboard />;
+      case "access-codes":
+        return <AccessCodesDisplay />;
+      case "payments":
+        return <PaymentIntegration />;
+      case "billing":
+        return <BillingDashboard />;
+      default:
+        return <EnhancedDashboard />;
+    }
+  };
 
   if (isMobile) {
     return (
@@ -44,84 +73,33 @@ export default function Dashboard() {
           <div className="flex-1 flex flex-col">
             <DashboardHeader />
             <main className="flex-1 p-6">
-              <Tabs value={activeTab} className="space-y-6">
-                {/* Hide Access Codes and Billing tabs from the header (TabsList) */}
-                <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 lg:grid-cols-8">
-                  <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
-                  <TabsTrigger value="calendar">Calendar</TabsTrigger>
-                  <TabsTrigger value="smart-booking">Smart Booking</TabsTrigger>
-                  <TabsTrigger value="crud">Management</TabsTrigger>
-                  <TabsTrigger value="analytics">Analytics</TabsTrigger>
-                  <TabsTrigger value="payments">Payments</TabsTrigger>
-                  {/* Removed TabsTrigger for access-codes */}
-                  {/* Removed TabsTrigger for billing */}
-                </TabsList>
+              {/* Global Search Bar */}
+              <div>
+                <GlobalSearch />
+              </div>
 
-                <TabsContent value="dashboard">
-                  <EnhancedDashboard />
-                </TabsContent>
+              {/* Search Results Block, only appears after searching (debouncedQuery) */}
+              {debouncedQuery && debouncedQuery.length >= 2 && (
+                <div className="bg-background border rounded-lg shadow-sm mt-6 mb-6 p-4">
+                  {/* You can customize this with another component if needed */}
+                  <div className="font-semibold mb-2 text-gray-800">
+                    Search Results for &quot;{debouncedQuery}&quot;:
+                  </div>
+                  {/* The GlobalSearch already displays results in dropdown, 
+                      you could put advanced/aggregated results here */}
+                  {/* Since actual result aggregation is in GlobalSearch, 
+                      you might want to enhance this with e.g. tips, filters, 
+                      or a compact summary */}
+                  {/* If you want the main results (rather than the dropdown), 
+                      you would need to extract the logic from GlobalSearch */}
+                  <div className="text-gray-500 text-sm">
+                    (See detailed results in the dropdown above.)
+                  </div>
+                </div>
+              )}
 
-                <TabsContent value="calendar">
-                  <BookingCalendar />
-                </TabsContent>
-
-                <TabsContent value="smart-booking">
-                  <SmartBookingDashboard />
-                </TabsContent>
-
-                <TabsContent value="crud">
-                  <Tabs defaultValue="overview" className="space-y-4">
-                    <TabsList>
-                      <TabsTrigger value="overview">Overview</TabsTrigger>
-                      <TabsTrigger value="access-control">Access Control</TabsTrigger>
-                      <TabsTrigger value="calendar-sync">Calendar Sync</TabsTrigger>
-                      <TabsTrigger value="notifications">Notifications</TabsTrigger>
-                      {hasRole('admin') && (
-                        <TabsTrigger value="user-roles">User Roles</TabsTrigger>
-                      )}
-                    </TabsList>
-
-                    <TabsContent value="overview">
-                      <CrudManagement />
-                    </TabsContent>
-
-                    <TabsContent value="access-control">
-                      <AccessControl />
-                    </TabsContent>
-
-                    <TabsContent value="calendar-sync">
-                      <CalendarSync />
-                    </TabsContent>
-
-                    <TabsContent value="notifications">
-                      <NotificationCenter />
-                    </TabsContent>
-
-                    {hasRole('admin') && (
-                      <TabsContent value="user-roles">
-                        <UserRoleManager />
-                      </TabsContent>
-                    )}
-                  </Tabs>
-                </TabsContent>
-
-                <TabsContent value="analytics">
-                  <AnalyticsDashboard />
-                </TabsContent>
-
-                {/* Keep tab contents for direct routing */}
-                <TabsContent value="access-codes">
-                  <AccessCodesDisplay />
-                </TabsContent>
-
-                <TabsContent value="payments">
-                  <PaymentIntegration />
-                </TabsContent>
-
-                <TabsContent value="billing">
-                  <BillingDashboard />
-                </TabsContent>
-              </Tabs>
+              {/* Main dynamic page content */}
+              {getContent()}
             </main>
           </div>
         </div>
