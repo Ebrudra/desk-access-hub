@@ -33,7 +33,12 @@ export const useUserPresence = (channelName: string = 'workspace') => {
     channel
       .on('presence', { event: 'sync' }, () => {
         const newState = channel.presenceState();
-        setPresenceState(newState);
+        // Transform the presence state to match our expected type
+        const transformedState: Record<string, UserPresence[]> = {};
+        Object.entries(newState).forEach(([key, presences]) => {
+          transformedState[key] = presences as UserPresence[];
+        });
+        setPresenceState(transformedState);
       })
       .on('presence', { event: 'join' }, ({ key, newPresences }) => {
         console.log('User joined:', key, newPresences);

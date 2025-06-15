@@ -11,6 +11,26 @@ export const useRealtimeNotifications = () => {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
 
+  // Map database notification types to UI types
+  const mapNotificationType = (dbType: string): "info" | "success" | "warning" | "error" => {
+    switch (dbType) {
+      case 'booking':
+        return 'info';
+      case 'payment':
+        return 'success';
+      case 'event':
+        return 'info';
+      case 'system':
+        return 'warning';
+      case 'access':
+        return 'info';
+      case 'error':
+        return 'error';
+      default:
+        return 'info';
+    }
+  };
+
   useEffect(() => {
     if (!user) return;
 
@@ -31,7 +51,7 @@ export const useRealtimeNotifications = () => {
             id: newNotification.id,
             title: newNotification.title,
             message: newNotification.message,
-            type: newNotification.type,
+            type: mapNotificationType(newNotification.type),
             timestamp: new Date(newNotification.created_at),
             read: newNotification.is_read,
             action: newNotification.action_url ? {
@@ -78,7 +98,7 @@ export const useRealtimeNotifications = () => {
         id: n.id,
         title: n.title,
         message: n.message,
-        type: n.type,
+        type: mapNotificationType(n.type),
         timestamp: new Date(n.created_at),
         read: n.is_read,
         action: n.action_url ? {
