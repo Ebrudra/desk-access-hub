@@ -1,198 +1,118 @@
 
+import { useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { AnalyticsDashboard } from "@/components/analytics/AnalyticsDashboard";
-import { Navigation } from "@/components/Navigation";
-import { SpaceUtilization } from "@/components/SpaceUtilization";
-import { BookingCalendar } from "@/components/BookingCalendar";
-import { MemberList } from "@/components/MemberList";
-import { SmartBookingDashboard } from "@/components/booking/SmartBookingDashboard";
-import { CrudManagement } from "@/components/crud/CrudManagement";
-import { MobileTabNavigation } from "@/components/ui/mobile-tab-navigation";
-import { RoleManagement } from "@/components/RoleManagement";
-import { RoleDashboardRenderer } from "@/components/RoleDashboardRenderer";
+import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { EnhancedDashboard } from "@/components/dashboards/EnhancedDashboard";
 import { MobileDashboard } from "@/components/dashboards/MobileDashboard";
-import { RealtimeNotifications } from "@/components/notifications/RealtimeNotifications";
-import { useSearchParams } from "react-router-dom";
-import { useIsMobile } from "@/hooks/use-mobile";
+import { BookingCalendar } from "@/components/BookingCalendar";
+import { SmartBookingDashboard } from "@/components/booking/SmartBookingDashboard";
+import { CrudManagement } from "@/components/crud/CrudManagement";
+import { AnalyticsDashboard } from "@/components/analytics/AnalyticsDashboard";
+import { AccessCodesDisplay } from "@/components/member/AccessCodesDisplay";
+import { AccessControl } from "@/components/AccessControl";
+import { PaymentIntegration } from "@/components/payments/PaymentIntegration";
+import { CalendarSync } from "@/components/integrations/CalendarSync";
+import { BillingDashboard } from "@/components/billing/BillingDashboard";
+import { NotificationCenter } from "@/components/notifications/NotificationCenter";
+import { UserRoleManager } from "@/components/admin/UserRoleManager";
 import { useAuthRole } from "@/hooks/useAuthRole";
+import { useMobile } from "@/hooks/use-mobile";
 
-const Index = () => {
-  const [searchParams, setSearchParams] = useSearchParams();
-  const currentTab = searchParams.get("tab") || "dashboard";
-  const isMobile = useIsMobile();
-  const { role, hasRole } = useAuthRole();
-
-  const handleTabChange = (value: string) => {
-    setSearchParams({ tab: value });
-  };
-
-  // Define tabs based on user role
-  const getTabsForRole = () => {
-    const baseTabs = [
-      { value: "dashboard", label: "Dashboard", icon: "Home" }
-    ];
-
-    if (hasRole('member')) {
-      baseTabs.push(
-        { value: "smart-booking", label: "Smart Booking", icon: "Brain" },
-        { value: "bookings", label: "My Bookings", icon: "Calendar" },
-        { value: "spaces", label: "Browse Spaces", icon: "Building2" },
-        { value: "access-codes", label: "Access Codes", icon: "KeyRound" },
-        { value: "notifications", label: "Notifications", icon: "Bell" }
-      );
-    }
-
-    if (hasRole('manager')) {
-      baseTabs.push(
-        { value: "analytics", label: "Analytics", icon: "BarChart3" },
-        { value: "members", label: "Members", icon: "Users" },
-        { value: "calendar", label: "Calendar", icon: "CalendarDays" },
-        { value: "access-control", label: "Access Control", icon: "Shield" },
-        { value: "issues", label: "Issues", icon: "AlertTriangle" }
-      );
-    }
-
-    if (hasRole('admin')) {
-      baseTabs.push(
-        { value: "crud", label: "Management", icon: "Settings" },
-        { value: "roles", label: "Roles", icon: "Shield" },
-        { value: "analytics", label: "Analytics", icon: "BarChart3" },
-        { value: "enhanced", label: "Enhanced Features", icon: "Zap" }
-      );
-    }
-
-    return baseTabs;
-  };
-
-  const tabs = getTabsForRole();
-
-  const renderTabContent = (tabValue: string) => {
-    switch (tabValue) {
-      case "dashboard":
-        return isMobile ? <MobileDashboard /> : <RoleDashboardRenderer />;
-      case "enhanced":
-        return <EnhancedDashboard />;
-      case "notifications":
-        return <RealtimeNotifications />;
-      case "smart-booking":
-        return hasRole('member') ? <SmartBookingDashboard /> : <div>Access denied</div>;
-      case "analytics":
-        return hasRole('manager') ? <AnalyticsDashboard /> : <div>Access denied</div>;
-      case "bookings":
-        return hasRole('member') ? (
-          <div className="text-center py-12">
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">My Bookings</h2>
-            <p className="text-gray-600 mb-6">View and manage your reservations</p>
-          </div>
-        ) : <div>Access denied</div>;
-      case "members":
-        return hasRole('manager') ? <MemberList /> : <div>Access denied</div>;
-      case "spaces":
-        return (
-          <div className="text-center py-12">
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">Available Spaces</h2>
-            <p className="text-gray-600 mb-6">Browse and book workspace resources</p>
-            <SpaceUtilization />
-          </div>
-        );
-      case "calendar":
-        return hasRole('manager') ? <BookingCalendar /> : <div>Access denied</div>;
-      case "crud":
-        return hasRole('admin') ? <CrudManagement /> : <div>Access denied</div>;
-      case "roles":
-        return hasRole('admin') ? <RoleManagement /> : <div>Access denied</div>;
-      case "access-codes":
-        return hasRole('member') ? (
-          <div className="text-center py-12">
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">Access Codes</h2>
-            <p className="text-gray-600 mb-6">Your active access codes and QR codes</p>
-          </div>
-        ) : <div>Access denied</div>;
-      case "access-control":
-        return hasRole('manager') ? (
-          <div className="text-center py-12">
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">Access Control</h2>
-            <p className="text-gray-600 mb-6">Manage facility access and permissions</p>
-          </div>
-        ) : <div>Access denied</div>;
-      case "issues":
-        return hasRole('manager') ? (
-          <div className="text-center py-12">
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">Issues & Reports</h2>
-            <p className="text-gray-600 mb-6">Handle facility maintenance and member reports</p>
-          </div>
-        ) : <div>Access denied</div>;
-      default:
-        return null;
-    }
-  };
+export default function Index() {
+  const [searchParams] = useSearchParams();
+  const { hasRole } = useAuthRole();
+  const isMobile = useMobile();
+  const activeTab = searchParams.get("tab") || "dashboard";
 
   if (isMobile) {
     return (
-      <div className="min-h-screen bg-gray-50">
-        <Navigation />
-        
-        <main className="pb-20">
-          <div className="px-4 py-6">
-            <div className="mb-6">
-              <h1 className="text-2xl font-bold text-gray-900 mb-1">
-                WorkSpace Hub
-              </h1>
-              <p className="text-sm text-gray-600">
-                {role === 'admin' ? 'Administration Dashboard' : 
-                 role === 'manager' ? 'Operations Dashboard' : 
-                 'Member Dashboard'}
-              </p>
-            </div>
-
-            {renderTabContent(currentTab)}
-          </div>
-        </main>
-
-        <MobileTabNavigation 
-          tabs={tabs}
-          currentTab={currentTab}
-          onTabChange={handleTabChange}
-        />
-      </div>
+      <ProtectedRoute>
+        <MobileDashboard />
+      </ProtectedRoute>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <Navigation />
-      
-      <main className="container mx-auto px-4 py-8">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">
-            WorkSpace Hub
-          </h1>
-          <p className="text-gray-600">
-            {role === 'admin' ? 'Administration Dashboard - Manage your coworking platform' : 
-             role === 'manager' ? 'Operations Dashboard - Daily facility management' : 
-             'Member Dashboard - Your coworking experience'}
-          </p>
-        </div>
-
-        <Tabs value={currentTab} onValueChange={handleTabChange} className="space-y-6">
-          <TabsList className={`grid w-full ${tabs.length <= 7 ? `grid-cols-${Math.min(tabs.length, 7)}` : 'grid-cols-7'}`}>
-            {tabs.slice(0, 7).map((tab) => (
-              <TabsTrigger key={tab.value} value={tab.value}>
-                {tab.label}
-              </TabsTrigger>
-            ))}
+    <ProtectedRoute>
+      <div className="container mx-auto px-4 py-8">
+        <Tabs value={activeTab} className="space-y-6">
+          <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 lg:grid-cols-8">
+            <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
+            <TabsTrigger value="calendar">Calendar</TabsTrigger>
+            <TabsTrigger value="smart-booking">Smart Booking</TabsTrigger>
+            <TabsTrigger value="crud">Management</TabsTrigger>
+            <TabsTrigger value="analytics">Analytics</TabsTrigger>
+            <TabsTrigger value="access-codes">Access Codes</TabsTrigger>
+            <TabsTrigger value="payments">Payments</TabsTrigger>
+            <TabsTrigger value="billing">Billing</TabsTrigger>
           </TabsList>
 
-          {tabs.map((tab) => (
-            <TabsContent key={tab.value} value={tab.value}>
-              {renderTabContent(tab.value)}
-            </TabsContent>
-          ))}
-        </Tabs>
-      </main>
-    </div>
-  );
-};
+          <TabsContent value="dashboard">
+            <EnhancedDashboard />
+          </TabsContent>
 
-export default Index;
+          <TabsContent value="calendar">
+            <BookingCalendar />
+          </TabsContent>
+
+          <TabsContent value="smart-booking">
+            <SmartBookingDashboard />
+          </TabsContent>
+
+          <TabsContent value="crud">
+            <Tabs defaultValue="overview" className="space-y-4">
+              <TabsList>
+                <TabsTrigger value="overview">Overview</TabsTrigger>
+                <TabsTrigger value="access-control">Access Control</TabsTrigger>
+                <TabsTrigger value="calendar-sync">Calendar Sync</TabsTrigger>
+                <TabsTrigger value="notifications">Notifications</TabsTrigger>
+                {hasRole('admin') && (
+                  <TabsTrigger value="user-roles">User Roles</TabsTrigger>
+                )}
+              </TabsList>
+
+              <TabsContent value="overview">
+                <CrudManagement />
+              </TabsContent>
+
+              <TabsContent value="access-control">
+                <AccessControl />
+              </TabsContent>
+
+              <TabsContent value="calendar-sync">
+                <CalendarSync />
+              </TabsContent>
+
+              <TabsContent value="notifications">
+                <NotificationCenter />
+              </TabsContent>
+
+              {hasRole('admin') && (
+                <TabsContent value="user-roles">
+                  <UserRoleManager />
+                </TabsContent>
+              )}
+            </Tabs>
+          </TabsContent>
+
+          <TabsContent value="analytics">
+            <AnalyticsDashboard />
+          </TabsContent>
+
+          <TabsContent value="access-codes">
+            <AccessCodesDisplay />
+          </TabsContent>
+
+          <TabsContent value="payments">
+            <PaymentIntegration />
+          </TabsContent>
+
+          <TabsContent value="billing">
+            <BillingDashboard />
+          </TabsContent>
+        </Tabs>
+      </div>
+    </ProtectedRoute>
+  );
+}
