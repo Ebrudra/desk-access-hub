@@ -83,7 +83,7 @@ const BlogPage = () => {
       <section className="bg-gradient-to-r from-blue-50 to-purple-50 py-20">
         <div className="container mx-auto px-4 text-center">
           <h1 className="text-4xl md:text-6xl font-bold text-gray-900 mb-6">
-            Coworking Success Stories & Insights
+            Coworking Success Stories &amp; Insights
           </h1>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto mb-8">
             Learn from industry experts and successful space operators. Discover proven strategies, 
@@ -227,7 +227,7 @@ const BlogPage = () => {
             <span className="text-xl font-bold text-gray-900">WorkspaceHub</span>
           </Link>
           <p className="text-gray-600">
-            © 2024 WorkspaceHub. Empowering coworking communities worldwide.
+            &copy; 2024 WorkspaceHub. Empowering coworking communities worldwide.
           </p>
         </div>
       </footer>
