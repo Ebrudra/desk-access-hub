@@ -1,13 +1,29 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useSearchParams } from "react-router-dom";
-import { ClipboardCheck, Users, AlertTriangle, BarChart3, KeyRound, Calendar } from "lucide-react";
+import { 
+  ClipboardCheck, 
+  Users, 
+  AlertTriangle, 
+  BarChart3, 
+  KeyRound, 
+  Calendar,
+  Activity,
+  Settings,
+  CheckSquare
+} from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { DailyOperations } from "@/components/manager/DailyOperations";
+import { StaffManagement } from "@/components/manager/StaffManagement";
+import { FacilityMonitoring } from "@/components/manager/FacilityMonitoring";
+import { TaskManagement } from "@/components/manager/TaskManagement";
 
 export const ManagerDashboard = () => {
   const [searchParams, setSearchParams] = useSearchParams();
+  const activeTab = searchParams.get('manager-tab') || 'overview';
 
   const { data: todayStats } = useQuery({
     queryKey: ["manager-today-stats"],
@@ -40,35 +56,41 @@ export const ManagerDashboard = () => {
     }
   });
 
+  const setManagerTab = (tab: string) => {
+    const newSearchParams = new URLSearchParams(searchParams);
+    newSearchParams.set('manager-tab', tab);
+    setSearchParams(newSearchParams);
+  };
+
   const operationalActions = [
     {
       icon: ClipboardCheck,
       title: "Approve Bookings",
       description: `${todayStats?.pendingBookings || 0} pending`,
-      action: () => setSearchParams({ tab: "crud", subtab: "bookings" }),
+      action: () => setManagerTab("operations"),
       color: "bg-yellow-500 hover:bg-yellow-600",
       urgent: (todayStats?.pendingBookings || 0) > 0
     },
     {
       icon: Users,
-      title: "Member Check-ins",
-      description: "Monitor daily activity",
-      action: () => setSearchParams({ tab: "members" }),
+      title: "Staff Management",
+      description: "Monitor team activity",
+      action: () => setManagerTab("staff"),
       color: "bg-blue-500 hover:bg-blue-600"
     },
     {
-      icon: KeyRound,
-      title: "Access Control",
-      description: "Manage entry permissions",
-      action: () => setSearchParams({ tab: "access-control" }),
+      icon: Settings,
+      title: "Facility Control",
+      description: "Monitor systems",
+      action: () => setManagerTab("facility"),
       color: "bg-green-500 hover:bg-green-600"
     },
     {
-      icon: AlertTriangle,
-      title: "Issues & Reports",
-      description: "Handle facility issues",
-      action: () => setSearchParams({ tab: "issues" }),
-      color: "bg-red-500 hover:bg-red-600"
+      icon: CheckSquare,
+      title: "Task Management",
+      description: "Assign & track tasks",
+      action: () => setManagerTab("tasks"),
+      color: "bg-purple-500 hover:bg-purple-600"
     }
   ];
 
@@ -101,107 +123,135 @@ export const ManagerDashboard = () => {
 
   return (
     <div className="space-y-6">
-      {/* Stats Overview */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        {statsCards.map((stat, index) => (
-          <Card key={index}>
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-600">{stat.title}</p>
-                  <p className={`text-2xl font-bold ${stat.color}`}>{stat.value}</p>
-                </div>
-                <stat.icon className={`h-8 w-8 ${stat.color}`} />
+      <Tabs value={activeTab} onValueChange={setManagerTab}>
+        <TabsList className="grid w-full grid-cols-5">
+          <TabsTrigger value="overview">Overview</TabsTrigger>
+          <TabsTrigger value="operations">Operations</TabsTrigger>
+          <TabsTrigger value="staff">Staff</TabsTrigger>
+          <TabsTrigger value="facility">Facility</TabsTrigger>
+          <TabsTrigger value="tasks">Tasks</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="overview" className="space-y-6">
+          {/* Stats Overview */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            {statsCards.map((stat, index) => (
+              <Card key={index}>
+                <CardContent className="p-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-medium text-gray-600">{stat.title}</p>
+                      <p className={`text-2xl font-bold ${stat.color}`}>{stat.value}</p>
+                    </div>
+                    <stat.icon className={`h-8 w-8 ${stat.color}`} />
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+
+          {/* Quick Actions */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Daily Operations</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                {operationalActions.map((action, index) => (
+                  <div
+                    key={index}
+                    className={`p-4 rounded-lg cursor-pointer transition-all ${action.color} ${
+                      action.urgent ? 'ring-2 ring-red-300 animate-pulse' : ''
+                    }`}
+                    onClick={action.action}
+                  >
+                    <div className="flex items-center justify-between text-white">
+                      <div>
+                        <h3 className="font-semibold text-sm">{action.title}</h3>
+                        <p className="text-xs opacity-90 mt-1">{action.description}</p>
+                      </div>
+                      <action.icon className="h-6 w-6" />
+                    </div>
+                  </div>
+                ))}
               </div>
             </CardContent>
           </Card>
-        ))}
-      </div>
 
-      {/* Quick Actions */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Daily Operations</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            {operationalActions.map((action, index) => (
-              <div
-                key={index}
-                className={`p-4 rounded-lg cursor-pointer transition-all ${action.color} ${
-                  action.urgent ? 'ring-2 ring-red-300 animate-pulse' : ''
-                }`}
-                onClick={action.action}
-              >
-                <div className="flex items-center justify-between text-white">
-                  <div>
-                    <h3 className="font-semibold text-sm">{action.title}</h3>
-                    <p className="text-xs opacity-90 mt-1">{action.description}</p>
+          {/* Recent Activity */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Recent Bookings</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between p-3 bg-yellow-50 rounded-lg">
+                    <div>
+                      <h4 className="font-medium text-sm">Conference Room A</h4>
+                      <p className="text-xs text-gray-600">John Doe • 2:00 PM - 4:00 PM</p>
+                    </div>
+                    <span className="text-xs bg-yellow-100 text-yellow-800 px-2 py-1 rounded">Pending</span>
                   </div>
-                  <action.icon className="h-6 w-6" />
+                  <div className="flex items-center justify-between p-3 bg-green-50 rounded-lg">
+                    <div>
+                      <h4 className="font-medium text-sm">Hot Desk 3</h4>
+                      <p className="text-xs text-gray-600">Jane Smith • 9:00 AM - 5:00 PM</p>
+                    </div>
+                    <span className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded">Confirmed</span>
+                  </div>
                 </div>
-              </div>
-            ))}
+                <Button variant="outline" className="w-full mt-4" onClick={() => setManagerTab("operations")}>
+                  Manage All Operations
+                </Button>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Facility Status</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between p-3 bg-green-50 rounded-lg">
+                    <div>
+                      <h4 className="font-medium text-sm">All Systems</h4>
+                      <p className="text-xs text-gray-600">Operating normally</p>
+                    </div>
+                    <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+                  </div>
+                  <div className="flex items-center justify-between p-3 bg-red-50 rounded-lg">
+                    <div>
+                      <h4 className="font-medium text-sm">WiFi Network</h4>
+                      <p className="text-xs text-gray-600">Intermittent issues reported</p>
+                    </div>
+                    <div className="w-3 h-3 bg-red-500 rounded-full"></div>
+                  </div>
+                </div>
+                <Button variant="outline" className="w-full mt-4" onClick={() => setManagerTab("facility")}>
+                  View Facility Controls
+                </Button>
+              </CardContent>
+            </Card>
           </div>
-        </CardContent>
-      </Card>
+        </TabsContent>
 
-      {/* Recent Activity */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card>
-          <CardHeader>
-            <CardTitle>Recent Bookings</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              <div className="flex items-center justify-between p-3 bg-yellow-50 rounded-lg">
-                <div>
-                  <h4 className="font-medium text-sm">Conference Room A</h4>
-                  <p className="text-xs text-gray-600">John Doe • 2:00 PM - 4:00 PM</p>
-                </div>
-                <span className="text-xs bg-yellow-100 text-yellow-800 px-2 py-1 rounded">Pending</span>
-              </div>
-              <div className="flex items-center justify-between p-3 bg-green-50 rounded-lg">
-                <div>
-                  <h4 className="font-medium text-sm">Hot Desk 3</h4>
-                  <p className="text-xs text-gray-600">Jane Smith • 9:00 AM - 5:00 PM</p>
-                </div>
-                <span className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded">Confirmed</span>
-              </div>
-            </div>
-            <Button variant="outline" className="w-full mt-4" onClick={() => setSearchParams({ tab: "crud", subtab: "bookings" })}>
-              Manage All Bookings
-            </Button>
-          </CardContent>
-        </Card>
+        <TabsContent value="operations">
+          <DailyOperations />
+        </TabsContent>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Facility Status</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              <div className="flex items-center justify-between p-3 bg-green-50 rounded-lg">
-                <div>
-                  <h4 className="font-medium text-sm">All Systems</h4>
-                  <p className="text-xs text-gray-600">Operating normally</p>
-                </div>
-                <div className="w-3 h-3 bg-green-500 rounded-full"></div>
-              </div>
-              <div className="flex items-center justify-between p-3 bg-red-50 rounded-lg">
-                <div>
-                  <h4 className="font-medium text-sm">WiFi Network</h4>
-                  <p className="text-xs text-gray-600">Intermittent issues reported</p>
-                </div>
-                <div className="w-3 h-3 bg-red-500 rounded-full"></div>
-              </div>
-            </div>
-            <Button variant="outline" className="w-full mt-4" onClick={() => setSearchParams({ tab: "issues" })}>
-              View All Issues
-            </Button>
-          </CardContent>
-        </Card>
-      </div>
+        <TabsContent value="staff">
+          <StaffManagement />
+        </TabsContent>
+
+        <TabsContent value="facility">
+          <FacilityMonitoring />
+        </TabsContent>
+
+        <TabsContent value="tasks">
+          <TaskManagement />
+        </TabsContent>
+      </Tabs>
     </div>
   );
 };
