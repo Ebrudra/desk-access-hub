@@ -318,6 +318,96 @@ export type Database = {
         }
         Relationships: []
       }
+      coworking_space_users: {
+        Row: {
+          assigned_at: string | null
+          assigned_by: string | null
+          coworking_space_id: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          assigned_at?: string | null
+          assigned_by?: string | null
+          coworking_space_id: string
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          assigned_at?: string | null
+          assigned_by?: string | null
+          coworking_space_id?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "coworking_space_users_assigned_by_fkey"
+            columns: ["assigned_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "coworking_space_users_coworking_space_id_fkey"
+            columns: ["coworking_space_id"]
+            isOneToOne: false
+            referencedRelation: "coworking_spaces"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "coworking_space_users_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      coworking_spaces: {
+        Row: {
+          address: string | null
+          city: string | null
+          country: string | null
+          created_at: string
+          id: string
+          image_url: string | null
+          name: string
+          owner_admin_id: string
+        }
+        Insert: {
+          address?: string | null
+          city?: string | null
+          country?: string | null
+          created_at?: string
+          id?: string
+          image_url?: string | null
+          name: string
+          owner_admin_id: string
+        }
+        Update: {
+          address?: string | null
+          city?: string | null
+          country?: string | null
+          created_at?: string
+          id?: string
+          image_url?: string | null
+          name?: string
+          owner_admin_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "coworking_spaces_owner_admin_id_fkey"
+            columns: ["owner_admin_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       email_templates: {
         Row: {
           created_at: string
@@ -710,6 +800,73 @@ export type Database = {
           user_id?: string | null
         }
         Relationships: []
+      }
+      payment_proofs: {
+        Row: {
+          amount: number
+          bank_reference: string | null
+          coworking_space_id: string
+          currency: string | null
+          id: string
+          payment_date: string
+          payment_purpose: string
+          proof_file_url: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: string | null
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          bank_reference?: string | null
+          coworking_space_id: string
+          currency?: string | null
+          id?: string
+          payment_date?: string
+          payment_purpose: string
+          proof_file_url?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string | null
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          bank_reference?: string | null
+          coworking_space_id?: string
+          currency?: string | null
+          id?: string
+          payment_date?: string
+          payment_purpose?: string
+          proof_file_url?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payment_proofs_coworking_space_id_fkey"
+            columns: ["coworking_space_id"]
+            isOneToOne: false
+            referencedRelation: "coworking_spaces"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payment_proofs_reviewed_by_fkey"
+            columns: ["reviewed_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payment_proofs_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       payments: {
         Row: {
