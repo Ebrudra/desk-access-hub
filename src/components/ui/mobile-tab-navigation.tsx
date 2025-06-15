@@ -10,7 +10,10 @@ import {
   Building2, 
   CalendarDays, 
   Settings,
-  MoreHorizontal
+  MoreHorizontal,
+  Shield,
+  KeyRound,
+  AlertTriangle
 } from "lucide-react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -36,6 +39,9 @@ const iconMap = {
   Building2,
   CalendarDays,
   Settings,
+  Shield,
+  KeyRound,
+  AlertTriangle
 };
 
 export const MobileTabNavigation = ({ tabs, currentTab, onTabChange }: MobileTabNavigationProps) => {

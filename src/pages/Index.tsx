@@ -1,78 +1,119 @@
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { DashboardStats } from "@/components/DashboardStats";
 import { AnalyticsDashboard } from "@/components/analytics/AnalyticsDashboard";
 import { Navigation } from "@/components/Navigation";
-import { QuickActions } from "@/components/QuickActions";
 import { SpaceUtilization } from "@/components/SpaceUtilization";
 import { BookingCalendar } from "@/components/BookingCalendar";
 import { MemberList } from "@/components/MemberList";
 import { SmartBookingDashboard } from "@/components/booking/SmartBookingDashboard";
 import { CrudManagement } from "@/components/crud/CrudManagement";
 import { MobileTabNavigation } from "@/components/ui/mobile-tab-navigation";
+import { RoleManagement } from "@/components/RoleManagement";
+import { RoleDashboardRenderer } from "@/components/RoleDashboardRenderer";
 import { useSearchParams } from "react-router-dom";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useAuthRole } from "@/hooks/useAuthRole";
 
 const Index = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const currentTab = searchParams.get("tab") || "dashboard";
   const isMobile = useIsMobile();
+  const { role, hasRole } = useAuthRole();
 
   const handleTabChange = (value: string) => {
     setSearchParams({ tab: value });
   };
 
-  const tabs = [
-    { value: "dashboard", label: "Dashboard", icon: "Home" },
-    { value: "smart-booking", label: "Smart Booking", icon: "Brain" },
-    { value: "analytics", label: "Analytics", icon: "BarChart3" },
-    { value: "bookings", label: "Bookings", icon: "Calendar" },
-    { value: "members", label: "Members", icon: "Users" },
-    { value: "spaces", label: "Spaces", icon: "Building2" },
-    { value: "calendar", label: "Calendar", icon: "CalendarDays" },
-    { value: "crud", label: "Management", icon: "Settings" }
-  ];
+  // Define tabs based on user role
+  const getTabsForRole = () => {
+    const baseTabs = [
+      { value: "dashboard", label: "Dashboard", icon: "Home" }
+    ];
+
+    if (hasRole('member')) {
+      baseTabs.push(
+        { value: "smart-booking", label: "Smart Booking", icon: "Brain" },
+        { value: "bookings", label: "My Bookings", icon: "Calendar" },
+        { value: "spaces", label: "Browse Spaces", icon: "Building2" },
+        { value: "access-codes", label: "Access Codes", icon: "KeyRound" }
+      );
+    }
+
+    if (hasRole('manager')) {
+      baseTabs.push(
+        { value: "analytics", label: "Analytics", icon: "BarChart3" },
+        { value: "members", label: "Members", icon: "Users" },
+        { value: "calendar", label: "Calendar", icon: "CalendarDays" },
+        { value: "access-control", label: "Access Control", icon: "Shield" },
+        { value: "issues", label: "Issues", icon: "AlertTriangle" }
+      );
+    }
+
+    if (hasRole('admin')) {
+      baseTabs.push(
+        { value: "crud", label: "Management", icon: "Settings" },
+        { value: "roles", label: "Roles", icon: "Shield" },
+        { value: "analytics", label: "Analytics", icon: "BarChart3" }
+      );
+    }
+
+    return baseTabs;
+  };
+
+  const tabs = getTabsForRole();
 
   const renderTabContent = (tabValue: string) => {
     switch (tabValue) {
       case "dashboard":
-        return (
-          <div className="space-y-6">
-            <DashboardStats />
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              <div className="lg:col-span-2">
-                <SpaceUtilization />
-              </div>
-              <div>
-                <QuickActions />
-              </div>
-            </div>
-          </div>
-        );
+        return <RoleDashboardRenderer />;
       case "smart-booking":
-        return <SmartBookingDashboard />;
+        return hasRole('member') ? <SmartBookingDashboard /> : <div>Access denied</div>;
       case "analytics":
-        return <AnalyticsDashboard />;
+        return hasRole('manager') ? <AnalyticsDashboard /> : <div>Access denied</div>;
       case "bookings":
-        return (
+        return hasRole('member') ? (
           <div className="text-center py-12">
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">Booking Management</h2>
-            <p className="text-gray-600 mb-6">Comprehensive booking management coming soon</p>
+            <h2 className="text-2xl font-bold text-gray-900 mb-4">My Bookings</h2>
+            <p className="text-gray-600 mb-6">View and manage your reservations</p>
           </div>
-        );
+        ) : <div>Access denied</div>;
       case "members":
-        return <MemberList />;
+        return hasRole('manager') ? <MemberList /> : <div>Access denied</div>;
       case "spaces":
         return (
           <div className="text-center py-12">
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">Space Management</h2>
-            <p className="text-gray-600 mb-6">Manage your coworking spaces and resources</p>
+            <h2 className="text-2xl font-bold text-gray-900 mb-4">Available Spaces</h2>
+            <p className="text-gray-600 mb-6">Browse and book workspace resources</p>
+            <SpaceUtilization />
           </div>
         );
       case "calendar":
-        return <BookingCalendar />;
+        return hasRole('manager') ? <BookingCalendar /> : <div>Access denied</div>;
       case "crud":
-        return <CrudManagement />;
+        return hasRole('admin') ? <CrudManagement /> : <div>Access denied</div>;
+      case "roles":
+        return hasRole('admin') ? <RoleManagement /> : <div>Access denied</div>;
+      case "access-codes":
+        return hasRole('member') ? (
+          <div className="text-center py-12">
+            <h2 className="text-2xl font-bold text-gray-900 mb-4">Access Codes</h2>
+            <p className="text-gray-600 mb-6">Your active access codes and QR codes</p>
+          </div>
+        ) : <div>Access denied</div>;
+      case "access-control":
+        return hasRole('manager') ? (
+          <div className="text-center py-12">
+            <h2 className="text-2xl font-bold text-gray-900 mb-4">Access Control</h2>
+            <p className="text-gray-600 mb-6">Manage facility access and permissions</p>
+          </div>
+        ) : <div>Access denied</div>;
+      case "issues":
+        return hasRole('manager') ? (
+          <div className="text-center py-12">
+            <h2 className="text-2xl font-bold text-gray-900 mb-4">Issues & Reports</h2>
+            <p className="text-gray-600 mb-6">Handle facility maintenance and member reports</p>
+          </div>
+        ) : <div>Access denied</div>;
       default:
         return null;
     }
@@ -83,14 +124,16 @@ const Index = () => {
       <div className="min-h-screen bg-gray-50">
         <Navigation />
         
-        <main className="pb-20"> {/* Bottom padding for fixed mobile nav */}
+        <main className="pb-20">
           <div className="px-4 py-6">
             <div className="mb-6">
               <h1 className="text-2xl font-bold text-gray-900 mb-1">
                 WorkSpace Hub
               </h1>
               <p className="text-sm text-gray-600">
-                Comprehensive coworking space management
+                {role === 'admin' ? 'Administration Dashboard' : 
+                 role === 'manager' ? 'Operations Dashboard' : 
+                 'Member Dashboard'}
               </p>
             </div>
 
@@ -117,66 +160,26 @@ const Index = () => {
             WorkSpace Hub
           </h1>
           <p className="text-gray-600">
-            Comprehensive coworking space management platform
+            {role === 'admin' ? 'Administration Dashboard - Manage your coworking platform' : 
+             role === 'manager' ? 'Operations Dashboard - Daily facility management' : 
+             'Member Dashboard - Your coworking experience'}
           </p>
         </div>
 
         <Tabs value={currentTab} onValueChange={handleTabChange} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-7">
-            <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
-            <TabsTrigger value="smart-booking">Smart Booking</TabsTrigger>
-            <TabsTrigger value="analytics">Analytics</TabsTrigger>
-            <TabsTrigger value="bookings">Bookings</TabsTrigger>
-            <TabsTrigger value="members">Members</TabsTrigger>
-            <TabsTrigger value="spaces">Spaces</TabsTrigger>
-            <TabsTrigger value="calendar">Calendar</TabsTrigger>
+          <TabsList className={`grid w-full ${tabs.length <= 7 ? `grid-cols-${Math.min(tabs.length, 7)}` : 'grid-cols-7'}`}>
+            {tabs.slice(0, 7).map((tab) => (
+              <TabsTrigger key={tab.value} value={tab.value}>
+                {tab.label}
+              </TabsTrigger>
+            ))}
           </TabsList>
 
-          <TabsContent value="dashboard" className="space-y-6">
-            <DashboardStats />
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              <div className="lg:col-span-2">
-                <SpaceUtilization />
-              </div>
-              <div>
-                <QuickActions />
-              </div>
-            </div>
-          </TabsContent>
-
-          <TabsContent value="smart-booking">
-            <SmartBookingDashboard />
-          </TabsContent>
-
-          <TabsContent value="analytics">
-            <AnalyticsDashboard />
-          </TabsContent>
-
-          <TabsContent value="bookings">
-            <div className="text-center py-12">
-              <h2 className="text-2xl font-bold text-gray-900 mb-4">Booking Management</h2>
-              <p className="text-gray-600 mb-6">Comprehensive booking management coming soon</p>
-            </div>
-          </TabsContent>
-
-          <TabsContent value="members">
-            <MemberList />
-          </TabsContent>
-
-          <TabsContent value="spaces">
-            <div className="text-center py-12">
-              <h2 className="text-2xl font-bold text-gray-900 mb-4">Space Management</h2>
-              <p className="text-gray-600 mb-6">Manage your coworking spaces and resources</p>
-            </div>
-          </TabsContent>
-
-          <TabsContent value="calendar">
-            <BookingCalendar />
-          </TabsContent>
-
-          <TabsContent value="crud">
-            <CrudManagement />
-          </TabsContent>
+          {tabs.map((tab) => (
+            <TabsContent key={tab.value} value={tab.value}>
+              {renderTabContent(tab.value)}
+            </TabsContent>
+          ))}
         </Tabs>
       </main>
     </div>
