@@ -108,6 +108,96 @@ export type Database = {
           },
         ]
       }
+      audit_logs: {
+        Row: {
+          action: string
+          created_at: string
+          details: Json | null
+          id: string
+          ip_address: unknown | null
+          resource_id: string | null
+          resource_type: string
+          session_id: string | null
+          severity: string | null
+          user_agent: string | null
+          user_id: string | null
+        }
+        Insert: {
+          action: string
+          created_at?: string
+          details?: Json | null
+          id?: string
+          ip_address?: unknown | null
+          resource_id?: string | null
+          resource_type: string
+          session_id?: string | null
+          severity?: string | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          action?: string
+          created_at?: string
+          details?: Json | null
+          id?: string
+          ip_address?: unknown | null
+          resource_id?: string | null
+          resource_type?: string
+          session_id?: string | null
+          severity?: string | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      automated_tasks: {
+        Row: {
+          configuration: Json | null
+          created_at: string
+          failure_count: number | null
+          id: string
+          is_active: boolean | null
+          last_run_at: string | null
+          name: string
+          next_run_at: string | null
+          run_count: number | null
+          schedule_expression: string | null
+          success_count: number | null
+          type: string
+          updated_at: string
+        }
+        Insert: {
+          configuration?: Json | null
+          created_at?: string
+          failure_count?: number | null
+          id?: string
+          is_active?: boolean | null
+          last_run_at?: string | null
+          name: string
+          next_run_at?: string | null
+          run_count?: number | null
+          schedule_expression?: string | null
+          success_count?: number | null
+          type: string
+          updated_at?: string
+        }
+        Update: {
+          configuration?: Json | null
+          created_at?: string
+          failure_count?: number | null
+          id?: string
+          is_active?: boolean | null
+          last_run_at?: string | null
+          name?: string
+          next_run_at?: string | null
+          run_count?: number | null
+          schedule_expression?: string | null
+          success_count?: number | null
+          type?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       bookings: {
         Row: {
           attendees: number | null
@@ -258,6 +348,60 @@ export type Database = {
           subject?: string
           updated_at?: string
           variables?: Json | null
+        }
+        Relationships: []
+      }
+      error_logs: {
+        Row: {
+          created_at: string
+          error_message: string
+          error_type: string
+          id: string
+          metadata: Json | null
+          request_headers: Json | null
+          request_method: string | null
+          request_url: string | null
+          resolved: boolean | null
+          resolved_at: string | null
+          resolved_by: string | null
+          response_status: number | null
+          severity: string | null
+          stack_trace: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          error_message: string
+          error_type: string
+          id?: string
+          metadata?: Json | null
+          request_headers?: Json | null
+          request_method?: string | null
+          request_url?: string | null
+          resolved?: boolean | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          response_status?: number | null
+          severity?: string | null
+          stack_trace?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          error_message?: string
+          error_type?: string
+          id?: string
+          metadata?: Json | null
+          request_headers?: Json | null
+          request_method?: string | null
+          request_url?: string | null
+          resolved?: boolean | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          response_status?: number | null
+          severity?: string | null
+          stack_trace?: string | null
+          user_id?: string | null
         }
         Relationships: []
       }
@@ -636,6 +780,33 @@ export type Database = {
           },
         ]
       }
+      performance_metrics: {
+        Row: {
+          id: string
+          labels: Json | null
+          metric_name: string
+          metric_type: string
+          metric_value: number
+          recorded_at: string
+        }
+        Insert: {
+          id?: string
+          labels?: Json | null
+          metric_name: string
+          metric_type: string
+          metric_value: number
+          recorded_at?: string
+        }
+        Update: {
+          id?: string
+          labels?: Json | null
+          metric_name?: string
+          metric_type?: string
+          metric_value?: number
+          recorded_at?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -746,6 +917,53 @@ export type Database = {
           },
         ]
       }
+      smart_scheduling: {
+        Row: {
+          algorithm_version: string | null
+          confidence_score: number | null
+          constraints: Json | null
+          created_at: string
+          expires_at: string | null
+          id: string
+          preferences: Json | null
+          recommended_slots: Json
+          resource_id: string | null
+          user_id: string | null
+        }
+        Insert: {
+          algorithm_version?: string | null
+          confidence_score?: number | null
+          constraints?: Json | null
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          preferences?: Json | null
+          recommended_slots: Json
+          resource_id?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          algorithm_version?: string | null
+          confidence_score?: number | null
+          constraints?: Json | null
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          preferences?: Json | null
+          recommended_slots?: Json
+          resource_id?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "smart_scheduling_resource_id_fkey"
+            columns: ["resource_id"]
+            isOneToOne: false
+            referencedRelation: "resources"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       spaces: {
         Row: {
           address: string
@@ -836,6 +1054,42 @@ export type Database = {
           subscription_tier?: string | null
           updated_at?: string
           user_id?: string | null
+        }
+        Relationships: []
+      }
+      system_settings: {
+        Row: {
+          category: string | null
+          created_at: string
+          description: string | null
+          id: string
+          is_public: boolean | null
+          key: string
+          updated_at: string
+          updated_by: string | null
+          value: Json
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_public?: boolean | null
+          key: string
+          updated_at?: string
+          updated_by?: string | null
+          value: Json
+        }
+        Update: {
+          category?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_public?: boolean | null
+          key?: string
+          updated_at?: string
+          updated_by?: string | null
+          value?: Json
         }
         Relationships: []
       }

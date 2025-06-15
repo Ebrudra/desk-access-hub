@@ -6,6 +6,7 @@ import { useAuthRole } from "@/hooks/useAuthRole";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { UserRoleManager } from "@/components/admin/UserRoleManager";
 import { TestUsersSetup } from "@/components/admin/TestUsersSetup";
+import { SystemSettings } from "@/components/admin/SystemSettings";
 import { Navigation } from "@/components/Navigation";
 
 const UserManagement = () => {
@@ -45,9 +46,10 @@ const UserManagement = () => {
       <Navigation />
       <div className="container mx-auto px-4 py-8">
         <Tabs defaultValue="roles" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-2">
+          <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="roles">User Role Manager</TabsTrigger>
             <TabsTrigger value="setup">Test Users Setup</TabsTrigger>
+            <TabsTrigger value="system">System Settings</TabsTrigger>
           </TabsList>
           
           <TabsContent value="roles">
@@ -56,6 +58,10 @@ const UserManagement = () => {
           
           <TabsContent value="setup">
             <TestUsersSetup />
+          </TabsContent>
+
+          <TabsContent value="system">
+            <SystemSettings />
           </TabsContent>
         </Tabs>
       </div>

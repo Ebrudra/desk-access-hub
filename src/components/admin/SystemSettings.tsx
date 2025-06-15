@@ -1,420 +1,390 @@
 
+import { useState } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Switch } from "@/components/ui/switch";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { useState } from "react";
+import { Settings, Database, Shield, BarChart3, Clock } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { 
-  Settings, 
-  Shield, 
-  Mail, 
-  Bell, 
-  CreditCard, 
-  Database, 
-  Globe,
-  Clock,
-  Users,
-  Key
-} from "lucide-react";
 
 export const SystemSettings = () => {
   const { toast } = useToast();
-  const [settings, setSettings] = useState({
-    // General Settings
-    siteName: "CoWork Manager",
-    siteDescription: "Modern coworking space management",
-    allowRegistration: true,
-    requireEmailVerification: true,
-    
-    // Security Settings
-    sessionTimeout: 24,
-    passwordMinLength: 8,
-    requireTwoFactor: false,
-    allowGoogleAuth: true,
-    
-    // Booking Settings
-    maxBookingDuration: 8,
-    advanceBookingDays: 30,
-    cancellationWindow: 2,
-    autoApproveBookings: false,
-    
-    // Notification Settings
-    emailNotifications: true,
-    bookingReminders: true,
-    maintenanceAlerts: true,
-    marketingEmails: false,
-    
-    // Payment Settings
-    currency: "USD",
-    taxRate: 8.5,
-    lateFeeEnabled: true,
-    gracePeriodDays: 3
+  const queryClient = useQueryClient();
+  const [editingSettings, setEditingSettings] = useState<Record<string, any>>({});
+
+  const { data: settings, isLoading } = useQuery({
+    queryKey: ["system-settings"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("system_settings")
+        .select("*")
+        .order("category", { ascending: true });
+      
+      if (error) throw error;
+      return data;
+    },
   });
 
-  const handleSettingChange = (key: string, value: any) => {
-    setSettings(prev => ({ ...prev, [key]: value }));
+  const { data: auditLogs } = useQuery({
+    queryKey: ["audit-logs"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("audit_logs")
+        .select("*")
+        .order("created_at", { ascending: false })
+        .limit(50);
+      
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  const { data: performanceMetrics } = useQuery({
+    queryKey: ["performance-metrics"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("performance_metrics")
+        .select("*")
+        .order("recorded_at", { ascending: false })
+        .limit(100);
+      
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  const { data: automatedTasks } = useQuery({
+    queryKey: ["automated-tasks"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("automated_tasks")
+        .select("*")
+        .order("name", { ascending: true });
+      
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  const updateSettingMutation = useMutation({
+    mutationFn: async ({ id, value }: { id: string; value: any }) => {
+      const { error } = await supabase
+        .from("system_settings")
+        .update({ value, updated_at: new Date().toISOString() })
+        .eq("id", id);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast({
+        title: "Setting Updated",
+        description: "System setting has been updated successfully",
+      });
+      queryClient.invalidateQueries({ queryKey: ["system-settings"] });
+      setEditingSettings({});
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Update Failed",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+
+  const toggleTaskMutation = useMutation({
+    mutationFn: async ({ id, is_active }: { id: string; is_active: boolean }) => {
+      const { error } = await supabase
+        .from("automated_tasks")
+        .update({ is_active, updated_at: new Date().toISOString() })
+        .eq("id", id);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast({
+        title: "Task Updated",
+        description: "Automated task status has been updated",
+      });
+      queryClient.invalidateQueries({ queryKey: ["automated-tasks"] });
+    },
+  });
+
+  const runTaskMutation = useMutation({
+    mutationFn: async (taskType: string) => {
+      const { data, error } = await supabase.functions.invoke('automated-tasks', {
+        body: { taskType, parameters: {} }
+      });
+
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: (data) => {
+      toast({
+        title: "Task Executed",
+        description: `Task completed successfully: ${JSON.stringify(data.result)}`,
+      });
+      queryClient.invalidateQueries({ queryKey: ["automated-tasks"] });
+    },
+  });
+
+  const getSeverityColor = (severity: string) => {
+    switch (severity) {
+      case 'critical': return 'bg-red-100 text-red-800';
+      case 'error': return 'bg-orange-100 text-orange-800';
+      case 'warning': return 'bg-yellow-100 text-yellow-800';
+      default: return 'bg-blue-100 text-blue-800';
+    }
   };
 
-  const handleSave = (category: string) => {
-    toast({
-      title: "Settings Saved",
-      description: `${category} settings have been updated successfully.`
-    });
-  };
+  const groupedSettings = settings?.reduce((acc, setting) => {
+    const category = setting.category || 'general';
+    if (!acc[category]) acc[category] = [];
+    acc[category].push(setting);
+    return acc;
+  }, {} as Record<string, any[]>) || {};
+
+  if (isLoading) {
+    return (
+      <div className="flex justify-center p-8">
+        <div className="text-center">
+          <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg mx-auto mb-4 animate-pulse"></div>
+          <p className="text-gray-600">Loading system settings...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center space-x-2">
-            <Settings className="h-5 w-5" />
-            <span>System Settings</span>
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <Tabs defaultValue="general">
-            <TabsList className="grid w-full grid-cols-5">
-              <TabsTrigger value="general">General</TabsTrigger>
-              <TabsTrigger value="security">Security</TabsTrigger>
-              <TabsTrigger value="booking">Booking</TabsTrigger>
-              <TabsTrigger value="notifications">Notifications</TabsTrigger>
-              <TabsTrigger value="payment">Payment</TabsTrigger>
-            </TabsList>
+      <div className="flex items-center space-x-2 mb-6">
+        <Settings className="h-6 w-6 text-blue-600" />
+        <h1 className="text-3xl font-bold">System Settings</h1>
+      </div>
 
-            <TabsContent value="general" className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-4">
-                  <div>
-                    <Label htmlFor="siteName">Site Name</Label>
-                    <Input
-                      id="siteName"
-                      value={settings.siteName}
-                      onChange={(e) => handleSettingChange('siteName', e.target.value)}
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="siteDescription">Site Description</Label>
-                    <Input
-                      id="siteDescription"
-                      value={settings.siteDescription}
-                      onChange={(e) => handleSettingChange('siteDescription', e.target.value)}
-                    />
-                  </div>
-                </div>
-                
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between p-4 border rounded-lg">
-                    <div>
-                      <Label>Allow New Registrations</Label>
-                      <p className="text-sm text-gray-600">Enable public user registration</p>
-                    </div>
-                    <Switch
-                      checked={settings.allowRegistration}
-                      onCheckedChange={(checked) => handleSettingChange('allowRegistration', checked)}
-                    />
-                  </div>
-                  
-                  <div className="flex items-center justify-between p-4 border rounded-lg">
-                    <div>
-                      <Label>Email Verification Required</Label>
-                      <p className="text-sm text-gray-600">Require email verification for new users</p>
-                    </div>
-                    <Switch
-                      checked={settings.requireEmailVerification}
-                      onCheckedChange={(checked) => handleSettingChange('requireEmailVerification', checked)}
-                    />
-                  </div>
-                </div>
-              </div>
-              
-              <Button onClick={() => handleSave('General')}>
-                <Globe className="h-4 w-4 mr-2" />
-                Save General Settings
-              </Button>
-            </TabsContent>
+      <Tabs defaultValue="settings" className="space-y-6">
+        <TabsList className="grid w-full grid-cols-4">
+          <TabsTrigger value="settings">
+            <Settings className="h-4 w-4 mr-2" />
+            Settings
+          </TabsTrigger>
+          <TabsTrigger value="tasks">
+            <Clock className="h-4 w-4 mr-2" />
+            Automated Tasks
+          </TabsTrigger>
+          <TabsTrigger value="audit">
+            <Shield className="h-4 w-4 mr-2" />
+            Audit Logs
+          </TabsTrigger>
+          <TabsTrigger value="metrics">
+            <BarChart3 className="h-4 w-4 mr-2" />
+            Performance
+          </TabsTrigger>
+        </TabsList>
 
-            <TabsContent value="security" className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-4">
-                  <div>
-                    <Label htmlFor="sessionTimeout">Session Timeout (hours)</Label>
-                    <Input
-                      id="sessionTimeout"
-                      type="number"
-                      value={settings.sessionTimeout}
-                      onChange={(e) => handleSettingChange('sessionTimeout', parseInt(e.target.value))}
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="passwordMinLength">Minimum Password Length</Label>
-                    <Input
-                      id="passwordMinLength"
-                      type="number"
-                      value={settings.passwordMinLength}
-                      onChange={(e) => handleSettingChange('passwordMinLength', parseInt(e.target.value))}
-                    />
-                  </div>
-                </div>
-                
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between p-4 border rounded-lg">
-                    <div>
-                      <Label>Require Two-Factor Authentication</Label>
-                      <p className="text-sm text-gray-600">Mandatory 2FA for all users</p>
+        <TabsContent value="settings">
+          <div className="grid gap-6">
+            {Object.entries(groupedSettings).map(([category, categorySettings]) => (
+              <Card key={category}>
+                <CardHeader>
+                  <CardTitle className="capitalize">{category} Settings</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  {categorySettings.map((setting) => (
+                    <div key={setting.id} className="flex items-center justify-between p-4 border rounded-lg">
+                      <div className="flex-1">
+                        <div className="flex items-center space-x-2 mb-2">
+                          <h3 className="font-medium">{setting.key.replace(/_/g, ' ').replace(/\b\w/g, (l: string) => l.toUpperCase())}</h3>
+                          {setting.is_public && <Badge variant="secondary">Public</Badge>}
+                        </div>
+                        <p className="text-sm text-gray-500">{setting.description}</p>
+                        
+                        {editingSettings[setting.id] ? (
+                          <div className="mt-2 flex items-center space-x-2">
+                            <Input
+                              type={typeof setting.value === 'boolean' ? 'checkbox' : 'text'}
+                              value={editingSettings[setting.id]}
+                              onChange={(e) => setEditingSettings({
+                                ...editingSettings,
+                                [setting.id]: e.target.value
+                              })}
+                              className="max-w-xs"
+                            />
+                            <Button 
+                              size="sm" 
+                              onClick={() => updateSettingMutation.mutate({
+                                id: setting.id,
+                                value: editingSettings[setting.id]
+                              })}
+                            >
+                              Save
+                            </Button>
+                            <Button 
+                              size="sm" 
+                              variant="outline"
+                              onClick={() => setEditingSettings({})}
+                            >
+                              Cancel
+                            </Button>
+                          </div>
+                        ) : (
+                          <div className="mt-2 flex items-center space-x-2">
+                            <code className="bg-gray-100 px-2 py-1 rounded text-sm">
+                              {String(setting.value)}
+                            </code>
+                            <Button 
+                              size="sm" 
+                              variant="outline"
+                              onClick={() => setEditingSettings({
+                                [setting.id]: String(setting.value)
+                              })}
+                            >
+                              Edit
+                            </Button>
+                          </div>
+                        )}
+                      </div>
                     </div>
-                    <Switch
-                      checked={settings.requireTwoFactor}
-                      onCheckedChange={(checked) => handleSettingChange('requireTwoFactor', checked)}
-                    />
-                  </div>
-                  
-                  <div className="flex items-center justify-between p-4 border rounded-lg">
-                    <div>
-                      <Label>Google Authentication</Label>
-                      <p className="text-sm text-gray-600">Allow login with Google accounts</p>
-                    </div>
-                    <Switch
-                      checked={settings.allowGoogleAuth}
-                      onCheckedChange={(checked) => handleSettingChange('allowGoogleAuth', checked)}
-                    />
-                  </div>
-                </div>
-              </div>
-              
-              <Button onClick={() => handleSave('Security')}>
-                <Shield className="h-4 w-4 mr-2" />
-                Save Security Settings
-              </Button>
-            </TabsContent>
-
-            <TabsContent value="booking" className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-4">
-                  <div>
-                    <Label htmlFor="maxBookingDuration">Max Booking Duration (hours)</Label>
-                    <Input
-                      id="maxBookingDuration"
-                      type="number"
-                      value={settings.maxBookingDuration}
-                      onChange={(e) => handleSettingChange('maxBookingDuration', parseInt(e.target.value))}
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="advanceBookingDays">Advance Booking Days</Label>
-                    <Input
-                      id="advanceBookingDays"
-                      type="number"
-                      value={settings.advanceBookingDays}
-                      onChange={(e) => handleSettingChange('advanceBookingDays', parseInt(e.target.value))}
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="cancellationWindow">Cancellation Window (hours)</Label>
-                    <Input
-                      id="cancellationWindow"
-                      type="number"
-                      value={settings.cancellationWindow}
-                      onChange={(e) => handleSettingChange('cancellationWindow', parseInt(e.target.value))}
-                    />
-                  </div>
-                </div>
-                
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between p-4 border rounded-lg">
-                    <div>
-                      <Label>Auto-Approve Bookings</Label>
-                      <p className="text-sm text-gray-600">Automatically approve booking requests</p>
-                    </div>
-                    <Switch
-                      checked={settings.autoApproveBookings}
-                      onCheckedChange={(checked) => handleSettingChange('autoApproveBookings', checked)}
-                    />
-                  </div>
-                  
-                  <div className="p-4 bg-blue-50 rounded-lg">
-                    <h4 className="font-medium text-blue-800 mb-2">Booking Rules Summary</h4>
-                    <div className="space-y-1 text-sm text-blue-700">
-                      <p>• Max duration: {settings.maxBookingDuration} hours</p>
-                      <p>• Book up to {settings.advanceBookingDays} days ahead</p>
-                      <p>• Cancel {settings.cancellationWindow}h before start</p>
-                      <p>• Auto-approval: {settings.autoApproveBookings ? 'Enabled' : 'Disabled'}</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              
-              <Button onClick={() => handleSave('Booking')}>
-                <Clock className="h-4 w-4 mr-2" />
-                Save Booking Settings
-              </Button>
-            </TabsContent>
-
-            <TabsContent value="notifications" className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-4">
-                  <h4 className="font-medium">Email Notifications</h4>
-                  
-                  <div className="flex items-center justify-between p-4 border rounded-lg">
-                    <div>
-                      <Label>Email Notifications</Label>
-                      <p className="text-sm text-gray-600">Enable email notifications</p>
-                    </div>
-                    <Switch
-                      checked={settings.emailNotifications}
-                      onCheckedChange={(checked) => handleSettingChange('emailNotifications', checked)}
-                    />
-                  </div>
-                  
-                  <div className="flex items-center justify-between p-4 border rounded-lg">
-                    <div>
-                      <Label>Booking Reminders</Label>
-                      <p className="text-sm text-gray-600">Send booking reminder emails</p>
-                    </div>
-                    <Switch
-                      checked={settings.bookingReminders}
-                      onCheckedChange={(checked) => handleSettingChange('bookingReminders', checked)}
-                    />
-                  </div>
-                </div>
-                
-                <div className="space-y-4">
-                  <h4 className="font-medium">System Alerts</h4>
-                  
-                  <div className="flex items-center justify-between p-4 border rounded-lg">
-                    <div>
-                      <Label>Maintenance Alerts</Label>
-                      <p className="text-sm text-gray-600">Notify about system maintenance</p>
-                    </div>
-                    <Switch
-                      checked={settings.maintenanceAlerts}
-                      onCheckedChange={(checked) => handleSettingChange('maintenanceAlerts', checked)}
-                    />
-                  </div>
-                  
-                  <div className="flex items-center justify-between p-4 border rounded-lg">
-                    <div>
-                      <Label>Marketing Emails</Label>
-                      <p className="text-sm text-gray-600">Send promotional content</p>
-                    </div>
-                    <Switch
-                      checked={settings.marketingEmails}
-                      onCheckedChange={(checked) => handleSettingChange('marketingEmails', checked)}
-                    />
-                  </div>
-                </div>
-              </div>
-              
-              <Button onClick={() => handleSave('Notifications')}>
-                <Bell className="h-4 w-4 mr-2" />
-                Save Notification Settings
-              </Button>
-            </TabsContent>
-
-            <TabsContent value="payment" className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-4">
-                  <div>
-                    <Label htmlFor="currency">Default Currency</Label>
-                    <Input
-                      id="currency"
-                      value={settings.currency}
-                      onChange={(e) => handleSettingChange('currency', e.target.value)}
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="taxRate">Tax Rate (%)</Label>
-                    <Input
-                      id="taxRate"
-                      type="number"
-                      step="0.1"
-                      value={settings.taxRate}
-                      onChange={(e) => handleSettingChange('taxRate', parseFloat(e.target.value))}
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="gracePeriodDays">Grace Period (days)</Label>
-                    <Input
-                      id="gracePeriodDays"
-                      type="number"
-                      value={settings.gracePeriodDays}
-                      onChange={(e) => handleSettingChange('gracePeriodDays', parseInt(e.target.value))}
-                    />
-                  </div>
-                </div>
-                
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between p-4 border rounded-lg">
-                    <div>
-                      <Label>Late Fee Enabled</Label>
-                      <p className="text-sm text-gray-600">Charge late fees for overdue payments</p>
-                    </div>
-                    <Switch
-                      checked={settings.lateFeeEnabled}
-                      onCheckedChange={(checked) => handleSettingChange('lateFeeEnabled', checked)}
-                    />
-                  </div>
-                  
-                  <div className="p-4 bg-green-50 rounded-lg">
-                    <h4 className="font-medium text-green-800 mb-2">Payment Summary</h4>
-                    <div className="space-y-1 text-sm text-green-700">
-                      <p>• Currency: {settings.currency}</p>
-                      <p>• Tax rate: {settings.taxRate}%</p>
-                      <p>• Grace period: {settings.gracePeriodDays} days</p>
-                      <p>• Late fees: {settings.lateFeeEnabled ? 'Enabled' : 'Disabled'}</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              
-              <Button onClick={() => handleSave('Payment')}>
-                <CreditCard className="h-4 w-4 mr-2" />
-                Save Payment Settings
-              </Button>
-            </TabsContent>
-          </Tabs>
-        </CardContent>
-      </Card>
-
-      {/* System Status */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center space-x-2">
-            <Database className="h-5 w-5" />
-            <span>System Status</span>
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="p-4 border rounded-lg">
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-sm font-medium">Database</span>
-                <Badge className="bg-green-100 text-green-800">Healthy</Badge>
-              </div>
-              <p className="text-xs text-gray-600">Last backup: 2 hours ago</p>
-            </div>
-            
-            <div className="p-4 border rounded-lg">
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-sm font-medium">Email Service</span>
-                <Badge className="bg-green-100 text-green-800">Active</Badge>
-              </div>
-              <p className="text-xs text-gray-600">Queue: 0 pending</p>
-            </div>
-            
-            <div className="p-4 border rounded-lg">
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-sm font-medium">Payment Gateway</span>
-                <Badge className="bg-green-100 text-green-800">Connected</Badge>
-              </div>
-              <p className="text-xs text-gray-600">Response time: 180ms</p>
-            </div>
+                  ))}
+                </CardContent>
+              </Card>
+            ))}
           </div>
-        </CardContent>
-      </Card>
+        </TabsContent>
+
+        <TabsContent value="tasks">
+          <Card>
+            <CardHeader>
+              <CardTitle>Automated Tasks</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {automatedTasks?.map((task) => (
+                  <div key={task.id} className="flex items-center justify-between p-4 border rounded-lg">
+                    <div className="flex-1">
+                      <div className="flex items-center space-x-2 mb-2">
+                        <h3 className="font-medium">{task.name}</h3>
+                        <Badge variant={task.is_active ? "default" : "secondary"}>
+                          {task.is_active ? "Active" : "Inactive"}
+                        </Badge>
+                      </div>
+                      <p className="text-sm text-gray-500 mb-2">
+                        Schedule: <code>{task.schedule_expression}</code>
+                      </p>
+                      <div className="text-xs text-gray-400 space-x-4">
+                        <span>Runs: {task.run_count || 0}</span>
+                        <span>Success: {task.success_count || 0}</span>
+                        <span>Failures: {task.failure_count || 0}</span>
+                        {task.last_run_at && (
+                          <span>Last: {new Date(task.last_run_at).toLocaleString()}</span>
+                        )}
+                      </div>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <Switch
+                        checked={task.is_active}
+                        onCheckedChange={(checked) => 
+                          toggleTaskMutation.mutate({ id: task.id, is_active: checked })
+                        }
+                      />
+                      <Button
+                        size="sm"
+                        onClick={() => runTaskMutation.mutate(task.type)}
+                        disabled={runTaskMutation.isPending}
+                      >
+                        Run Now
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="audit">
+          <Card>
+            <CardHeader>
+              <CardTitle>Recent Audit Logs</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-2">
+                {auditLogs?.map((log) => (
+                  <div key={log.id} className="flex items-center justify-between p-3 border rounded">
+                    <div className="flex-1">
+                      <div className="flex items-center space-x-2 mb-1">
+                        <span className="font-medium">{log.action}</span>
+                        <Badge className={getSeverityColor(log.severity)}>
+                          {log.severity}
+                        </Badge>
+                      </div>
+                      <p className="text-sm text-gray-600">
+                        {log.resource_type} {log.resource_id && `(${log.resource_id})`}
+                      </p>
+                      <p className="text-xs text-gray-400">
+                        {new Date(log.created_at).toLocaleString()} 
+                        {log.ip_address && ` - ${log.ip_address}`}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="metrics">
+          <Card>
+            <CardHeader>
+              <CardTitle>Performance Metrics</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                {['active_bookings', 'total_active_members', 'today_bookings'].map((metricName) => {
+                  const latestMetric = performanceMetrics?.find(m => m.metric_name === metricName);
+                  return (
+                    <div key={metricName} className="p-4 bg-gray-50 rounded-lg">
+                      <h3 className="font-medium capitalize mb-2">
+                        {metricName.replace(/_/g, ' ')}
+                      </h3>
+                      <p className="text-2xl font-bold">{latestMetric?.metric_value || 0}</p>
+                      <p className="text-xs text-gray-500">
+                        {latestMetric?.recorded_at ? 
+                          new Date(latestMetric.recorded_at).toLocaleString() : 
+                          'No data'
+                        }
+                      </p>
+                    </div>
+                  );
+                })}
+              </div>
+              
+              <div className="space-y-2">
+                <h4 className="font-medium">Recent Metrics</h4>
+                {performanceMetrics?.slice(0, 20).map((metric) => (
+                  <div key={metric.id} className="flex items-center justify-between p-2 border rounded">
+                    <div>
+                      <span className="font-medium">{metric.metric_name}</span>
+                      <span className="ml-2 text-gray-600">({metric.metric_type})</span>
+                    </div>
+                    <div className="text-right">
+                      <p className="font-mono">{metric.metric_value}</p>
+                      <p className="text-xs text-gray-400">
+                        {new Date(metric.recorded_at).toLocaleString()}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 };
