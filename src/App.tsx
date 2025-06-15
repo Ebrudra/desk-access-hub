@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -22,6 +23,7 @@ import Pricing from "./pages/Pricing";
 import PaymentSuccess from "./pages/PaymentSuccess";
 import PaymentCanceled from "./pages/PaymentCanceled";
 import Billing from "./pages/Billing";
+import UserManagement from "./pages/UserManagement";
 import LandingPage from "./components/landing/LandingPage";
 
 const queryClient = new QueryClient({
@@ -60,6 +62,14 @@ const App = () => (
                 element={
                   <ProtectedRoute>
                     <Billing />
+                  </ProtectedRoute>
+                } 
+              />
+              <Route 
+                path="/user-management" 
+                element={
+                  <ProtectedRoute>
+                    <UserManagement />
                   </ProtectedRoute>
                 } 
               />
