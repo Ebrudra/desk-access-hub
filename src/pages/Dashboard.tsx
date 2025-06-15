@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -21,6 +20,7 @@ import { useAuthRole } from "@/hooks/useAuthRole";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { DashboardSidebar } from "@/components/dashboard/DashboardSidebar";
 import { DashboardHeader } from "@/components/dashboard/DashboardHeader";
+import { CoworkingSpacesList } from "@/components/dashboard/CoworkingSpacesList";
 
 export default function Dashboard() {
   const [searchParams] = useSearchParams();
