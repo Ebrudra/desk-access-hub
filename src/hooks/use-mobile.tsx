@@ -16,5 +16,6 @@ export function useIsMobile() {
     return () => mql.removeEventListener("change", onChange)
   }, [])
 
-  return !!isMobile
+  // Force mobile detection for debugging - return true if screen is mobile size
+  return window.innerWidth < MOBILE_BREAKPOINT
 }

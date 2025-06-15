@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { SidebarProvider } from "@/components/ui/sidebar";
@@ -27,13 +28,8 @@ export default function Dashboard() {
   const { hasRole } = useAuthRole();
   const isMobile = useIsMobile();
   const activeTab = searchParams.get("tab") || "dashboard";
-  // const [searchQuery, setSearchQuery] = useState("");
-  // const debouncedQuery = useDebounce(searchQuery, 300);
 
-  // Only show GlobalSearch bar for EnhancedDashboard and dashboard tab
-  // const shouldShowGlobalSearch =
-  //   (activeTab === "dashboard" || activeTab === "enhanced-dashboard") &&
-  //   !isMobile;
+  console.log("Dashboard - isMobile:", isMobile, "window.innerWidth:", window.innerWidth);
 
   // Determine which dashboard/content to show based on tab param
   const getContent = () => {
@@ -61,7 +57,9 @@ export default function Dashboard() {
     }
   };
 
+  // Force mobile dashboard for mobile screens
   if (isMobile) {
+    console.log("Rendering MobileDashboard");
     return (
       <ProtectedRoute>
         <MobileDashboard />
@@ -69,6 +67,7 @@ export default function Dashboard() {
     );
   }
 
+  console.log("Rendering Desktop Dashboard");
   return (
     <ProtectedRoute>
       <SidebarProvider>
@@ -77,9 +76,6 @@ export default function Dashboard() {
           <div className="flex-1 flex flex-col">
             <DashboardHeader />
             <main className="flex-1 p-6">
-              {/* GlobalSearch bar and search results have been removed as requested */}
-
-              {/* Main dynamic page content */}
               {getContent()}
             </main>
           </div>
