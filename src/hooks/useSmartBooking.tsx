@@ -20,6 +20,16 @@ interface BookingConstraints {
   required_amenities?: string[];
 }
 
+interface RecommendedSlot {
+  resource_id: string;
+  resource_name: string;
+  resource_type: string;
+  start_time: string;
+  end_time: string;
+  score: number;
+  reasons: string[];
+}
+
 export const useSmartBooking = () => {
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
@@ -46,15 +56,14 @@ export const useSmartBooking = () => {
         constraints
       );
 
-      // Store recommendations in database
+      // Store recommendations in database (without resource_id since it's not in the table)
       const { data, error } = await supabase
         .from("smart_scheduling")
         .insert({
-          resource_id: resourceId,
           user_id: user.id,
-          recommended_slots: recommendedSlots,
-          preferences,
-          constraints,
+          recommended_slots: recommendedSlots as any,
+          preferences: preferences as any,
+          constraints: constraints as any,
           confidence_score: calculateConfidenceScore(recommendedSlots),
           algorithm_version: "v1.0"
         })
@@ -62,7 +71,7 @@ export const useSmartBooking = () => {
         .single();
 
       if (error) throw error;
-      return data;
+      return { ...data, recommended_slots: recommendedSlots };
     },
     onSuccess: () => {
       toast({
@@ -106,10 +115,7 @@ export const useSmartBooking = () => {
       
       const { data, error } = await supabase
         .from("smart_scheduling")
-        .select(`
-          *,
-          resources (name, type, capacity, amenities)
-        `)
+        .select("*")
         .eq("user_id", user.id)
         .order("created_at", { ascending: false })
         .limit(5);
@@ -133,7 +139,7 @@ async function generateRecommendations(
   resourceId: string | undefined,
   preferences: BookingPreferences,
   constraints: BookingConstraints
-) {
+): Promise<RecommendedSlot[]> {
   // Get available resources
   let resourcesQuery = supabase
     .from("resources")
@@ -145,7 +151,9 @@ async function generateRecommendations(
   }
 
   if (constraints.resource_types?.length) {
-    resourcesQuery = resourcesQuery.in("type", constraints.resource_types);
+    // Type assertion to handle the enum type mismatch
+    const resourceTypes = constraints.resource_types as Array<"meeting_room" | "desk" | "office" | "equipment" | "lounge" | "hot_desk" | "dedicated_desk" | "private_office" | "phone_booth" | "event_space">;
+    resourcesQuery = resourcesQuery.in("type", resourceTypes);
   }
 
   if (constraints.min_capacity) {
@@ -162,7 +170,7 @@ async function generateRecommendations(
     .lte("end_time", constraints.end_date)
     .in("status", ["confirmed", "pending"]);
 
-  const slots = [];
+  const slots: RecommendedSlot[] = [];
 
   // Generate time slots for each resource
   for (const resource of resources || []) {
@@ -184,8 +192,8 @@ function generateTimeSlotsForResource(
   constraints: BookingConstraints,
   preferences: BookingPreferences,
   existingBookings: any[]
-) {
-  const slots = [];
+): RecommendedSlot[] {
+  const slots: RecommendedSlot[] = [];
   const duration = preferences.default_duration || 2; // hours
   const startDate = new Date(constraints.start_date);
   const endDate = new Date(constraints.end_date);
@@ -297,7 +305,7 @@ function generateRecommendationReasons(
   return reasons;
 }
 
-function calculateConfidenceScore(slots: any[]): number {
+function calculateConfidenceScore(slots: RecommendedSlot[]): number {
   if (slots.length === 0) return 0;
   
   const avgScore = slots.reduce((sum, slot) => sum + slot.score, 0) / slots.length;

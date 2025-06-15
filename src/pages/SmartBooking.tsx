@@ -10,6 +10,16 @@ import { Calendar, Clock, MapPin, Users, Sparkles, Star } from "lucide-react";
 import { useSmartBooking } from "@/hooks/useSmartBooking";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 
+interface RecommendedSlot {
+  resource_id: string;
+  resource_name: string;
+  resource_type: string;
+  start_time: string;
+  end_time: string;
+  score: number;
+  reasons: string[];
+}
+
 export default function SmartBooking() {
   const { getSmartRecommendations, userPreferences, recentRecommendations, loading } = useSmartBooking();
   const [constraints, setConstraints] = useState({
@@ -20,7 +30,7 @@ export default function SmartBooking() {
     required_amenities: [] as string[],
   });
 
-  const [recommendations, setRecommendations] = useState<any[]>([]);
+  const [recommendations, setRecommendations] = useState<RecommendedSlot[]>([]);
 
   const handleGetRecommendations = async () => {
     if (!constraints.start_date || !constraints.end_date) return;
@@ -42,7 +52,9 @@ export default function SmartBooking() {
         }
       });
 
-      setRecommendations(result.recommended_slots || []);
+      // Safely handle the recommended_slots data
+      const slots = result.recommended_slots as RecommendedSlot[] || [];
+      setRecommendations(slots);
     } catch (error) {
       console.error('Failed to get recommendations:', error);
     }
@@ -152,12 +164,12 @@ export default function SmartBooking() {
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-2 text-sm">
-                    {userPreferences.preferred_times?.length > 0 && (
+                    {userPreferences.preferred_times && Array.isArray(userPreferences.preferred_times) && userPreferences.preferred_times.length > 0 && (
                       <div>
                         <strong>Preferred Times:</strong> {userPreferences.preferred_times.join(', ')}
                       </div>
                     )}
-                    {userPreferences.preferred_resource_types?.length > 0 && (
+                    {userPreferences.preferred_resource_types && Array.isArray(userPreferences.preferred_resource_types) && userPreferences.preferred_resource_types.length > 0 && (
                       <div>
                         <strong>Preferred Types:</strong> {userPreferences.preferred_resource_types.join(', ')}
                       </div>
@@ -249,24 +261,27 @@ export default function SmartBooking() {
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {recentRecommendations.map((rec) => (
-                  <div key={rec.id} className="border rounded p-3">
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="font-medium">
-                        {rec.resources?.name || 'Resource'}
-                      </span>
-                      <Badge variant="outline">
-                        Score: {rec.confidence_score}%
-                      </Badge>
+                {recentRecommendations.map((rec) => {
+                  // Safely handle recommended_slots as Json type
+                  const slotsCount = Array.isArray(rec.recommended_slots) ? rec.recommended_slots.length : 0;
+                  
+                  return (
+                    <div key={rec.id} className="border rounded p-3">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="font-medium">Smart Recommendation</span>
+                        <Badge variant="outline">
+                          Score: {rec.confidence_score}%
+                        </Badge>
+                      </div>
+                      <p className="text-sm text-gray-600">
+                        {new Date(rec.created_at).toLocaleDateString()}
+                      </p>
+                      <p className="text-xs text-gray-500">
+                        {slotsCount} recommendations generated
+                      </p>
                     </div>
-                    <p className="text-sm text-gray-600">
-                      {new Date(rec.created_at).toLocaleDateString()}
-                    </p>
-                    <p className="text-xs text-gray-500">
-                      {rec.recommended_slots?.length || 0} recommendations generated
-                    </p>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </CardContent>
           </Card>
