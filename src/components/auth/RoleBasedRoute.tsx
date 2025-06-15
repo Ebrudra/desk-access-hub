@@ -1,12 +1,12 @@
 
 import { ReactNode } from "react";
-import { useAuthRole, UserRole } from "@/hooks/useAuthRole";
+import { useAuthRole, CoreUserRole } from "@/hooks/useAuthRole";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Shield } from "lucide-react";
 
 interface RoleBasedRouteProps {
   children: ReactNode;
-  requiredRole: UserRole;
+  requiredRole: CoreUserRole;
   fallback?: ReactNode;
 }
 
