@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -66,7 +65,7 @@ export const BookingCalendar = ({ expanded = false }: BookingCalendarProps) => {
               View and manage space bookings
             </CardDescription>
           </div>
-          <Button onClick={() => navigate("/new-booking")}>
+          <Button onClick={() => navigate("/bookings/new")}>
             <CalendarPlus className="mr-2 h-4 w-4" />
             New Booking
           </Button>
@@ -108,7 +107,6 @@ export const BookingCalendar = ({ expanded = false }: BookingCalendarProps) => {
             <div className="space-y-3 flex-1 min-h-0 overflow-y-auto">
               {selectedDateBookings.length === 0 ? (
                 <div className="text-center py-8 text-gray-500 flex flex-col items-center justify-center">
-                  <CalendarIcon className="mx-auto h-8 w-8 mb-2 opacity-50" /> {/* Use icon, not widget! */}
                   <p>No bookings for this date</p>
                 </div>
               ) : (

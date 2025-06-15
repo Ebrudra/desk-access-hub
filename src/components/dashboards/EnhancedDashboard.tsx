@@ -1,4 +1,3 @@
-
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { RealtimeNotifications } from "@/components/notifications/RealtimeNotifications";
@@ -16,6 +15,8 @@ import {
   Smartphone,
   Zap
 } from "lucide-react";
+import { QuickActions } from "@/components/QuickActions";
+import { NotificationCenter } from "@/components/notifications/NotificationCenter";
 
 export const EnhancedDashboard = () => {
   const isMobile = useIsMobile();
@@ -26,28 +27,28 @@ export const EnhancedDashboard = () => {
       title: "Real-time Notifications",
       description: "Get instant updates on bookings, events, and system changes",
       icon: Bell,
-      color: "text-blue-600",
+      color: "from-blue-400 to-blue-600",
       available: true
     },
     {
       title: "Global Search",
       description: "Search across all platform data with intelligent filtering",
       icon: Search,
-      color: "text-green-600",
+      color: "from-green-400 to-green-600",
       available: true
     },
     {
       title: "Mobile Optimized",
       description: "Touch-friendly interface with swipe actions and responsive design",
       icon: Smartphone,
-      color: "text-purple-600",
+      color: "from-purple-400 to-purple-600",
       available: true
     },
     {
       title: "Performance Optimized",
       description: "Lazy loading, virtualization, and efficient data handling",
       icon: Zap,
-      color: "text-orange-600",
+      color: "from-orange-400 to-orange-600",
       available: true
     }
   ];
@@ -145,78 +146,85 @@ export const EnhancedDashboard = () => {
         </CardContent>
       </Card>
 
+      {/* MAIN TABS */}
       <Tabs defaultValue="features" className="space-y-4">
-        <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="features">New Features</TabsTrigger>
+        <TabsList className="grid w-full grid-cols-5">
+          <TabsTrigger value="quick-actions">Quick Actions</TabsTrigger>
           <TabsTrigger value="notifications">Notifications</TabsTrigger>
+          <TabsTrigger value="features">New Features</TabsTrigger>
           <TabsTrigger value="performance">Performance</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="features" className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {features.map((feature, index) => {
+        {/* Quick Actions */}
+        <TabsContent value="quick-actions">
+          <QuickActions />
+        </TabsContent>
+
+        {/* Notifications */}
+        <TabsContent value="notifications">
+          <NotificationCenter />
+        </TabsContent>
+
+        {/* New Features with bento grid and micro animations */}
+        <TabsContent value="features" className="space-y-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 animate-fade-in">
+            {/* Bento grid with subtle hover/scale-animations */}
+            {features.map((feature, i) => {
               const Icon = feature.icon;
               return (
-                <Card key={index}>
-                  <CardHeader>
-                    <CardTitle className="flex items-center space-x-2">
-                      <Icon className={`h-5 w-5 ${feature.color}`} />
-                      <span>{feature.title}</span>
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-gray-600">{feature.description}</p>
-                    <div className="mt-4">
-                      {feature.available ? (
-                        <span className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-green-100 text-green-800">
-                          ✓ Available
-                        </span>
-                      ) : (
-                        <span className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-yellow-100 text-yellow-800">
-                          Coming Soon
-                        </span>
-                      )}
-                    </div>
-                  </CardContent>
-                </Card>
+                <div
+                  key={i}
+                  className={
+                    "group rounded-2xl p-6 shadow-md bg-gradient-to-br " +
+                    feature.color +
+                    " hover:scale-105 transform transition duration-300 relative overflow-hidden"
+                  }
+                  style={{
+                    minHeight: "180px",
+                  }}
+                >
+                  <div className="flex items-center mb-3 space-x-4">
+                    <Icon className="h-8 w-8 text-white drop-shadow-lg transition-transform group-hover:scale-125" />
+                    <span className="text-xl font-bold text-white drop-shadow-sm">{feature.title}</span>
+                  </div>
+                  <div className="text-white text-opacity-90 text-md">{feature.description}</div>
+                  <span className="absolute bottom-2 right-4 text-sm text-white opacity-60">
+                    {feature.available ? "✓ Available" : "Coming Soon"}
+                  </span>
+                </div>
               );
             })}
           </div>
         </TabsContent>
 
-        <TabsContent value="notifications">
-          <RealtimeNotifications />
-        </TabsContent>
-
+        {/* Coworking space performance metrics tab */}
         <TabsContent value="performance">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <Card>
               <CardHeader>
-                <CardTitle className="text-sm">Lazy Loading</CardTitle>
+                <CardTitle className="text-sm">Space Utilization</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold text-green-600">95%</div>
-                <p className="text-xs text-gray-600">Faster initial load</p>
+                <div className="text-2xl font-bold text-green-600">80%</div>
+                <p className="text-xs text-gray-600">Average daily utilization</p>
               </CardContent>
             </Card>
-            
             <Card>
               <CardHeader>
-                <CardTitle className="text-sm">Memory Usage</CardTitle>
+                <CardTitle className="text-sm">Active Bookings</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold text-blue-600">60%</div>
-                <p className="text-xs text-gray-600">Reduction achieved</p>
+                <div className="text-2xl font-bold text-blue-600">24</div>
+                <p className="text-xs text-gray-600">This week</p>
               </CardContent>
             </Card>
-            
             <Card>
               <CardHeader>
-                <CardTitle className="text-sm">Mobile Score</CardTitle>
+                <CardTitle className="text-sm">Most Popular Room</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold text-purple-600">98</div>
-                <p className="text-xs text-gray-600">Lighthouse score</p>
+                <div className="text-xl font-bold text-purple-600">Main Conference</div>
+                <p className="text-xs text-gray-600">Booked 12 times</p>
               </CardContent>
             </Card>
           </div>
