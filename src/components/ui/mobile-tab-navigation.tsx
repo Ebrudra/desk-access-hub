@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import {
@@ -87,16 +86,18 @@ export const MobileTabNavigation = ({
   const handleMoreClick = () => setIsSheetOpen(true);
 
   const handleOverflowTabClick = (tabValue: string) => {
-    if (!setSearchParams || !searchParams) return;
-    const params = new URLSearchParams(searchParams);
-    params.set('tab', tabValue);
-    setSearchParams(params);
+    if (setSearchParams && searchParams) {
+      const params = new URLSearchParams(searchParams);
+      params.set('tab', tabValue);
+      setSearchParams(params);
+    }
     setIsSheetOpen(false);
   };
 
   return (
     <div className="fixed bottom-0 left-0 right-0 z-50">
-      <div className="bg-white border-t border-gray-200 rounded-t-xl shadow-md mx-2 mb-2 mt-2">
+      {/* Margins top & bottom */}
+      <div className="bg-white border-t border-gray-200 rounded-t-xl shadow-md mx-4 mb-4 mt-2 py-2">
         <div className="flex items-center px-1">
           {/* Main tabs */}
           {mainTabs.map((tab) => (

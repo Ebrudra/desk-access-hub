@@ -51,11 +51,12 @@ export const MobileDashboard = () => {
     }
   ]);
 
+  // Only two quick actions
   const quickActions = [
     {
       icon: "Calendar",
       label: "New Booking",
-      description: "Create a booking",
+      description: "Create a new booking",
       color: "bg-blue-500",
       action: () => {
         const params = new URLSearchParams(searchParams);
@@ -78,23 +79,25 @@ export const MobileDashboard = () => {
     }
   ];
 
+  // Update bottom navigation tabs to match user request (Home, Calendar, Analytics, Notifications, More)
   const tabs = [
     { value: "dashboard", label: "Home", icon: "Home" },
     { value: "calendar", label: "Calendar", icon: "Calendar" },
     { value: "analytics", label: "Analytics", icon: "Analytics" },
     { value: "notifications", label: "Notifications", icon: "Notifications" },
-    { value: "more", label: "More", icon: "MoreHorizontal" }, // The More icon itself is handled in mobile-tab-navigation
+    { value: "more", label: "More", icon: "MoreHorizontal" }
   ];
 
+  // The "more" menu - ensure all supported
   const moreItems = [
     { value: "smart-booking", label: "Smart Booking", icon: "Brain" },
-    { value: "access-codes", label: "Grant Access", icon: "KeyRound" },
-    { value: "calendar", label: "Booking", icon: "Calendar" },
+    { value: "access-codes", label: "Access Code", icon: "KeyRound" },
+    { value: "booking", label: "Booking", icon: "Calendar" },
     { value: "members", label: "Members", icon: "Users" },
     { value: "events", label: "Events", icon: "CalendarDays" },
     { value: "resources", label: "Resources", icon: "Building2" },
     { value: "billing", label: "Billing", icon: "BarChart3" },
-    { value: "payments", label: "Payment", icon: "BarChart3" },
+    { value: "payments", label: "Payment", icon: "BarChart3" }
   ];
 
   const iconMap = {
@@ -112,11 +115,90 @@ export const MobileDashboard = () => {
     MapPin: MapPin,
   };
 
-  const handleTabChange = (value: string) => {
-    if (value === "more") return; // Do nothing, More menu opens via its own logic
-    const params = new URLSearchParams(searchParams);
-    params.set('tab', value);
-    setSearchParams(params);
+  // Mobile header as per screenshot (gradient bar, circular icon, bold font)
+  const Header = () => (
+    <div className="bg-gradient-to-r from-[#35386a] via-[#633dc3] to-[#4152b2] p-4 pt-8 flex items-center justify-between shadow-lg rounded-b-xl relative">
+      <div className="flex items-center">
+        <div className="flex items-center gap-3">
+          {/* Circle gradient icon */}
+          <div className="w-10 h-10 rounded-[1.5rem] bg-gradient-to-br from-blue-400 via-purple-400 to-indigo-500 flex items-center justify-center shadow-lg" />
+          <span className="text-2xl font-bold font-display text-white drop-shadow tracking-tight">WorkspaceHub</span>
+        </div>
+      </div>
+      <MobileHeaderMenu />
+    </div>
+  );
+
+  // Render tab content based on selected tab
+  const renderTabContent = () => {
+    switch (activeTab) {
+      case "dashboard":
+        return renderDashboardContent();
+      case "calendar":
+        return (
+          <div className="p-0 pt-4">
+            <BookingCalendar />
+          </div>
+        );
+      case "smart-booking":
+        return (
+          <div className="p-0 pt-4">
+            <SmartBookingDashboard />
+          </div>
+        );
+      case "analytics":
+        return (
+          <div className="p-0 pt-4">
+            <AnalyticsDashboard />
+          </div>
+        );
+      case "members":
+        // Swap placeholder with CrudManagement (if that's members manager)
+        return (
+          <div className="p-0 pt-4">
+            <CrudManagement />
+          </div>
+        );
+      case "events":
+        return (
+          <div className="p-0 pt-4">
+            <CrudManagement />
+          </div>
+        );
+      case "resources":
+        return (
+          <div className="p-0 pt-4">
+            <CrudManagement />
+          </div>
+        );
+      case "billing":
+        return (
+          <div className="p-0 pt-4">
+            <AnalyticsDashboard />
+          </div>
+        );
+      case "payments":
+        return (
+          <div className="p-0 pt-4">
+            <AnalyticsDashboard />
+          </div>
+        );
+      case "access-codes":
+        return (
+          <div className="p-0 pt-4">
+            <CrudManagement />
+          </div>
+        );
+      case "notifications":
+        // You may want a NotificationCenter component, here we use CrudManagement as placeholder
+        return (
+          <div className="p-0 pt-4">
+            <CrudManagement />
+          </div>
+        );
+      default:
+        return renderDashboardContent();
+    }
   };
 
   const renderDashboardContent = () => (
@@ -235,88 +317,23 @@ export const MobileDashboard = () => {
     </div>
   );
 
-  const renderTabContent = () => {
-    switch (activeTab) {
-      case "dashboard":
-        return renderDashboardContent();
-      case "calendar":
-        return (
-          <div className="p-4">
-            <BookingCalendar />
-          </div>
-        );
-      case "smart-booking":
-        return (
-          <div className="p-4">
-            <SmartBookingDashboard />
-          </div>
-        );
-      case "analytics":
-        return (
-          <div className="p-4">
-            <AnalyticsDashboard />
-          </div>
-        );
-      case "crud":
-        return (
-          <div className="p-4">
-            <CrudManagement />
-          </div>
-        );
-      case "spaces":
-        return (
-          <div className="p-4">
-            <Card className="rounded-xl">
-              <CardContent className="p-6">
-                <h2 className="text-xl font-semibold mb-4">Spaces Management</h2>
-                <p className="text-gray-600">Space management functionality will be displayed here.</p>
-              </CardContent>
-            </Card>
-          </div>
-        );
-      case "members":
-        return (
-          <div className="p-4">
-            <Card className="rounded-xl">
-              <CardContent className="p-6">
-                <h2 className="text-xl font-semibold mb-4">Members Management</h2>
-                <p className="text-gray-600">Member management functionality will be displayed here.</p>
-              </CardContent>
-            </Card>
-          </div>
-        );
-      default:
-        return renderDashboardContent();
-    }
-  };
-
-  const Header = () => (
-    <div className="bg-gradient-to-br from-blue-700 via-blue-500 to-blue-400 p-4 sticky top-0 z-40 flex items-center justify-between shadow-xl">
-      <div className="flex items-center">
-        <MobileHeaderMenu />
-        <span className="ml-1 text-2xl sm:text-3xl font-extrabold text-white font-display tracking-tight drop-shadow">
-          WorkSpace Hub
-        </span>
-      </div>
-      {/* Can place notification icon or avatar here if needed */}
-    </div>
-  );
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
       {/* Header */}
       <Header />
 
       {/* Main Content */}
-      <div className="p-4 pb-24">
-        {renderTabContent()}
-      </div>
-
+      <div className="p-4 pb-28">{renderTabContent()}</div>
       {/* Bottom Navigation */}
       <MobileTabNavigation
         tabs={tabs}
         currentTab={activeTab}
-        onTabChange={handleTabChange}
+        onTabChange={(tab) => {
+          if (tab === "more") return;
+          const params = new URLSearchParams(searchParams);
+          params.set('tab', tab);
+          setSearchParams(params);
+        }}
         moreItems={moreItems}
         setSearchParams={setSearchParams}
         searchParams={searchParams}
