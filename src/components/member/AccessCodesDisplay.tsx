@@ -1,4 +1,3 @@
-
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -8,6 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 interface AccessCode {
   id: string;
@@ -43,6 +43,7 @@ export const AccessCodesDisplay = () => {
   const { user } = useAuth();
   const { toast } = useToast();
   const [generatingCode, setGeneratingCode] = useState<string | null>(null);
+  const navigate = useNavigate();
 
   const { data: accessCodes, refetch } = useQuery({
     queryKey: ["user-access-codes", user?.id],
@@ -316,7 +317,7 @@ export const AccessCodesDisplay = () => {
             <p className="text-gray-600 mb-4">
               You don't have any active access codes. Access codes are generated for confirmed bookings.
             </p>
-            <Button onClick={() => window.location.href = "/?tab=smart-booking"}>
+            <Button onClick={() => navigate("/dashboard?tab=smart-booking")}>
               Make a Booking
             </Button>
           </CardContent>
