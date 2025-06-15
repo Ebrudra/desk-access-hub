@@ -18,14 +18,25 @@ export const useUserPresence = (channelName: string = 'workspace') => {
   const [channel, setChannel] = useState<any>(null);
 
   useEffect(() => {
-    if (!user) return;
+    if (!user) {
+      setIsOnline(false);
+      setPresenceState({});
+      return;
+    }
 
     // Clean up existing channel if it exists
     if (channel) {
+      console.log('Cleaning up existing presence channel');
       supabase.removeChannel(channel);
     }
 
-    const newChannel = supabase.channel(channelName);
+    const newChannel = supabase.channel(channelName, {
+      config: {
+        presence: {
+          key: user.id,
+        },
+      },
+    });
 
     const userStatus: UserPresence = {
       user_id: user.id,
@@ -41,26 +52,18 @@ export const useUserPresence = (channelName: string = 'workspace') => {
         const newState = newChannel.presenceState();
         console.log('Presence sync state:', newState);
         
-        // Transform the presence state to match our expected type
         const transformedState: Record<string, UserPresence[]> = {};
         Object.entries(newState).forEach(([key, presences]) => {
-          // Each presence entry is an array of presence objects
           if (Array.isArray(presences) && presences.length > 0) {
-            // Extract the actual tracked data from each presence object
-            const validPresences: UserPresence[] = [];
-            
-            presences.forEach((presence: any) => {
-              // The tracked data is directly in the presence object when using .track()
-              if (presence && presence.user_id && presence.user_email) {
-                validPresences.push({
-                  user_id: presence.user_id,
-                  user_email: presence.user_email,
-                  last_seen: presence.last_seen,
-                  status: presence.status || 'online',
-                  current_page: presence.current_page
-                });
-              }
-            });
+            const validPresences: UserPresence[] = presences
+              .filter((presence: any) => presence && presence.user_id && presence.user_email)
+              .map((presence: any) => ({
+                user_id: presence.user_id,
+                user_email: presence.user_email,
+                last_seen: presence.last_seen,
+                status: presence.status || 'online',
+                current_page: presence.current_page
+              }));
             
             if (validPresences.length > 0) {
               transformedState[key] = validPresences;
@@ -76,11 +79,14 @@ export const useUserPresence = (channelName: string = 'workspace') => {
         console.log('User left:', key, leftPresences);
       })
       .subscribe(async (status) => {
-        console.log('Channel subscription status:', status);
+        console.log('Presence channel subscription status:', status);
         if (status === 'SUBSCRIBED') {
           const presenceTrackStatus = await newChannel.track(userStatus);
           console.log('Presence track status:', presenceTrackStatus);
           setIsOnline(presenceTrackStatus === 'ok');
+        } else if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
+          console.error('Presence channel error:', status);
+          setIsOnline(false);
         }
       });
 
@@ -88,7 +94,7 @@ export const useUserPresence = (channelName: string = 'workspace') => {
 
     // Update presence when page changes
     const handlePageChange = () => {
-      if (newChannel) {
+      if (newChannel && isOnline) {
         newChannel.track({
           ...userStatus,
           current_page: window.location.pathname,
@@ -99,7 +105,7 @@ export const useUserPresence = (channelName: string = 'workspace') => {
 
     // Update presence periodically
     const interval = setInterval(() => {
-      if (newChannel) {
+      if (newChannel && isOnline) {
         newChannel.track({
           ...userStatus,
           last_seen: new Date().toISOString(),
@@ -107,12 +113,27 @@ export const useUserPresence = (channelName: string = 'workspace') => {
       }
     }, 30000); // Every 30 seconds
 
+    // Listen for page visibility changes
+    const handleVisibilityChange = () => {
+      if (newChannel) {
+        const status = document.hidden ? 'away' : 'online';
+        newChannel.track({
+          ...userStatus,
+          status,
+          last_seen: new Date().toISOString(),
+        });
+      }
+    };
+
     window.addEventListener('popstate', handlePageChange);
+    document.addEventListener('visibilitychange', handleVisibilityChange);
 
     return () => {
       window.removeEventListener('popstate', handlePageChange);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
       clearInterval(interval);
       if (newChannel) {
+        console.log('Unsubscribing from presence channel');
         supabase.removeChannel(newChannel);
       }
     };

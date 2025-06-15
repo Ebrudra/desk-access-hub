@@ -1,5 +1,5 @@
 
-import { Wifi, WifiOff, AlertCircle } from "lucide-react";
+import { Wifi, WifiOff, AlertCircle, RotateCcw } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 
@@ -20,7 +20,7 @@ export const ConnectionStatus = ({ status, className }: ConnectionStatusProps) =
         };
       case 'connecting':
         return {
-          icon: AlertCircle,
+          icon: RotateCcw,
           label: 'Connecting',
           variant: 'secondary' as const,
           className: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
@@ -43,7 +43,7 @@ export const ConnectionStatus = ({ status, className }: ConnectionStatusProps) =
       variant={config.variant} 
       className={cn("flex items-center gap-1", config.className, className)}
     >
-      <Icon className="h-3 w-3" />
+      <Icon className={cn("h-3 w-3", status === 'connecting' && "animate-spin")} />
       <span className="text-xs">{config.label}</span>
     </Badge>
   );
