@@ -1,4 +1,3 @@
-
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Users, Key, Info } from "lucide-react";
@@ -6,19 +5,19 @@ import { Users, Key, Info } from "lucide-react";
 export const TestUsersSetup = () => {
   const testUsers = [
     {
-      email: "admin.user@example.com",
+      email: "admin.user@getnada.com",
       password: "AdminPass123!",
       role: "admin",
       name: "Admin User"
     },
     {
-      email: "manager.user@example.com", 
+      email: "manager.user@getnada.com", 
       password: "ManagerPass123!",
       role: "manager",
       name: "Manager User"
     },
     {
-      email: "member.user@example.com",
+      email: "member.user@getnada.com",
       password: "MemberPass123!",
       role: "member", 
       name: "Member User"
