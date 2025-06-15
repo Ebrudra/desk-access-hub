@@ -7,7 +7,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { EnhancedErrorBoundary } from "@/components/ui/enhanced-error-boundary";
 import { ThemeProvider } from "@/contexts/ThemeContext";
-import Index from "./pages/Index";
+import Dashboard from "./pages/Dashboard";
 import Auth from "./pages/Auth";
 import AuthCallback from "./pages/AuthCallback";
 import BookingDetail from "./pages/BookingDetail";
@@ -25,6 +25,7 @@ import PaymentCanceled from "./pages/PaymentCanceled";
 import Billing from "./pages/Billing";
 import UserManagement from "./pages/UserManagement";
 import LandingPage from "./components/landing/LandingPage";
+import BlogPage from "./pages/BlogPage";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -49,8 +50,9 @@ const App = () => (
           <Sonner />
           <BrowserRouter>
             <Routes>
-              <Route path="/" element={<Index />} />
-              <Route path="/landing" element={<LandingPage />} />
+              <Route path="/" element={<LandingPage />} />
+              <Route path="/dashboard" element={<Dashboard />} />
+              <Route path="/blog" element={<BlogPage />} />
               <Route path="/auth" element={<Auth />} />
               <Route path="/enhanced-auth" element={<EnhancedAuth />} />
               <Route path="/auth/callback" element={<AuthCallback />} />

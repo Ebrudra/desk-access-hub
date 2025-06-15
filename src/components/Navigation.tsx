@@ -7,7 +7,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { useAuth } from "@/hooks/useAuth";
 import { useAuthRole } from "@/hooks/useAuthRole";
 import { supabase } from "@/integrations/supabase/client";
-import { Home, Settings, LogOut, Menu, X, Shield } from "lucide-react";
+import { Home, Settings, LogOut, Shield } from "lucide-react";
 import { NotificationCenter } from "@/components/ui/notification-center";
 import { LiveUserCount } from "@/components/ui/live-user-count";
 import { ConnectionStatus } from "@/components/ui/connection-status";
@@ -33,15 +33,15 @@ export const Navigation = () => {
 
   const handleSignOut = async () => {
     await supabase.auth.signOut();
-    navigate('/landing');
+    navigate('/');
   };
 
   const handleLogoClick = () => {
-    navigate('/landing');
+    navigate('/');
   };
 
   const navItems = [
-    { icon: Home, label: "Dashboard", path: "/" },
+    { icon: Home, label: "Dashboard", path: "/dashboard" },
   ];
 
   const isActivePath = (path: string) => {
@@ -134,9 +134,9 @@ export const Navigation = () => {
                     <DropdownMenuSeparator />
                     {isAdmin && (
                       <DropdownMenuItem asChild>
-                        <Link to="/?tab=roles" className="flex items-center">
+                        <Link to="/user-management" className="flex items-center">
                           <Shield className="mr-2 h-4 w-4" />
-                          <span>Manage Roles</span>
+                          <span>Manage Users</span>
                         </Link>
                       </DropdownMenuItem>
                     )}
