@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { SidebarProvider } from "@/components/ui/sidebar";
@@ -30,6 +29,11 @@ export default function Dashboard() {
   const activeTab = searchParams.get("tab") || "dashboard";
   const [searchQuery, setSearchQuery] = useState("");
   const debouncedQuery = useDebounce(searchQuery, 300);
+
+  // Only show GlobalSearch bar for EnhancedDashboard and dashboard tab
+  const shouldShowGlobalSearch =
+    (activeTab === "dashboard" || activeTab === "enhanced-dashboard") &&
+    !isMobile;
 
   // Determine which dashboard/content to show based on tab param
   const getContent = () => {
@@ -73,27 +77,21 @@ export default function Dashboard() {
           <div className="flex-1 flex flex-col">
             <DashboardHeader />
             <main className="flex-1 p-6">
-              {/* Global Search Bar */}
-              <div>
-                <GlobalSearch />
-              </div>
+              {/* Show Global Search Bar only in dashboard/EnhancedDashboard */}
+              {shouldShowGlobalSearch && (
+                <div>
+                  <GlobalSearch />
+                </div>
+              )}
 
-              {/* Search Results Block, only appears after searching (debouncedQuery) */}
-              {debouncedQuery && debouncedQuery.length >= 2 && (
+              {/* Search Results Block, only appears after searching (debouncedQuery) and only when GlobalSearch is visible */}
+              {shouldShowGlobalSearch && debouncedQuery && debouncedQuery.length >= 2 && (
                 <div className="bg-background border rounded-lg shadow-sm mt-6 mb-6 p-4">
-                  {/* You can customize this with another component if needed */}
                   <div className="font-semibold mb-2 text-gray-800">
                     Search Results for &quot;{debouncedQuery}&quot;:
                   </div>
-                  {/* The GlobalSearch already displays results in dropdown, 
-                      you could put advanced/aggregated results here */}
-                  {/* Since actual result aggregation is in GlobalSearch, 
-                      you might want to enhance this with e.g. tips, filters, 
-                      or a compact summary */}
-                  {/* If you want the main results (rather than the dropdown), 
-                      you would need to extract the logic from GlobalSearch */}
                   <div className="text-gray-500 text-sm">
-                    (See detailed results in the dropdown above.)
+                    (See detailed results in the block below.)
                   </div>
                 </div>
               )}

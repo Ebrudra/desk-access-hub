@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -26,7 +25,8 @@ interface SearchResult {
   title: string;
   subtitle?: string;
   description?: string;
-  url?: string;
+  // Remove url to disable clickability
+  // url?: string;
   metadata?: Record<string, any>;
 }
 
@@ -67,30 +67,36 @@ export const GlobalSearch = () => {
             title: booking.title || `Booking ${booking.id.slice(0, 8)}`,
             subtitle: booking.resources?.name,
             description: `${new Date(booking.start_time).toLocaleDateString()} - ${booking.status}`,
-            url: `/bookings/${booking.id}`,
+            // Remove url to disable clickability
+            // url: `/bookings/${booking.id}`,
             metadata: booking
           });
         });
       }
 
-      // Search members
+      // Search members (FIX: enable search by member name)
       if (selectedTypes.length === 0 || selectedTypes.includes('member')) {
         const { data: members } = await supabase
           .from("members")
-          .select("*, profiles(first_name, last_name)")
-          .limit(5);
+          .select("*, profiles:user_id(first_name,last_name)")
+          .limit(20);
 
         members?.forEach(member => {
           const profile = member.profiles as any;
           const fullName = `${profile?.first_name || ''} ${profile?.last_name || ''}`.trim();
-          if (fullName.toLowerCase().includes(debouncedQuery.toLowerCase())) {
+          // Add very basic substring search (could be more advanced)
+          if (
+            fullName.toLowerCase().includes(debouncedQuery.toLowerCase()) ||
+            (member.membership_tier && member.membership_tier.toLowerCase().includes(debouncedQuery.toLowerCase())) ||
+            (member.membership_status && member.membership_status.toLowerCase().includes(debouncedQuery.toLowerCase()))
+          ) {
             results.push({
               id: member.id,
               type: 'member',
               title: fullName || 'Unknown Member',
               subtitle: member.membership_tier,
               description: `Status: ${member.membership_status}`,
-              url: `/members/${member.id}`,
+              // url: `/members/${member.id}`,
               metadata: member
             });
           }
@@ -112,7 +118,7 @@ export const GlobalSearch = () => {
             title: space.name,
             subtitle: `${space.city}, ${space.country}`,
             description: space.description,
-            url: `/spaces/${space.id}`,
+            // url: `/spaces/${space.id}`,
             metadata: space
           });
         });
@@ -133,7 +139,7 @@ export const GlobalSearch = () => {
             title: resource.name,
             subtitle: resource.type,
             description: `Capacity: ${resource.capacity} • ${resource.is_available ? 'Available' : 'Unavailable'}`,
-            url: `/resources/${resource.id}`,
+            // url: `/resources/${resource.id}`,
             metadata: resource
           });
         });
@@ -154,7 +160,7 @@ export const GlobalSearch = () => {
             title: event.title,
             subtitle: event.event_type,
             description: `${new Date(event.start_time).toLocaleDateString()}`,
-            url: `/events/${event.id}`,
+            // url: `/events/${event.id}`,
             metadata: event
           });
         });
@@ -256,7 +262,7 @@ export const GlobalSearch = () => {
                   {searchResults.map((result) => (
                     <div
                       key={`${result.type}-${result.id}`}
-                      className="px-4 py-3 hover:bg-gray-50 cursor-pointer border-b last:border-b-0"
+                      className="px-4 py-3 cursor-default border-b last:border-b-0"
                     >
                       <div className="flex items-start space-x-3">
                         <div className="flex-shrink-0 mt-1">

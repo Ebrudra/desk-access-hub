@@ -1,4 +1,3 @@
-
 import { Calendar, Home, Users, BarChart3, Settings, CreditCard, Shield, Sparkles, Key } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import {
@@ -93,9 +92,8 @@ export function DashboardSidebar() {
         </Link>
       </SidebarHeader>
 
-      {/* Connection Status tag */}
+      {/* Connection Status tag - only appears here now */}
       <div className="pl-5 pb-2 mt-2">
-        {/* In a real app, status would be dynamic */}
         <ConnectionStatus status="connected" />
       </div>
       

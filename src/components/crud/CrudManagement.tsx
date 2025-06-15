@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -11,6 +10,7 @@ import { EventsList } from "./EventsList";
 import { Calendar, Building2, Users, MapPin, Settings, Shield } from "lucide-react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { useAuthRole } from "@/hooks/useAuthRole";
+import { SpacesList } from "./SpacesList";
 
 export const CrudManagement = () => {
   const [searchParams] = useSearchParams();
@@ -78,16 +78,7 @@ export const CrudManagement = () => {
         </TabsContent>
 
         <TabsContent value="spaces">
-          <div className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Spaces Management</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <SpaceForm />
-              </CardContent>
-            </Card>
-          </div>
+          <SpacesList />
         </TabsContent>
 
         <TabsContent value="members">
