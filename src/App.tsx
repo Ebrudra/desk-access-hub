@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -17,6 +16,11 @@ import ResourceDetail from "./pages/ResourceDetail";
 import NewBooking from "./pages/NewBooking";
 import NewMember from "./pages/NewMember";
 import NotFound from "./pages/NotFound";
+import EnhancedAuth from "./pages/EnhancedAuth";
+import Pricing from "./pages/Pricing";
+import PaymentSuccess from "./pages/PaymentSuccess";
+import PaymentCanceled from "./pages/PaymentCanceled";
+import Billing from "./pages/Billing";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -42,7 +46,19 @@ const App = () => (
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/auth" element={<Auth />} />
+            <Route path="/enhanced-auth" element={<EnhancedAuth />} />
             <Route path="/auth/callback" element={<AuthCallback />} />
+            <Route path="/pricing" element={<Pricing />} />
+            <Route path="/payment-success" element={<PaymentSuccess />} />
+            <Route path="/payment-canceled" element={<PaymentCanceled />} />
+            <Route 
+              path="/billing" 
+              element={
+                <ProtectedRoute>
+                  <Billing />
+                </ProtectedRoute>
+              } 
+            />
             <Route 
               path="/bookings/new" 
               element={
