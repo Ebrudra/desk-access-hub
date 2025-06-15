@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -81,16 +80,39 @@ export const BookingPreferencesManager = () => {
 
   useEffect(() => {
     if (userPreferences) {
+      // Safely parse notification_settings from Json to the expected object type
+      const notificationSettings = (() => {
+        try {
+          if (typeof userPreferences.notification_settings === 'object' && 
+              userPreferences.notification_settings !== null && 
+              !Array.isArray(userPreferences.notification_settings)) {
+            return userPreferences.notification_settings as {
+              booking_reminders: boolean;
+              booking_confirmations: boolean;
+              promotional_emails: boolean;
+            };
+          }
+          // Return default if parsing fails
+          return {
+            booking_reminders: true,
+            booking_confirmations: true,
+            promotional_emails: false,
+          };
+        } catch {
+          return {
+            booking_reminders: true,
+            booking_confirmations: true,
+            promotional_emails: false,
+          };
+        }
+      })();
+
       setPreferences({
         id: userPreferences.id,
         preferred_resource_types: userPreferences.preferred_resource_types || [],
         preferred_times: userPreferences.preferred_times || [],
         default_duration: userPreferences.default_duration || 2,
-        notification_settings: userPreferences.notification_settings || {
-          booking_reminders: true,
-          booking_confirmations: true,
-          promotional_emails: false,
-        },
+        notification_settings: notificationSettings,
         favorite_resources: userPreferences.favorite_resources || [],
         default_attendees: userPreferences.default_attendees || 1,
       });
