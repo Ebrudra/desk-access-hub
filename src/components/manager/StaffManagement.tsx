@@ -2,7 +2,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback, AvatarInitials } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Users, Clock, UserCheck, Phone, Mail, Calendar } from "lucide-react";
@@ -11,14 +11,28 @@ export const StaffManagement = () => {
   const { data: staffData } = useQuery({
     queryKey: ["staff-management"],
     queryFn: async () => {
-      // Get all users with manager or admin roles
+      // Get all users with manager or admin roles and their profile information
       const { data: userRoles } = await supabase
         .from("user_roles")
-        .select(`
-          *,
-          profiles(first_name, last_name)
-        `)
+        .select("*")
         .in("role", ["admin", "manager"]);
+
+      // Get profile information for each user separately to avoid relation issues
+      const staffWithProfiles = [];
+      if (userRoles) {
+        for (const userRole of userRoles) {
+          const { data: profile } = await supabase
+            .from("profiles")
+            .select("first_name, last_name")
+            .eq("id", userRole.user_id)
+            .single();
+          
+          staffWithProfiles.push({
+            ...userRole,
+            profile: profile || { first_name: null, last_name: null }
+          });
+        }
+      }
 
       // Mock schedule data
       const schedules = [
@@ -28,9 +42,9 @@ export const StaffManagement = () => {
       ];
 
       return {
-        staff: userRoles || [],
+        staff: staffWithProfiles,
         schedules,
-        totalStaff: userRoles?.length || 0,
+        totalStaff: staffWithProfiles.length,
         onDuty: schedules.filter(s => s.status === 'on-duty').length,
         scheduled: schedules.filter(s => s.status === 'scheduled').length
       };
@@ -111,12 +125,12 @@ export const StaffManagement = () => {
                   <div className="flex items-center space-x-3">
                     <Avatar>
                       <AvatarFallback>
-                        {(staff.profiles?.first_name?.charAt(0) || 'U') + (staff.profiles?.last_name?.charAt(0) || 'S')}
+                        {(staff.profile?.first_name?.charAt(0) || 'U') + (staff.profile?.last_name?.charAt(0) || 'S')}
                       </AvatarFallback>
                     </Avatar>
                     <div>
                       <h4 className="font-medium">
-                        {staff.profiles?.first_name} {staff.profiles?.last_name}
+                        {staff.profile?.first_name} {staff.profile?.last_name}
                       </h4>
                       <p className="text-sm text-gray-600">ID: {staff.user_id.slice(0, 8)}...</p>
                       <div className="flex items-center space-x-2 mt-1">

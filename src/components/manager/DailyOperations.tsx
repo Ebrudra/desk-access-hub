@@ -1,4 +1,3 @@
-
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -47,7 +46,7 @@ export const DailyOperations = () => {
   });
 
   const updateBookingStatus = useMutation({
-    mutationFn: async ({ id, status }: { id: string, status: string }) => {
+    mutationFn: async ({ id, status }: { id: string, status: "confirmed" | "cancelled" }) => {
       const { error } = await supabase
         .from("bookings")
         .update({ status })
