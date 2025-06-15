@@ -1,9 +1,18 @@
-
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "./useAuth";
 
-export type UserRole = 'admin' | 'manager' | 'member';
+// Match backend roles
+export type UserRole =
+  | "admin"
+  | "manager"
+  | "member"
+  | "super-admin"
+  | "employee"
+  | "user";
+
+// Subset used for app logic/UI: classic roles only
+export type CoreUserRole = "admin" | "manager" | "member";
 
 export const useAuthRole = () => {
   const { user } = useAuth();
@@ -25,11 +34,25 @@ export const useAuthRole = () => {
           .eq('user_id', user.id)
           .single();
 
+        // Accept all backend roles but fallback to "member" for unknown/unsupported roles in core UI logic
         if (error && error.code !== 'PGRST116') {
           console.error('Error fetching user role:', error);
-          setRole('member'); // Default to member on error
+          setRole('member');
         } else {
-          setRole(data?.role || 'member');
+          // If not in UserRole, fallback to member
+          const backendRole = data?.role as UserRole | undefined;
+          setRole(
+            backendRole && [
+              "admin",
+              "manager",
+              "member",
+              "super-admin",
+              "employee",
+              "user",
+            ].includes(backendRole)
+              ? backendRole
+              : "member"
+          );
         }
       } catch (error) {
         console.error('Error fetching user role:', error);
@@ -42,15 +65,30 @@ export const useAuthRole = () => {
     fetchUserRole();
   }, [user]);
 
-  const hasRole = (requiredRole: UserRole): boolean => {
+  // Logic only gives privileges to "admin", "manager", "member" (not special/extra roles)
+  const hasRole = (requiredRole: CoreUserRole): boolean => {
     if (!role) return false;
-    
-    const roleHierarchy = { admin: 3, manager: 2, member: 1 };
-    return roleHierarchy[role] >= roleHierarchy[requiredRole];
+
+    const roleHierarchy: Record<CoreUserRole, number> = {
+      admin: 3,
+      manager: 2,
+      member: 1,
+    };
+
+    if (
+      role === "admin" ||
+      role === "manager" ||
+      role === "member"
+    ) {
+      return roleHierarchy[role as CoreUserRole] >= roleHierarchy[requiredRole];
+    }
+
+    // extra roles not granted special privileges in UI
+    return false;
   };
 
-  const hasAnyRole = (requiredRoles: UserRole[]): boolean => {
-    return requiredRoles.some(requiredRole => hasRole(requiredRole));
+  const hasAnyRole = (requiredRoles: CoreUserRole[]): boolean => {
+    return requiredRoles.some((requiredRole) => hasRole(requiredRole));
   };
 
   return {

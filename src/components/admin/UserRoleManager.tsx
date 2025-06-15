@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
@@ -110,7 +109,6 @@ export const UserRoleManager = () => {
         <UserCheck className="h-6 w-6 text-blue-600" />
         <h2 className="text-2xl font-bold">User Role Manager</h2>
       </div>
-
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center space-x-2">
@@ -138,7 +136,6 @@ export const UserRoleManager = () => {
                     {user.role || 'No role'}
                   </Badge>
                 </div>
-
                 <div className="flex items-center space-x-2">
                   <Select
                     value={user.role || ''}
@@ -150,6 +147,7 @@ export const UserRoleManager = () => {
                       <SelectValue placeholder="Select role" />
                     </SelectTrigger>
                     <SelectContent>
+                      {/* Only allow assignment of non-special roles */}
                       <SelectItem value="member">Member</SelectItem>
                       <SelectItem value="manager">Manager</SelectItem>
                       <SelectItem value="admin">Admin</SelectItem>
