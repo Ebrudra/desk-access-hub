@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
@@ -13,9 +12,10 @@ import { useToast } from "@/hooks/use-toast";
 interface SpaceFormProps {
   spaceId?: string;
   onSuccess?: () => void;
+  onCancel?: () => void;
 }
 
-export const SpaceForm = ({ spaceId, onSuccess }: SpaceFormProps) => {
+export const SpaceForm = ({ spaceId, onSuccess, onCancel }: SpaceFormProps) => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [formData, setFormData] = useState({
@@ -161,14 +161,27 @@ export const SpaceForm = ({ spaceId, onSuccess }: SpaceFormProps) => {
             />
           </div>
 
-          <Button 
-            type="submit" 
-            className="w-full"
-            disabled={createMutation.isPending}
-          >
-            <Building2 className="h-4 w-4 mr-2" />
-            {spaceId ? "Update Space" : "Create Space"}
-          </Button>
+          <div className="flex gap-4">
+            <Button
+              type="submit"
+              className="w-full"
+              disabled={createMutation.isPending}
+            >
+              <Building2 className="h-4 w-4 mr-2" />
+              {spaceId ? "Update Space" : "Create Space"}
+            </Button>
+            {onCancel && (
+              <Button
+                type="button"
+                variant="outline"
+                className="w-full"
+                onClick={onCancel}
+                disabled={createMutation.isPending}
+              >
+                Cancel
+              </Button>
+            )}
+          </div>
         </form>
       </CardContent>
     </Card>
