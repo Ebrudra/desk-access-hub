@@ -44,12 +44,23 @@ export const useUserPresence = (channelName: string = 'workspace') => {
         // Transform the presence state to match our expected type
         const transformedState: Record<string, UserPresence[]> = {};
         Object.entries(newState).forEach(([key, presences]) => {
-          // Each presence array contains the actual tracked data
+          // Each presence entry is an array of presence objects
           if (Array.isArray(presences) && presences.length > 0) {
-            // Filter out any presences that don't have our expected structure
-            const validPresences = presences.filter((p: any) => 
-              p && typeof p === 'object' && p.user_id && p.user_email
-            ) as UserPresence[];
+            // Extract the actual tracked data from each presence object
+            const validPresences: UserPresence[] = [];
+            
+            presences.forEach((presence: any) => {
+              // The tracked data is directly in the presence object when using .track()
+              if (presence && presence.user_id && presence.user_email) {
+                validPresences.push({
+                  user_id: presence.user_id,
+                  user_email: presence.user_email,
+                  last_seen: presence.last_seen,
+                  status: presence.status || 'online',
+                  current_page: presence.current_page
+                });
+              }
+            });
             
             if (validPresences.length > 0) {
               transformedState[key] = validPresences;
