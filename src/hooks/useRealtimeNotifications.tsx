@@ -32,54 +32,71 @@ export const useRealtimeNotifications = () => {
   };
 
   useEffect(() => {
-    if (!user) return;
+    // Early return if no user, but don't skip the hook
+    if (!user) {
+      setNotifications([]);
+      setUnreadCount(0);
+      return;
+    }
 
-    // Subscribe to real-time notifications
-    const channel = supabase
-      .channel('notifications')
-      .on(
-        'postgres_changes',
-        {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'notifications',
-          filter: `user_id=eq.${user.id}`
-        },
-        (payload) => {
-          const newNotification = payload.new as any;
-          const notification: Notification = {
-            id: newNotification.id,
-            title: newNotification.title,
-            message: newNotification.message,
-            type: mapNotificationType(newNotification.type),
-            timestamp: new Date(newNotification.created_at),
-            read: newNotification.is_read,
-            action: newNotification.action_url ? {
-              label: "View",
-              onClick: () => window.location.href = newNotification.action_url
-            } : undefined
-          };
+    let channel: any = null;
 
-          setNotifications(prev => [notification, ...prev]);
-          setUnreadCount(prev => prev + 1);
+    const setupNotifications = async () => {
+      try {
+        // Subscribe to real-time notifications
+        channel = supabase
+          .channel('notifications')
+          .on(
+            'postgres_changes',
+            {
+              event: 'INSERT',
+              schema: 'public',
+              table: 'notifications',
+              filter: `user_id=eq.${user.id}`
+            },
+            (payload) => {
+              const newNotification = payload.new as any;
+              const notification: Notification = {
+                id: newNotification.id,
+                title: newNotification.title,
+                message: newNotification.message,
+                type: mapNotificationType(newNotification.type),
+                timestamp: new Date(newNotification.created_at),
+                read: newNotification.is_read,
+                action: newNotification.action_url ? {
+                  label: "View",
+                  onClick: () => window.location.href = newNotification.action_url
+                } : undefined
+              };
 
-          // Show toast notification
-          toast({
-            title: notification.title,
-            description: notification.message,
-            variant: notification.type === 'error' ? 'destructive' : 'default',
-          });
-        }
-      )
-      .subscribe();
+              setNotifications(prev => [notification, ...prev]);
+              setUnreadCount(prev => prev + 1);
 
-    // Load existing notifications
-    loadNotifications();
+              // Show toast notification
+              toast({
+                title: notification.title,
+                description: notification.message,
+                variant: notification.type === 'error' ? 'destructive' : 'default',
+              });
+            }
+          )
+          .subscribe();
+
+        // Load existing notifications
+        await loadNotifications();
+      } catch (error) {
+        console.error('Error setting up notifications:', error);
+      }
+    };
+
+    setupNotifications();
 
     return () => {
-      supabase.removeChannel(channel);
+      if (channel) {
+        supabase.removeChannel(channel);
+      }
     };
-  }, [user, toast]);
+  }, [user?.id, toast]);
 
   const loadNotifications = async () => {
     if (!user) return;
@@ -115,6 +132,8 @@ export const useRealtimeNotifications = () => {
   };
 
   const markAsRead = async (notificationId: string) => {
+    if (!user) return;
+
     try {
       const { error } = await supabase
         .from('notifications')
@@ -152,6 +171,8 @@ export const useRealtimeNotifications = () => {
   };
 
   const dismissNotification = async (notificationId: string) => {
+    if (!user) return;
+
     try {
       const { error } = await supabase
         .from('notifications')

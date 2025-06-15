@@ -11,8 +11,9 @@ export const useRealtimeData = (tableName: string, queryKey: string[]) => {
 
   useEffect(() => {
     let retryCount = 0;
-    const maxRetries = 3;
-    const retryDelay = 2000;
+    const maxRetries = 2; // Reduced retries to prevent spam
+    const retryDelay = 5000; // Increased delay
+    let retryTimeout: NodeJS.Timeout;
 
     const createChannel = () => {
       const channel = supabase
@@ -30,17 +31,11 @@ export const useRealtimeData = (tableName: string, queryKey: string[]) => {
             // Invalidate queries to refresh data
             queryClient.invalidateQueries({ queryKey });
             
-            // Show notification for important updates
-            if (payload.eventType === 'INSERT') {
+            // Show notification for important updates (only for specific events)
+            if (payload.eventType === 'INSERT' && tableName === 'bookings') {
               toast({
-                title: "New item added",
-                description: `A new ${tableName.slice(0, -1)} has been created`,
-              });
-            } else if (payload.eventType === 'DELETE') {
-              toast({
-                title: "Item deleted",
-                description: `A ${tableName.slice(0, -1)} has been deleted`,
-                variant: "destructive"
+                title: "New booking created",
+                description: `A new booking has been created`,
               });
             }
           }
@@ -51,19 +46,21 @@ export const useRealtimeData = (tableName: string, queryKey: string[]) => {
           if (status === 'SUBSCRIBED') {
             setConnectionStatus('connected');
             retryCount = 0; // Reset retry count on success
+            if (retryTimeout) clearTimeout(retryTimeout);
           } else if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT' || status === 'CLOSED') {
             setConnectionStatus('disconnected');
             
-            // Retry connection with exponential backoff
+            // Only retry if we haven't exceeded max retries
             if (retryCount < maxRetries) {
               retryCount++;
-              console.log(`Retrying connection for ${tableName} (attempt ${retryCount}/${maxRetries})`);
-              setTimeout(() => {
+              console.log(`Will retry connection for ${tableName} (attempt ${retryCount}/${maxRetries}) in ${retryDelay}ms`);
+              retryTimeout = setTimeout(() => {
                 supabase.removeChannel(channel);
                 createChannel();
               }, retryDelay * retryCount);
             } else {
-              console.error(`Max retries reached for ${tableName} realtime connection`);
+              console.log(`Max retries reached for ${tableName} realtime connection`);
+              setConnectionStatus('disconnected');
             }
           } else {
             setConnectionStatus('connecting');
@@ -77,6 +74,7 @@ export const useRealtimeData = (tableName: string, queryKey: string[]) => {
 
     return () => {
       console.log(`Cleaning up realtime channel for ${tableName}`);
+      if (retryTimeout) clearTimeout(retryTimeout);
       supabase.removeChannel(channel);
     };
   }, [tableName, queryKey, queryClient, toast]);

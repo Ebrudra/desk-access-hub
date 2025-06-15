@@ -27,17 +27,17 @@ export const Navigation = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const isMobile = useIsMobile();
 
+  // Always call hooks (don't conditionally call them)
+  const realtimeNotifications = useRealtimeNotifications();
+  const realtimeData = useRealtimeData('bookings', ['bookings']);
+
   const handleSignOut = async () => {
     await supabase.auth.signOut();
     navigate('/landing');
   };
 
   const handleLogoClick = () => {
-    if (user) {
-      navigate('/');
-    } else {
-      navigate('/landing');
-    }
+    navigate('/landing');
   };
 
   const navItems = [
@@ -91,7 +91,7 @@ export const Navigation = () => {
             <span className="text-xl font-bold text-gray-900">WorkSpace Hub</span>
           </button>
 
-          {/* Desktop Navigation */}
+          {/* Desktop Navigation - only show if user exists */}
           {!isMobile && user && <NavigationItems />}
 
           {/* Right side items */}
@@ -99,17 +99,17 @@ export const Navigation = () => {
             <ThemeToggle />
             <LanguageToggle />
             <ConnectionStatus 
-              status={useRealtimeData('bookings', ['bookings']).connectionStatus}
+              status={realtimeData.connectionStatus}
               className="hidden sm:flex"
             />
             <LiveUserCount />
             {user && (
               <>
                 <NotificationCenter
-                  notifications={useRealtimeNotifications().notifications}
-                  onMarkAsRead={useRealtimeNotifications().markAsRead}
-                  onMarkAllAsRead={useRealtimeNotifications().markAllAsRead}
-                  onDismiss={useRealtimeNotifications().dismissNotification}
+                  notifications={realtimeNotifications.notifications}
+                  onMarkAsRead={realtimeNotifications.markAsRead}
+                  onMarkAllAsRead={realtimeNotifications.markAllAsRead}
+                  onDismiss={realtimeNotifications.dismissNotification}
                 />
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
@@ -160,7 +160,7 @@ export const Navigation = () => {
               </Button>
             )}
 
-            {/* Mobile menu */}
+            {/* Mobile menu - only show if user exists */}
             {isMobile && user && (
               <MobileDrawer>
                 <div className="pt-6">
