@@ -73,18 +73,18 @@ export const MobileDashboard = () => {
   ];
 
   return (
-    <div className="space-y-4 pb-20">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 pb-24 px-2 sm:px-0">
       {/* Search */}
-      <Card>
-        <CardContent className="pt-6">
+      <Card className="rounded-2xl shadow-sm mt-4 mb-4">
+        <CardContent className="pt-6 pb-4">
           <GlobalSearch />
         </CardContent>
       </Card>
 
       {/* Quick Actions Grid */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Quick Actions</CardTitle>
+      <Card className="rounded-2xl shadow-md mb-4">
+        <CardHeader className="pb-2">
+          <CardTitle className="font-bold text-base">Quick Actions</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-2 gap-3">
@@ -96,14 +96,14 @@ export const MobileDashboard = () => {
                   <Button
                     key={index}
                     variant="outline"
-                    className="h-20 flex-col space-y-2"
+                    className="flex flex-col items-center h-24 py-2 space-y-2 rounded-xl shadow group hover-scale focus:outline-none"
                     onClick={action.action}
                   >
                     <div className={`p-2 rounded-lg ${action.color}`}>
                       <Icon className="h-5 w-5 text-white" />
                     </div>
-                    <div className="text-center">
-                      <div className="font-medium text-xs">{action.label}</div>
+                    <div className="text-center flex-1 flex flex-col items-center justify-center">
+                      <div className="font-medium text-xs text-gray-900">{action.label}</div>
                       <div className="text-xs text-gray-500">{action.description}</div>
                     </div>
                   </Button>
@@ -115,9 +115,9 @@ export const MobileDashboard = () => {
 
       {/* Recent Bookings with Swipe Actions */}
       {hasRole('member') && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Recent Bookings</CardTitle>
+        <Card className="rounded-2xl shadow mb-4">
+          <CardHeader className="pb-2">
+            <CardTitle className="font-bold text-base">Recent Bookings</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
             {bookings.map((booking) => (
@@ -151,6 +151,7 @@ export const MobileDashboard = () => {
                   subtitle={booking.time}
                   description={`${booking.attendees} attendee${booking.attendees > 1 ? 's' : ''} • ${booking.status}`}
                   onTap={() => console.log("View booking", booking.id)}
+                  className="rounded-lg"
                 />
               </SwipeActions>
             ))}
@@ -159,25 +160,24 @@ export const MobileDashboard = () => {
       )}
 
       {/* Status Cards */}
-      <div className="grid grid-cols-2 gap-3">
-        <Card>
-          <CardContent className="pt-4">
+      <div className="grid grid-cols-2 gap-3 mb-8">
+        <Card className="rounded-xl shadow-sm">
+          <CardContent className="pt-4 pb-3 flex flex-col items-center">
             <div className="flex items-center space-x-2">
               <Clock className="h-4 w-4 text-blue-600" />
               <div>
-                <div className="font-semibold">3</div>
+                <div className="font-semibold text-lg text-gray-900">3</div>
                 <div className="text-xs text-gray-600">Active Today</div>
               </div>
             </div>
           </CardContent>
         </Card>
-        
-        <Card>
-          <CardContent className="pt-4">
+        <Card className="rounded-xl shadow-sm">
+          <CardContent className="pt-4 pb-3 flex flex-col items-center">
             <div className="flex items-center space-x-2">
               <MapPin className="h-4 w-4 text-green-600" />
               <div>
-                <div className="font-semibold">12</div>
+                <div className="font-semibold text-lg text-gray-900">12</div>
                 <div className="text-xs text-gray-600">Available</div>
               </div>
             </div>
