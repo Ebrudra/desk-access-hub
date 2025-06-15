@@ -34,7 +34,7 @@ interface Space {
 
 export const EnhancedBookingForm = ({ onBookingComplete }: { onBookingComplete?: () => void }) => {
   const { user } = useAuth();
-  const { spaces, isLoading: spacesLoading } = useSpaces();
+  const { data: spaces, isLoading: spacesLoading } = useSpaces();
   const { toast } = useToast();
   const [showPayment, setShowPayment] = useState(false);
   const [bookingId, setBookingId] = useState<string | null>(null);
