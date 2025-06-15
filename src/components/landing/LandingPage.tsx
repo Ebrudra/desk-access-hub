@@ -1,93 +1,102 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { ArrowRight, Building2, Calendar, Users, Zap, Shield, BarChart3, CheckCircle } from "lucide-react";
+import { ArrowRight, Building2, Calendar, Users, Zap, Shield, BarChart3, CheckCircle, Wifi, Bell, Activity, Sparkles } from "lucide-react";
+import { ConnectionStatus } from "@/components/ui/connection-status";
+import { LiveUserCount } from "@/components/ui/live-user-count";
+import { useAuth } from "@/hooks/useAuth";
+import { useRealtimeData } from "@/hooks/useRealtimeData";
+import { useRealtimeNotifications } from "@/hooks/useRealtimeNotifications";
 
 const LandingPage = () => {
   const [email, setEmail] = useState("");
+  const { user } = useAuth();
+  const [liveStats, setLiveStats] = useState({
+    activeUsers: 47,
+    bookingsToday: 23,
+    spacesBooked: 12
+  });
+
+  // Mock real-time data for demo
+  const { connectionStatus } = useRealtimeData('spaces', ['spaces']);
+  const { unreadCount } = useRealtimeNotifications();
+
+  // Simulate live stats updates
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setLiveStats(prev => ({
+        activeUsers: prev.activeUsers + Math.floor(Math.random() * 3) - 1,
+        bookingsToday: prev.bookingsToday + Math.floor(Math.random() * 2),
+        spacesBooked: prev.spacesBooked + Math.floor(Math.random() * 2) - 1
+      }));
+    }, 3000);
+
+    return () => clearInterval(interval);
+  }, []);
 
   const features = [
     {
+      icon: Zap,
+      title: "Real-time Updates",
+      description: "Instant synchronization across all devices with WebSocket connections and live presence tracking.",
+      demo: <ConnectionStatus status={connectionStatus} className="animate-pulse" />
+    },
+    {
+      icon: Users,
+      title: "Live User Presence",
+      description: "See who's online in real-time with detailed presence indicators and activity status.",
+      demo: <LiveUserCount />
+    },
+    {
+      icon: Bell,
+      title: "Smart Notifications",
+      description: "Contextual notifications that adapt to user behavior and preferences.",
+      demo: <Badge variant="destructive" className="animate-bounce">{unreadCount || 3} new</Badge>
+    },
+    {
       icon: Building2,
       title: "Smart Space Management",
-      description: "Manage multiple coworking locations with intelligent resource allocation and real-time availability."
+      description: "AI-powered resource allocation with predictive booking suggestions.",
+      demo: <Badge variant="secondary">AI Powered</Badge>
     },
     {
       icon: Calendar,
       title: "Advanced Booking System",
-      description: "Flexible booking with recurring reservations, waitlists, and automatic conflict resolution."
-    },
-    {
-      icon: Users,
-      title: "Member Management",
-      description: "Complete member lifecycle management with tiered memberships and access control."
-    },
-    {
-      icon: Zap,
-      title: "Real-time Updates",
-      description: "Instant notifications for bookings, payments, and space availability across all devices."
-    },
-    {
-      icon: Shield,
-      title: "Digital Access Control",
-      description: "RFID integration, mobile app access, and comprehensive security logging."
+      description: "Flexible scheduling with conflict resolution and automatic waitlist management.",
+      demo: <Badge variant="outline" className="text-green-600">Available</Badge>
     },
     {
       icon: BarChart3,
-      title: "Analytics & Insights",
-      description: "Detailed utilization reports, revenue tracking, and member behavior analytics."
+      title: "Live Analytics",
+      description: "Real-time insights with interactive dashboards and custom reporting.",
+      demo: <div className="flex items-center gap-1 text-xs text-green-600">
+        <Activity className="h-3 w-3" />
+        Live
+      </div>
     }
   ];
 
-  const pricingTiers = [
-    {
-      name: "Starter",
-      price: "$49",
-      period: "/month",
-      description: "Perfect for small coworking spaces",
-      features: [
-        "Up to 50 members",
-        "Basic booking system",
-        "Email support",
-        "Mobile app access",
-        "Basic analytics"
-      ],
-      popular: false
+  const liveFeatures = [
+    { 
+      label: "Active Users", 
+      value: liveStats.activeUsers,
+      icon: Users,
+      color: "text-blue-500"
     },
-    {
-      name: "Professional",
-      price: "$149",
-      period: "/month",
-      description: "For growing coworking businesses",
-      features: [
-        "Up to 200 members",
-        "Advanced booking & events",
-        "Priority support",
-        "Access control integration",
-        "Advanced analytics",
-        "Payment processing",
-        "Multi-location support"
-      ],
-      popular: true
+    { 
+      label: "Bookings Today", 
+      value: liveStats.bookingsToday,
+      icon: Calendar,
+      color: "text-green-500" 
     },
-    {
-      name: "Enterprise",
-      price: "Custom",
-      period: "",
-      description: "For large coworking networks",
-      features: [
-        "Unlimited members",
-        "White-label solution",
-        "24/7 phone support",
-        "Custom integrations",
-        "Advanced security",
-        "Dedicated account manager",
-        "Custom reporting"
-      ],
-      popular: false
+    { 
+      label: "Spaces Booked", 
+      value: liveStats.spacesBooked,
+      icon: Building2,
+      color: "text-purple-500"
     }
   ];
 
@@ -100,15 +109,19 @@ const LandingPage = () => {
           <span className="text-xl font-bold text-white">WorkspaceHub</span>
         </div>
         <div className="hidden md:flex items-center space-x-8">
+          <div className="flex items-center gap-4">
+            <ConnectionStatus status={connectionStatus} />
+            {user && <LiveUserCount />}
+          </div>
           <a href="#features" className="text-gray-300 hover:text-white transition-colors">Features</a>
+          <a href="#live-demo" className="text-gray-300 hover:text-white transition-colors">Live Demo</a>
           <a href="#pricing" className="text-gray-300 hover:text-white transition-colors">Pricing</a>
-          <a href="#contact" className="text-gray-300 hover:text-white transition-colors">Contact</a>
           <Button 
             variant="outline" 
             className="text-white border-white/20 hover:bg-white/10"
-            onClick={() => window.location.href = '/auth'}
+            onClick={() => window.location.href = user ? '/?tab=dashboard' : '/auth'}
           >
-            Sign In
+            {user ? 'Dashboard' : 'Sign In'}
           </Button>
         </div>
       </nav>
@@ -117,16 +130,42 @@ const LandingPage = () => {
       <section className="relative px-6 py-20 text-center">
         <div className="absolute inset-0 bg-gradient-to-r from-blue-600/20 to-purple-600/20 blur-3xl"></div>
         <div className="relative max-w-4xl mx-auto">
-          <Badge className="mb-6 bg-blue-500/10 text-blue-400 border-blue-500/20">
-            🚀 Now with AI-powered space optimization
-          </Badge>
+          <div className="flex justify-center items-center gap-2 mb-6">
+            <Badge className="bg-blue-500/10 text-blue-400 border-blue-500/20">
+              <Sparkles className="h-3 w-3 mr-1" />
+              Live Real-time Features
+            </Badge>
+            <ConnectionStatus status={connectionStatus} />
+          </div>
+          
           <h1 className="text-5xl md:text-7xl font-bold text-white mb-6 leading-tight">
             The Future of
-            <span className="bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent"> Coworking</span>
+            <span className="bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent"> Real-time</span>
+            <br />Coworking
           </h1>
+          
           <p className="text-xl text-gray-300 mb-8 max-w-2xl mx-auto">
-            Streamline operations, maximize revenue, and create exceptional member experiences with our all-in-one coworking space management platform.
+            Experience instant synchronization, live presence tracking, and real-time notifications in the most advanced coworking management platform.
           </p>
+
+          {/* Live Stats Demo */}
+          <div className="grid grid-cols-3 gap-4 max-w-md mx-auto mb-8">
+            {liveFeatures.map((feature, index) => {
+              const Icon = feature.icon;
+              return (
+                <Card key={index} className="bg-white/5 border-white/10 backdrop-blur-sm">
+                  <CardContent className="p-4 text-center">
+                    <Icon className={`h-5 w-5 mx-auto mb-2 ${feature.color}`} />
+                    <div className="text-2xl font-bold text-white animate-pulse">
+                      {feature.value}
+                    </div>
+                    <div className="text-xs text-gray-400">{feature.label}</div>
+                  </CardContent>
+                </Card>
+              );
+            })}
+          </div>
+
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
             <div className="flex gap-2 w-full sm:w-auto">
               <Input
@@ -145,30 +184,103 @@ const LandingPage = () => {
             </div>
           </div>
           <p className="text-sm text-gray-400 mt-4">
-            Free 14-day trial • No credit card required • Setup in 5 minutes
+            Free 14-day trial • No credit card required • Real-time features included
           </p>
         </div>
       </section>
 
+      {/* Live Demo Section */}
+      <section id="live-demo" className="px-6 py-20 bg-black/20">
+        <div className="max-w-6xl mx-auto">
+          <div className="text-center mb-16">
+            <div className="flex justify-center items-center gap-2 mb-4">
+              <Activity className="h-6 w-6 text-green-400 animate-pulse" />
+              <h2 className="text-4xl font-bold text-white">Live Demo</h2>
+            </div>
+            <p className="text-xl text-gray-300 max-w-2xl mx-auto">
+              Watch real-time features in action. These stats update live as you browse!
+            </p>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
+            <Card className="bg-white/5 border-white/10 backdrop-blur-sm">
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-white">Connection Status</CardTitle>
+                  <Wifi className="h-5 w-5 text-blue-400" />
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  <ConnectionStatus status={connectionStatus} />
+                  <p className="text-sm text-gray-400">
+                    Real-time WebSocket connection with automatic reconnection
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-white/5 border-white/10 backdrop-blur-sm">
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-white">Live Presence</CardTitle>
+                  <Users className="h-5 w-5 text-green-400" />
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  <LiveUserCount />
+                  <p className="text-sm text-gray-400">
+                    See who's online and their current activity
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-white/5 border-white/10 backdrop-blur-sm">
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-white">Smart Notifications</CardTitle>
+                  <Bell className="h-5 w-5 text-purple-400" />
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  <Badge variant="destructive" className="animate-pulse">
+                    {unreadCount || 2} unread notifications
+                  </Badge>
+                  <p className="text-sm text-gray-400">
+                    Contextual real-time notifications
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </section>
+
       {/* Features Section */}
-      <section id="features" className="px-6 py-20 bg-black/20">
+      <section id="features" className="px-6 py-20">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-16">
             <h2 className="text-4xl font-bold text-white mb-4">
-              Everything you need to run a successful coworking space
+              Real-time features that scale with you
             </h2>
             <p className="text-xl text-gray-300 max-w-2xl mx-auto">
-              From member onboarding to revenue optimization, we've got every aspect of your business covered.
+              Experience the power of instant synchronization and live collaboration in your coworking space.
             </p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {features.map((feature, index) => {
               const Icon = feature.icon;
               return (
-                <Card key={index} className="bg-white/5 border-white/10 backdrop-blur-sm hover:bg-white/10 transition-all duration-300">
+                <Card key={index} className="bg-white/5 border-white/10 backdrop-blur-sm hover:bg-white/10 transition-all duration-300 group">
                   <CardHeader>
-                    <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg flex items-center justify-center mb-4">
-                      <Icon className="h-6 w-6 text-white" />
+                    <div className="flex items-center justify-between mb-4">
+                      <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform">
+                        <Icon className="h-6 w-6 text-white" />
+                      </div>
+                      {feature.demo}
                     </div>
                     <CardTitle className="text-white">{feature.title}</CardTitle>
                   </CardHeader>
@@ -184,77 +296,47 @@ const LandingPage = () => {
         </div>
       </section>
 
-      {/* Pricing Section */}
-      <section id="pricing" className="px-6 py-20">
-        <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold text-white mb-4">
-              Simple, transparent pricing
-            </h2>
-            <p className="text-xl text-gray-300">
-              Choose the plan that scales with your coworking business
-            </p>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {pricingTiers.map((tier, index) => (
-              <Card key={index} className={`relative bg-white/5 border-white/10 backdrop-blur-sm hover:bg-white/10 transition-all duration-300 ${tier.popular ? 'ring-2 ring-blue-500' : ''}`}>
-                {tier.popular && (
-                  <Badge className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-gradient-to-r from-blue-500 to-purple-600">
-                    Most Popular
-                  </Badge>
-                )}
-                <CardHeader className="text-center">
-                  <CardTitle className="text-white text-2xl">{tier.name}</CardTitle>
-                  <div className="flex items-baseline justify-center">
-                    <span className="text-4xl font-bold text-white">{tier.price}</span>
-                    <span className="text-gray-400 ml-1">{tier.period}</span>
-                  </div>
-                  <CardDescription className="text-gray-300">{tier.description}</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <ul className="space-y-3 mb-6">
-                    {tier.features.map((feature, idx) => (
-                      <li key={idx} className="flex items-center text-gray-300">
-                        <CheckCircle className="h-5 w-5 text-green-400 mr-3 flex-shrink-0" />
-                        {feature}
-                      </li>
-                    ))}
-                  </ul>
-                  <Button className={`w-full ${tier.popular ? 'bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700' : 'bg-white/10 hover:bg-white/20 text-white'}`}>
-                    {tier.name === "Enterprise" ? "Contact Sales" : "Start Free Trial"}
-                  </Button>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </div>
-      </section>
-
       {/* CTA Section */}
       <section className="px-6 py-20 bg-gradient-to-r from-blue-600/20 to-purple-600/20">
         <div className="max-w-4xl mx-auto text-center">
-          <h2 className="text-4xl font-bold text-white mb-6">
-            Ready to transform your coworking space?
-          </h2>
+          <div className="flex justify-center items-center gap-2 mb-6">
+            <Activity className="h-6 w-6 text-green-400 animate-pulse" />
+            <h2 className="text-4xl font-bold text-white">
+              Ready to experience real-time coworking?
+            </h2>
+          </div>
           <p className="text-xl text-gray-300 mb-8">
-            Join hundreds of coworking spaces already using WorkspaceHub to streamline operations and delight members.
+            Join the future of workspace management with live updates, instant notifications, and seamless collaboration.
           </p>
-          <Button className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-lg px-8 py-3">
-            Start Your Free Trial <ArrowRight className="ml-2 h-5 w-5" />
+          <div className="flex justify-center items-center gap-4 mb-6">
+            <ConnectionStatus status={connectionStatus} />
+            <LiveUserCount />
+          </div>
+          <Button 
+            className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-lg px-8 py-3"
+            onClick={() => window.location.href = user ? '/?tab=dashboard' : '/auth'}
+          >
+            {user ? 'Go to Dashboard' : 'Start Your Free Trial'} <ArrowRight className="ml-2 h-5 w-5" />
           </Button>
         </div>
       </section>
 
       {/* Footer */}
       <footer className="px-6 py-12 border-t border-white/10">
-        <div className="max-w-6xl mx-auto text-center">
+        <div className="max-w-6xl mx-auto">
           <div className="flex items-center justify-center space-x-2 mb-6">
             <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg"></div>
             <span className="text-xl font-bold text-white">WorkspaceHub</span>
           </div>
-          <p className="text-gray-400">
-            © 2024 WorkspaceHub. All rights reserved.
-          </p>
+          <div className="text-center">
+            <div className="flex justify-center items-center gap-4 mb-4">
+              <ConnectionStatus status={connectionStatus} />
+              <Badge variant="secondary" className="text-xs">Real-time Enabled</Badge>
+            </div>
+            <p className="text-gray-400">
+              © 2024 WorkspaceHub. All rights reserved. Real-time features powered by Supabase.
+            </p>
+          </div>
         </div>
       </footer>
     </div>

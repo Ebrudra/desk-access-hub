@@ -16,15 +16,7 @@ export const useRealtimeData = (tableName: string, queryKey: string[]) => {
 
     const createChannel = () => {
       const channel = supabase
-        .channel(`realtime-${tableName}-${Date.now()}`, {
-          config: {
-            postgres_changes: [{
-              event: '*',
-              schema: 'public',
-              table: tableName
-            }]
-          }
-        })
+        .channel(`realtime-${tableName}-${Date.now()}`)
         .on(
           'postgres_changes',
           {
@@ -59,7 +51,7 @@ export const useRealtimeData = (tableName: string, queryKey: string[]) => {
           if (status === 'SUBSCRIBED') {
             setConnectionStatus('connected');
             retryCount = 0; // Reset retry count on success
-          } else if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
+          } else if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT' || status === 'CLOSED') {
             setConnectionStatus('disconnected');
             
             // Retry connection with exponential backoff
