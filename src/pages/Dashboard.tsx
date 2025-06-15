@@ -45,15 +45,16 @@ export default function Dashboard() {
             <DashboardHeader />
             <main className="flex-1 p-6">
               <Tabs value={activeTab} className="space-y-6">
+                {/* Hide Access Codes and Billing tabs from the header (TabsList) */}
                 <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 lg:grid-cols-8">
                   <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
                   <TabsTrigger value="calendar">Calendar</TabsTrigger>
                   <TabsTrigger value="smart-booking">Smart Booking</TabsTrigger>
                   <TabsTrigger value="crud">Management</TabsTrigger>
                   <TabsTrigger value="analytics">Analytics</TabsTrigger>
-                  <TabsTrigger value="access-codes">Access Codes</TabsTrigger>
                   <TabsTrigger value="payments">Payments</TabsTrigger>
-                  <TabsTrigger value="billing">Billing</TabsTrigger>
+                  {/* Removed TabsTrigger for access-codes */}
+                  {/* Removed TabsTrigger for billing */}
                 </TabsList>
 
                 <TabsContent value="dashboard">
@@ -108,6 +109,7 @@ export default function Dashboard() {
                   <AnalyticsDashboard />
                 </TabsContent>
 
+                {/* Keep tab contents for direct routing */}
                 <TabsContent value="access-codes">
                   <AccessCodesDisplay />
                 </TabsContent>
