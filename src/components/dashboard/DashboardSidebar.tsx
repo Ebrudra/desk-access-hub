@@ -1,5 +1,4 @@
-
-import { Calendar, Home, Users, BarChart3, Settings, CreditCard, Shield, Sparkles } from "lucide-react";
+import { Calendar, Home, Users, BarChart3, Settings, CreditCard, Shield, Sparkles, Key } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import {
   Sidebar,
@@ -43,6 +42,16 @@ const menuItems = [
   {
     title: "Payments",
     url: "/dashboard?tab=payments",
+    icon: CreditCard,
+  },
+  {
+    title: "Access Code",
+    url: "/dashboard?tab=access-codes",
+    icon: Key,
+  },
+  {
+    title: "Billing",
+    url: "/dashboard?tab=billing",
     icon: CreditCard,
   },
 ];
