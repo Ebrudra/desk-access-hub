@@ -8,7 +8,8 @@ import { useAuthRole } from "@/hooks/useAuthRole";
 import { 
   Bell, 
   Search, 
-  Bolt 
+  Bolt,
+  ChartBar // <-- Import analytics icon
 } from "lucide-react";
 import { QuickActions } from "@/components/QuickActions";
 import { NotificationCenter } from "@/components/notifications/NotificationCenter";
@@ -43,7 +44,7 @@ export const EnhancedDashboard = () => {
     {
       title: "Mobile Optimized",
       description: "Touch-friendly interface with swipe actions and responsive design",
-      icon: Bell, // Lucide doesn't have a "Smartphone" icon, we're sticking to allowed icons
+      icon: ChartBar, // Changed from Bell to ChartBar for analytics relevance
       color: FEATURE_COLORS[2],
       available: true
     },
