@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useState } from "react";
@@ -35,7 +34,11 @@ export const SocialAuthButtons = ({ isLoading, onLoadingChange }: SocialAuthButt
         throw error;
       }
     } catch (error: any) {
-      console.error(`${providerName} authentication error:`, error);
+      // Only log in development
+      if (import.meta.env.DEV) {
+        console.error(`${providerName} authentication error:`, error);
+      }
+      
       toast({
         title: "Authentication Error",
         description: error.message || `Failed to authenticate with ${providerName}`,

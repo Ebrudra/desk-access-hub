@@ -37,7 +37,11 @@ const AuthCallback = () => {
           navigate("/auth");
         }
       } catch (error: any) {
-        console.error('Auth callback error:', error);
+        // Only log in development
+        if (import.meta.env.DEV) {
+          console.error('Auth callback error:', error);
+        }
+        
         toast({
           title: "Authentication Error",
           description: error.message || "Failed to complete authentication",

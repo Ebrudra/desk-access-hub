@@ -24,7 +24,10 @@ export const useSessionPersistence = () => {
       if (error) throw error;
       return data.session;
     } catch (error) {
-      console.error('Session refresh failed:', error);
+      // Only log in development
+      if (import.meta.env.DEV) {
+        console.error('Session refresh failed:', error);
+      }
       clearCache();
       return null;
     }
